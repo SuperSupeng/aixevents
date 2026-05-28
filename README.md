@@ -74,7 +74,7 @@ supabase_rls_setup.sql
 - Build output directory: `dist`
 - Node.js version: `20`
 
-项目根目录的 `wrangler.jsonc` 会让 Wrangler 直接使用 `dist` 静态资源，并把 `/api/*` 交给 `src/worker.ts` 处理，避免 Wrangler 自动配置 Vite 时报 Vite 版本错误。
+项目根目录的 `wrangler.jsonc` 会让 Wrangler 直接使用 `dist` 静态资源，并把 `/api/*` 交给 `src/worker.ts` 处理，避免 Wrangler 自动配置 Vite 时报 Vite 版本错误。SPA fallback 由 `wrangler.jsonc` 的 `not_found_handling` 处理，不需要额外的 `_redirects` 文件。
 
 需要在 Cloudflare 的环境变量中配置：
 

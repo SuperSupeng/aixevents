@@ -101,3 +101,5 @@ Worker 会提供：
 ## 安全说明
 
 安全模型与检查项见 [SECURITY_CHECKLIST.md](./SECURITY_CHECKLIST.md)。
+
+Last deployment trigger: 2026-05-28T19:14:56Z

@@ -76,7 +76,7 @@ supabase_rls_setup.sql
 
 项目根目录的 `wrangler.jsonc` 会让 Wrangler 直接使用 `dist` 静态资源，并把 `/api/*` 交给 `src/worker.ts` 处理，避免 Wrangler 自动配置 Vite 时报 Vite 版本错误。SPA fallback 由 `wrangler.jsonc` 的 `not_found_handling` 处理，不需要额外的 `_redirects` 文件。
 
-需要在 Cloudflare 的环境变量中配置：
+需要在 Cloudflare 的环境变量中配置。注意：`VITE_*` 变量必须在构建时可用，否则前端拿不到 Supabase 公开连接信息。
 
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_ANON_KEY`

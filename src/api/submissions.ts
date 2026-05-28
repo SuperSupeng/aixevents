@@ -1,4 +1,4 @@
-import { supabase } from '../config/supabase';
+import { isSupabaseConfigured, supabase } from '../config/supabase';
 import { DEFAULT_ACTIVITY_TYPE, type ActivityType } from '../constants/activityTaxonomy';
 import type { EditableEventSubmission, EventSubmissionInput, EventSubmissionResult } from '../types';
 
@@ -160,6 +160,10 @@ function transformEditableSubmission(raw: any): EditableEventSubmission {
 }
 
 export async function uploadEventPoster(file: File): Promise<string> {
+  if (!isSupabaseConfigured) {
+    throw new Error('活动提交服务暂时不可用，请稍后再试。');
+  }
+
   if (!ALLOWED_POSTER_TYPES.includes(file.type)) {
     throw new Error('海报仅支持 JPG、PNG 或 WebP 图片。');
   }
@@ -191,6 +195,10 @@ export async function uploadEventPoster(file: File): Promise<string> {
 }
 
 export async function submitEventForReview(input: EventSubmissionInput): Promise<EventSubmissionResult> {
+  if (!isSupabaseConfigured) {
+    throw new Error('活动提交服务暂时不可用，请稍后再试。');
+  }
+
   const editToken = generateEditToken();
   const editTokenHash = await sha256Hex(editToken);
   const payload = buildEventPayload(input);
@@ -214,6 +222,10 @@ export async function submitEventForReview(input: EventSubmissionInput): Promise
 }
 
 export async function fetchSubmissionForEdit(editToken: string): Promise<EditableEventSubmission | null> {
+  if (!isSupabaseConfigured) {
+    throw new Error('读取活动信息失败，请稍后再试。');
+  }
+
   const { data, error } = await supabase.rpc('get_datawhale_event_by_edit_token', {
     p_edit_token: editToken,
   });
@@ -228,6 +240,10 @@ export async function fetchSubmissionForEdit(editToken: string): Promise<Editabl
 }
 
 export async function updateSubmissionWithToken(editToken: string, input: EventSubmissionInput): Promise<{ mode: string }> {
+  if (!isSupabaseConfigured) {
+    throw new Error('提交修改失败，请稍后再试。');
+  }
+
   const payload = buildEventPayload(input);
   const { data, error } = await supabase.rpc('update_datawhale_event_by_edit_token', {
     p_edit_token: editToken,

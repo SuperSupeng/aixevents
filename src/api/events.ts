@@ -1,4 +1,4 @@
-import { supabase } from '../config/supabase';
+import { isSupabaseConfigured, supabase } from '../config/supabase';
 import { CITY_OPTIONS, OTHER_CITY_OPTION } from '../constants/activityTaxonomy';
 import type { TechEvent } from '../types';
 
@@ -46,6 +46,11 @@ function normalizeCityName(rawCity?: string): string {
  * 获取活动列表
  */
 export async function fetchEvents(filters: EventFilters = {}): Promise<TechEvent[]> {
+  if (!isSupabaseConfigured) {
+    console.warn('Supabase client environment variables are missing.');
+    return [];
+  }
+
   try {
     let query = supabase
       .from('datawhale_events_public')
@@ -126,6 +131,11 @@ export async function fetchEvents(filters: EventFilters = {}): Promise<TechEvent
  * 获取单个活动详情
  */
 export async function fetchEventById(id: string): Promise<TechEvent | null> {
+  if (!isSupabaseConfigured) {
+    console.warn('Supabase client environment variables are missing.');
+    return null;
+  }
+
   try {
     const { data, error } = await supabase
       .from('datawhale_events_public')
@@ -152,6 +162,11 @@ export async function fetchEventById(id: string): Promise<TechEvent | null> {
  * 获取所有唯一的地点列表
  */
 export async function fetchLocations(): Promise<string[]> {
+  if (!isSupabaseConfigured) {
+    console.warn('Supabase client environment variables are missing.');
+    return [];
+  }
+
   try {
     const { data, error } = await supabase
       .from('datawhale_events_public')

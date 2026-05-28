@@ -75,13 +75,13 @@ const ListView: React.FC<ListViewProps> = ({ events, onEventClick, searchQuery, 
   return (
     <div className="space-y-6">
       {/* Results Header */}
-      <div className="flex items-center justify-between text-sm text-white/50">
+      <div className="flex items-center justify-between text-sm text-black/60 font-bold">
         <span>
-          Showing {visibleEvents.length} of {events.length} events
+          正在显示 {visibleEvents.length} / {events.length} 场活动
         </span>
         {hasMore && (
-          <span className="text-primary/70">
-            Scroll for more...
+          <span className="text-accent">
+            向下滚动查看更多
           </span>
         )}
       </div>
@@ -113,17 +113,17 @@ const ListView: React.FC<ListViewProps> = ({ events, onEventClick, searchQuery, 
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="flex items-center gap-3 text-white/50"
+              className="flex items-center gap-3 text-black/50 font-bold"
             >
               <Loader2 size={20} className="animate-spin" />
-              <span className="text-sm">Loading more events...</span>
+              <span className="text-sm">加载更多活动...</span>
             </motion.div>
           ) : (
             <button
               onClick={loadMore}
-              className="px-6 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-primary/30 text-white/70 hover:text-white transition-all text-sm font-medium"
+              className="px-6 py-3 rounded-md bg-white hover:bg-primary border border-black/15 hover:border-black/30 text-black/70 hover:text-black transition-all text-sm font-black"
             >
-              Load More ({events.length - displayedItems} remaining)
+              加载更多（剩余 {events.length - displayedItems} 场）
             </button>
           )}
         </div>
@@ -131,8 +131,8 @@ const ListView: React.FC<ListViewProps> = ({ events, onEventClick, searchQuery, 
 
       {/* End Indicator */}
       {!hasMore && events.length > ITEMS_PER_PAGE && (
-        <div className="flex items-center justify-center py-8 text-white/40 text-sm">
-          <span>✓ All events loaded</span>
+        <div className="flex items-center justify-center py-8 text-black/40 text-sm font-bold">
+          <span>✓ 已加载全部活动</span>
         </div>
       )}
     </div>

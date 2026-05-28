@@ -13,6 +13,7 @@ import {
   startOfDay,
   endOfDay
 } from 'date-fns';
+import { zhCN } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, MapPin, Globe } from 'lucide-react';
 import EventDetail from './EventDetail';
 import EmptyState from './EmptyState';
@@ -89,15 +90,13 @@ const WeekView: React.FC<WeekViewProps> = ({ events }) => {
     
     if (!isSameDay(eventStart, day)) return null;
     
-    const startHour = eventStart.getHours();
     const startMinute = eventStart.getMinutes();
     const durationMinutes = (eventEnd.getTime() - eventStart.getTime()) / (1000 * 60);
     
-    const top = (startHour * 60 + startMinute) / 60; // in hours
     const height = durationMinutes / 60; // in hours
     
     return {
-      top: `${top * 60}px`, // 60px per hour
+      top: `${startMinute}px`, // positioned within the start-hour row
       height: `${Math.max(height * 60, 30)}px`, // minimum 30px
     };
   };
@@ -110,13 +109,13 @@ const WeekView: React.FC<WeekViewProps> = ({ events }) => {
         {/* Week Navigation */}
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold text-white">
-            Week of {format(currentWeekStart, 'MMM d')} - {format(endOfWeek(currentWeekStart, { weekStartsOn: 1 }), 'MMM d, yyyy')}
+            {format(currentWeekStart, 'M月d日', { locale: zhCN })} - {format(endOfWeek(currentWeekStart, { weekStartsOn: 1 }), 'M月d日', { locale: zhCN })} 周视图
           </h2>
           <div className="flex items-center gap-2">
             <button
               onClick={goToPreviousWeek}
               className="p-2 rounded-lg bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 transition-all"
-              aria-label="Previous week"
+              aria-label="上一周"
             >
               <ChevronLeft size={20} />
             </button>
@@ -124,12 +123,12 @@ const WeekView: React.FC<WeekViewProps> = ({ events }) => {
               onClick={goToToday}
               className="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 transition-all text-sm font-medium"
             >
-              Today
+              今天
             </button>
             <button
               onClick={goToNextWeek}
               className="p-2 rounded-lg bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 transition-all"
-              aria-label="Next week"
+              aria-label="下一周"
             >
               <ChevronRight size={20} />
             </button>
@@ -147,15 +146,15 @@ const WeekView: React.FC<WeekViewProps> = ({ events }) => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl sm:text-3xl font-bold text-white">
-            Week of {format(currentWeekStart, 'MMM d')} - {format(endOfWeek(currentWeekStart, { weekStartsOn: 1 }), 'MMM d, yyyy')}
+            {format(currentWeekStart, 'M月d日', { locale: zhCN })} - {format(endOfWeek(currentWeekStart, { weekStartsOn: 1 }), 'M月d日', { locale: zhCN })} 周视图
           </h2>
-          <p className="text-sm text-white/50 mt-1">Showing times in {userTimezone}</p>
+          <p className="text-sm text-white/50 mt-1">时间按 {userTimezone} 显示</p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={goToPreviousWeek}
             className="p-2 rounded-lg bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 transition-all"
-            aria-label="Previous week"
+            aria-label="上一周"
           >
             <ChevronLeft size={20} />
           </button>
@@ -163,12 +162,12 @@ const WeekView: React.FC<WeekViewProps> = ({ events }) => {
             onClick={goToToday}
             className="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 transition-all text-sm font-medium"
           >
-            Today
+            今天
           </button>
           <button
             onClick={goToNextWeek}
             className="p-2 rounded-lg bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 transition-all"
-            aria-label="Next week"
+            aria-label="下一周"
           >
             <ChevronRight size={20} />
           </button>
@@ -180,7 +179,7 @@ const WeekView: React.FC<WeekViewProps> = ({ events }) => {
         <div className="bg-[#0a0a0a]/70 border border-white/10 rounded-2xl p-4 backdrop-blur-xl">
           <h3 className="text-sm font-semibold text-white/70 mb-3 flex items-center gap-2">
             <CalendarIcon size={16} />
-            All-Day Events
+            全天活动
           </h3>
           <div className="grid gap-2">
             {allDayEvents.map(event => {
@@ -201,7 +200,7 @@ const WeekView: React.FC<WeekViewProps> = ({ events }) => {
                       </h4>
                       <div className="flex items-center gap-1.5 text-xs text-white/50 flex-shrink-0">
                         {event.format === 'online' ? (
-                          <><Globe size={12} /> Online</>
+                          <><Globe size={12} /> 线上</>
                         ) : event.location ? (
                           <><MapPin size={12} /> {event.location.city}</>
                         ) : null}
@@ -210,12 +209,12 @@ const WeekView: React.FC<WeekViewProps> = ({ events }) => {
                     <div className="flex items-center gap-2 text-xs text-white/50">
                       <Clock size={12} />
                       {isMultiDay ? (
-                        <span>{format(eventStart, 'MMM d')} - {format(eventEnd, 'MMM d')}</span>
+                        <span>{format(eventStart, 'M月d日', { locale: zhCN })} - {format(eventEnd, 'M月d日', { locale: zhCN })}</span>
                       ) : (
-                        <span>{format(eventStart, 'EEEE, MMM d')}</span>
+                        <span>{format(eventStart, 'EEEE，M月d日', { locale: zhCN })}</span>
                       )}
                       <span className="text-white/30">•</span>
-                      <span>All Day</span>
+                      <span>全天</span>
                     </div>
                   </div>
                 </button>
@@ -233,7 +232,7 @@ const WeekView: React.FC<WeekViewProps> = ({ events }) => {
             className="grid border-b border-white/10 bg-white/5"
             style={{ gridTemplateColumns: '100px repeat(7, 1fr)' }}
           >
-          <div className="py-3 text-xs font-semibold text-white/50 border-r border-white/10 flex items-center justify-center">Time</div>
+          <div className="py-3 text-xs font-semibold text-white/50 border-r border-white/10 flex items-center justify-center">时间</div>
           {weekDays.map((day, index) => (
             <div
               key={index}
@@ -241,7 +240,7 @@ const WeekView: React.FC<WeekViewProps> = ({ events }) => {
                 isToday(day) ? 'bg-primary/10' : ''
               }`}
             >
-              <div className="text-xs font-semibold text-white/70">{format(day, 'EEE')}</div>
+              <div className="text-xs font-semibold text-white/70">{format(day, 'EEE', { locale: zhCN })}</div>
               <div className={`text-lg font-bold ${isToday(day) ? 'text-primary' : 'text-white'}`}>
                 {format(day, 'd')}
               </div>
@@ -298,7 +297,7 @@ const WeekView: React.FC<WeekViewProps> = ({ events }) => {
                             {event.format === 'online' && (
                               <div className="flex items-center gap-1 text-[10px] text-emerald-400 mt-0.5">
                                 <Globe size={10} />
-                                Online
+                                线上
                               </div>
                             )}
                           </button>

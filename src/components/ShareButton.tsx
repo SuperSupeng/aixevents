@@ -19,9 +19,9 @@ const ShareButton: React.FC<ShareButtonProps> = ({
   const [copied, setCopied] = useState(false);
 
   // 构建分享内容
-  const shareUrl = customUrl || (event ? `https://aixevents.com/event/${event.id}` : window.location.href);
-  const shareTitle = customTitle || (event ? event.title : 'AIXEvents');
-  const shareDescription = customDescription || (event ? event.summary : 'Discover tech events worldwide');
+  const shareUrl = customUrl || (event ? `${window.location.origin}/event/${event.id}` : window.location.href);
+  const shareTitle = customTitle || (event ? event.title : 'Datawhale AI+X 活动日历');
+  const shareDescription = customDescription || (event ? event.summary : '发现全球 AI 与科技活动');
 
   // Twitter 分享
   const shareToTwitter = () => {
@@ -90,7 +90,7 @@ const ShareButton: React.FC<ShareButtonProps> = ({
         className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 transition-all"
       >
         <Share2 size={18} />
-        <span className="text-sm font-medium">Share</span>
+        <span className="text-sm font-medium">分享</span>
       </button>
 
       {showMenu && (
@@ -108,7 +108,7 @@ const ShareButton: React.FC<ShareButtonProps> = ({
               className="w-full flex items-center gap-3 px-4 py-2.5 text-white/70 hover:text-white hover:bg-white/5 transition-colors"
             >
               <Twitter size={18} />
-              <span className="text-sm font-medium">Share on Twitter</span>
+              <span className="text-sm font-medium">分享到 Twitter</span>
             </button>
 
             <button
@@ -116,7 +116,7 @@ const ShareButton: React.FC<ShareButtonProps> = ({
               className="w-full flex items-center gap-3 px-4 py-2.5 text-white/70 hover:text-white hover:bg-white/5 transition-colors"
             >
               <Linkedin size={18} />
-              <span className="text-sm font-medium">Share on LinkedIn</span>
+              <span className="text-sm font-medium">分享到 LinkedIn</span>
             </button>
 
             <button
@@ -124,7 +124,7 @@ const ShareButton: React.FC<ShareButtonProps> = ({
               className="w-full flex items-center gap-3 px-4 py-2.5 text-white/70 hover:text-white hover:bg-white/5 transition-colors"
             >
               <Mail size={18} />
-              <span className="text-sm font-medium">Share via Email</span>
+              <span className="text-sm font-medium">邮件分享</span>
             </button>
 
             <div className="h-px bg-white/10 my-2" />
@@ -135,7 +135,7 @@ const ShareButton: React.FC<ShareButtonProps> = ({
             >
               {copied ? <Check size={18} className="text-green-500" /> : <Link size={18} />}
               <span className="text-sm font-medium">
-                {copied ? 'Link Copied!' : 'Copy Link'}
+                {copied ? '链接已复制' : '复制链接'}
               </span>
             </button>
           </div>

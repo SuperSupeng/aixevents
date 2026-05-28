@@ -1,4 +1,5 @@
 import { supabase } from '../config/supabase';
+import { CITY_OPTIONS, OTHER_CITY_OPTION } from '../constants/activityTaxonomy';
 import type { TechEvent } from '../types';
 
 export interface EventFilters {
@@ -12,13 +13,42 @@ export interface EventFilters {
   offset?: number;
 }
 
+function isMissingDatawhaleTable(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false;
+  const message = 'message' in error ? String((error as { message?: unknown }).message || '') : '';
+  const code = 'code' in error ? String((error as { code?: unknown }).code || '') : '';
+  return code === '42P01' || message.includes('datawhale_events_public') || message.includes("Could not find the table");
+}
+
+function sanitizeSearchTerm(term: string): string {
+  return term.trim().replace(/[%,()]/g, ' ');
+}
+
+function sanitizeTagSearchTerm(term: string): string {
+  return term.replace(/^#/, '').trim().replace(/[{}"\\,]/g, '');
+}
+
+function normalizeCityName(rawCity?: string): string {
+  const city = String(rawCity || '').trim();
+  if (!city) return '';
+
+  for (const option of CITY_OPTIONS) {
+    if (option === OTHER_CITY_OPTION) continue;
+    if (city === option || city.startsWith(option) || city.startsWith(`${option}市`)) {
+      return option;
+    }
+  }
+
+  return city;
+}
+
 /**
  * 获取活动列表
  */
 export async function fetchEvents(filters: EventFilters = {}): Promise<TechEvent[]> {
   try {
     let query = supabase
-      .from('events')
+      .from('datawhale_events_public')
       .select('*')
       .order('start_time', { ascending: true });
 
@@ -30,30 +60,33 @@ export async function fetchEvents(filters: EventFilters = {}): Promise<TechEvent
       query = query.eq('format', filters.format);
     }
 
-    // 地点筛选
+    // 地点筛选：只按公开城市筛选；线上/线下由 format 单独控制
     if (filters.location && filters.location !== 'all') {
-      if (filters.location === 'online') {
-        query = query.eq('format', 'online');
-      } else {
-        // 搜索城市或国家（清理输入防止注入）
-        const cityName = filters.location.split(',')[0].trim()
-          .replace(/[^\w\s\u4e00-\u9fa5-]/g, ''); // 只保留字母、数字、空格、中文、连字符
-        
-        if (cityName) {
-          query = query.or(`location->>city.eq.${cityName},location->>country.eq.${cityName}`);
-        }
+      // 公开地点筛选只按城市（清理输入防止注入）
+      const cityName = filters.location.split(',')[0].trim()
+        .replace(/[^\w\s\u4e00-\u9fa5-]/g, ''); // 只保留字母、数字、空格、中文、连字符
+
+      if (cityName) {
+        query = query.ilike('location->>city', `${cityName}%`);
       }
     }
 
-    // Tag filter (e.g. Featured for paid/partner events)
+    // 活动类型筛选。用户自定义标签走搜索，不作为首页固定筛选项。
     if (filters.tag) {
-      query = query.contains('tags', [filters.tag]);
+      query = query.eq('activity_type', filters.tag);
     }
 
     // Search keywords
     if (filters.search) {
-      const searchTerm = `%${filters.search}%`;
-      query = query.or(`title.ilike.${searchTerm},summary.ilike.${searchTerm}`);
+      const sanitizedSearch = sanitizeSearchTerm(filters.search);
+      if (sanitizedSearch) {
+        const searchTerm = `%${sanitizedSearch}%`;
+        const exactTag = sanitizeTagSearchTerm(sanitizedSearch);
+        const tagClauses = exactTag && !exactTag.includes(' ')
+          ? `,tags.cs.{${exactTag}},custom_tags.cs.{${exactTag}}`
+          : '';
+        query = query.or(`title.ilike.${searchTerm},summary.ilike.${searchTerm},organizer->>name.ilike.${searchTerm}${tagClauses}`);
+      }
     }
 
     // 日期范围
@@ -73,6 +106,10 @@ export async function fetchEvents(filters: EventFilters = {}): Promise<TechEvent
     const { data, error } = await query;
 
     if (error) {
+      if (isMissingDatawhaleTable(error)) {
+        console.warn('Datawhale activity table is not ready yet.');
+        return [];
+      }
       console.error('Error fetching events:', error);
       throw error;
     }
@@ -91,12 +128,15 @@ export async function fetchEvents(filters: EventFilters = {}): Promise<TechEvent
 export async function fetchEventById(id: string): Promise<TechEvent | null> {
   try {
     const { data, error } = await supabase
-      .from('events')
+      .from('datawhale_events_public')
       .select('*')
       .eq('id', id)
       .single();
 
     if (error) {
+      if (isMissingDatawhaleTable(error)) {
+        return null;
+      }
       console.error('Error fetching event:', error);
       throw error;
     }
@@ -114,20 +154,26 @@ export async function fetchEventById(id: string): Promise<TechEvent | null> {
 export async function fetchLocations(): Promise<string[]> {
   try {
     const { data, error } = await supabase
-      .from('events')
+      .from('datawhale_events_public')
       .select('location')
       .not('location', 'is', null);
 
     if (error) {
+      if (isMissingDatawhaleTable(error)) {
+        return [];
+      }
       console.error('Error fetching locations:', error);
       throw error;
     }
 
-    // 提取唯一城市列表
+    // 提取唯一城市列表；公开筛选只按城市，不展示具体场地
     const locations = new Set<string>();
     (data || []).forEach((event: any) => {
-      if (event.location?.city && event.location?.country) {
-        locations.add(`${event.location.city}, ${event.location.country}`);
+      if (event.location?.city) {
+        const city = normalizeCityName(event.location.city);
+        if (city) {
+          locations.add(city);
+        }
       }
     });
 
@@ -142,22 +188,39 @@ export async function fetchLocations(): Promise<string[]> {
  * 转换数据库格式到前端类型
  */
 function transformEvent(dbEvent: any): TechEvent {
+  const links = dbEvent.links || {};
+  const officialSite = links.officialSite || links.registration || links.poster || '#';
+  const location = dbEvent.location
+    ? {
+        ...dbEvent.location,
+        city: normalizeCityName(dbEvent.location.city) || dbEvent.location.city,
+      }
+    : dbEvent.location;
+
   return {
     id: dbEvent.id,
     title: dbEvent.title,
     summary: dbEvent.summary || '',
-    coverImage: dbEvent.cover_image,
+    coverImage: dbEvent.cover_image || links.poster,
     startTime: dbEvent.start_time,
     endTime: dbEvent.end_time,
     timezone: dbEvent.timezone,
     isAllDay: dbEvent.is_all_day,
     format: dbEvent.format,
-    location: dbEvent.location,
+    location,
     tags: dbEvent.tags || [],
-    language: dbEvent.language || ['English'],
-    links: dbEvent.links,
+    activityType: dbEvent.activity_type,
+    customTags: dbEvent.custom_tags || [],
+    language: dbEvent.language || ['中文'],
+    links: {
+      ...links,
+      officialSite,
+    },
     organizer: dbEvent.organizer,
+    organizers: dbEvent.organizers || (dbEvent.organizer?.name ? [dbEvent.organizer.name] : []),
     price: dbEvent.price || { type: 'unknown' },
     status: dbEvent.status || 'upcoming',
+    isFeatured: Boolean(dbEvent.is_featured),
+    featuredRank: dbEvent.featured_rank ?? null,
   };
 }

@@ -4,12 +4,14 @@ import Logo from './Logo';
 
 interface NavbarProps {
   onExploreClick: () => void;
+  onHackathonsClick: () => void;
   onResourcesClick: () => void;
   onSubmitClick: () => void;
 }
 
 const Navbar: React.FC<NavbarProps> = ({
   onExploreClick,
+  onHackathonsClick,
   onResourcesClick,
   onSubmitClick
 }) => {
@@ -20,29 +22,27 @@ const Navbar: React.FC<NavbarProps> = ({
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 py-4 sm:py-6">
-      <div className="max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-8 py-3 sm:py-4 glass-panel !rounded-full relative">
+    <nav className="fixed top-0 left-0 right-0 z-50 px-3 sm:px-6 py-4">
+      <div className="w-full max-w-7xl mx-auto flex items-center justify-between px-3 sm:px-6 py-3 bg-white/90 border-2 border-black/90 rounded-lg shadow-[0_5px_0_rgba(5,5,5,0.92)] sm:shadow-[6px_6px_0_rgba(5,5,5,0.92)] backdrop-blur-xl relative">
         <button 
           onClick={scrollToTop}
-          className="flex items-center gap-3 hover:opacity-80 transition-opacity group"
+          className="flex min-w-0 items-center gap-2 sm:gap-3 hover:opacity-80 transition-opacity group"
         >
-          <Logo size={32} className="group-hover:scale-110 transition-transform duration-300" />
-          <span className="text-xl font-bold tracking-tight text-white font-sans">
-            GlobalTech<span className="text-primary-light">Events</span>
-          </span>
+          <Logo size={34} className="max-w-[168px] sm:max-w-[224px] group-hover:scale-[1.03] transition-transform duration-300" />
         </button>
         
-        <div className="hidden md:flex items-center gap-10 text-[13px] font-medium tracking-wide uppercase text-white/80">
-          <button onClick={onExploreClick} className="text-white hover:text-white transition-colors">View Calendar</button>
-          <button onClick={onResourcesClick} className="hover:text-white transition-colors">Resources</button>
-          <button onClick={onSubmitClick} className="hover:text-white transition-colors">Submit Event</button>
+        <div className="hidden md:flex items-center gap-7 text-base font-black tracking-wide uppercase text-black">
+          <button onClick={onExploreClick} className="hover:text-accent transition-colors">活动日历</button>
+          <button onClick={onHackathonsClick} className="hover:text-accent transition-colors">Hackathon</button>
+          <button onClick={onResourcesClick} className="hover:text-accent transition-colors">资源</button>
+          <button onClick={onSubmitClick} className="bg-primary px-4 py-2 border-2 border-black hover:bg-primary-light transition-colors">提交活动</button>
         </div>
 
         {/* Mobile Menu Button */}
         <button 
-          className="md:hidden p-2 text-white/80 hover:text-white transition-colors"
+          className="md:hidden p-2 text-black hover:text-accent transition-colors"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          aria-label="Toggle menu"
+          aria-label="打开菜单"
         >
           {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
@@ -50,25 +50,31 @@ const Navbar: React.FC<NavbarProps> = ({
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden absolute top-full left-4 right-4 mt-2 glass-panel rounded-3xl p-6 animate-in fade-in slide-in-from-top-5">
+        <div className="md:hidden absolute top-full left-4 right-4 mt-2 bg-white border-2 border-black rounded-lg p-6 shadow-[6px_6px_0_rgba(5,5,5,0.92)] animate-in fade-in slide-in-from-top-5">
           <div className="flex flex-col gap-4">
-            <button 
-              onClick={() => { onExploreClick(); setMobileMenuOpen(false); }} 
-              className="text-white hover:text-primary transition-colors py-2 font-medium text-left"
+            <button
+              onClick={() => { onExploreClick(); setMobileMenuOpen(false); }}
+              className="text-black hover:text-accent transition-colors py-2 font-black text-left text-base"
             >
-              View Calendar
+              活动日历
+            </button>
+            <button
+              onClick={() => { onHackathonsClick(); setMobileMenuOpen(false); }}
+              className="text-black/70 hover:text-accent transition-colors py-2 text-left font-black text-base"
+            >
+              Hackathon
             </button>
             <button 
               onClick={() => { onResourcesClick(); setMobileMenuOpen(false); }} 
-              className="text-white/80 hover:text-white transition-colors py-2 text-left"
+              className="text-black/70 hover:text-accent transition-colors py-2 text-left font-black text-base"
             >
-              Resources
+              资源
             </button>
             <button 
               onClick={() => { onSubmitClick(); setMobileMenuOpen(false); }} 
-              className="text-white/80 hover:text-white transition-colors py-2 text-left"
+              className="text-black/70 hover:text-accent transition-colors py-2 text-left font-black text-base"
             >
-              Submit Event
+              提交活动
             </button>
           </div>
         </div>

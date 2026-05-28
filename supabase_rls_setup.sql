@@ -1,92 +1,80 @@
--- =====================================================
--- Supabase RLS (Row Level Security) 设置
--- =====================================================
--- 在 Supabase SQL Editor 中执行此文件
--- =====================================================
+-- Datawhale AI+X 活动日历 RLS 与 Storage 策略修复脚本
+-- 完整初始化优先执行 database/schema.sql；此文件用于只重建权限策略。
 
--- 1. 启用 RLS (如果还没启用)
-ALTER TABLE events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE datawhale_events ENABLE ROW LEVEL SECURITY;
 
--- 2. 删除所有现有策略（避免冲突）
-DROP POLICY IF EXISTS "Allow public read access" ON events;
-DROP POLICY IF EXISTS "Deny anonymous write" ON events;
-DROP POLICY IF EXISTS "Deny anonymous update" ON events;
-DROP POLICY IF EXISTS "Deny anonymous delete" ON events;
-DROP POLICY IF EXISTS "Service role full access" ON events;
+DROP POLICY IF EXISTS "Public insert pending Datawhale events" ON datawhale_events;
+DROP POLICY IF EXISTS "Deny public read Datawhale events" ON datawhale_events;
+DROP POLICY IF EXISTS "Deny public update Datawhale events" ON datawhale_events;
+DROP POLICY IF EXISTS "Deny public delete Datawhale events" ON datawhale_events;
 
--- =====================================================
--- 公开读取策略
--- =====================================================
--- 允许所有人（包括匿名用户）读取活动数据
-CREATE POLICY "Public read access on events" 
-ON events 
-FOR SELECT 
-USING (true);
+REVOKE ALL ON datawhale_events FROM anon, authenticated;
+GRANT INSERT ON datawhale_events TO anon, authenticated;
+GRANT SELECT ON datawhale_events_public TO anon, authenticated;
+GRANT EXECUTE ON FUNCTION get_datawhale_event_by_edit_token(TEXT) TO anon, authenticated;
+GRANT EXECUTE ON FUNCTION update_datawhale_event_by_edit_token(TEXT, JSONB) TO anon, authenticated;
 
--- =====================================================
--- 禁止匿名用户写入
--- =====================================================
--- 禁止通过 ANON KEY 插入数据（只能通过 SERVICE KEY）
-CREATE POLICY "Deny anonymous insert" 
-ON events 
-FOR INSERT 
-WITH CHECK (false);
+CREATE POLICY "Public insert pending Datawhale events"
+ON datawhale_events
+FOR INSERT
+WITH CHECK (
+  review_status = 'pending'
+  AND reviewed_at IS NULL
+  AND published_at IS NULL
+  AND review_note IS NULL
+  AND pending_update IS NULL
+  AND update_status = 'none'
+  AND update_note IS NULL
+  AND is_featured = false
+  AND featured_rank IS NULL
+  AND edit_token_hash IS NOT NULL
+);
 
--- 禁止通过 ANON KEY 更新数据
-CREATE POLICY "Deny anonymous update" 
-ON events 
-FOR UPDATE 
+CREATE POLICY "Deny public read Datawhale events"
+ON datawhale_events
+FOR SELECT
 USING (false);
 
--- 禁止通过 ANON KEY 删除数据
-CREATE POLICY "Deny anonymous delete" 
-ON events 
-FOR DELETE 
+CREATE POLICY "Deny public update Datawhale events"
+ON datawhale_events
+FOR UPDATE
 USING (false);
 
--- =====================================================
--- Service Role 完全访问策略
--- =====================================================
--- 允许使用 SERVICE_ROLE_KEY 的操作（你的爬虫）进行所有操作
--- 注意：这个策略对 service_role 自动生效，无需手动创建
--- Supabase 的 service_role 会绕过 RLS
+CREATE POLICY "Deny public delete Datawhale events"
+ON datawhale_events
+FOR DELETE
+USING (false);
 
--- =====================================================
--- 验证 RLS 是否生效
--- =====================================================
--- 查看当前表的 RLS 状态
-SELECT 
-    tablename,
-    rowsecurity as rls_enabled
-FROM pg_tables 
-WHERE schemaname = 'public' 
-AND tablename = 'events';
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+  'datawhale-event-posters',
+  'datawhale-event-posters',
+  true,
+  5242880,
+  ARRAY['image/jpeg', 'image/png', 'image/webp']
+)
+ON CONFLICT (id) DO UPDATE
+SET
+  public = EXCLUDED.public,
+  file_size_limit = EXCLUDED.file_size_limit,
+  allowed_mime_types = EXCLUDED.allowed_mime_types;
 
--- 查看所有策略
-SELECT 
-    schemaname,
-    tablename,
-    policyname,
-    cmd as command,
-    qual as using_expression,
-    with_check as with_check_expression
-FROM pg_policies 
-WHERE schemaname = 'public' 
-AND tablename = 'events';
+DROP POLICY IF EXISTS "Public read Datawhale event posters" ON storage.objects;
+DROP POLICY IF EXISTS "Public upload Datawhale event posters" ON storage.objects;
 
--- =====================================================
--- 测试（可选）
--- =====================================================
--- 在 Supabase Dashboard 中，切换到 "Table Editor"
--- 尝试直接删除一行数据，应该会失败（因为 ANON KEY 无权限）
--- 但是你可以正常查看数据
+CREATE POLICY "Public read Datawhale event posters"
+ON storage.objects
+FOR SELECT
+USING (bucket_id = 'datawhale-event-posters');
 
--- =====================================================
--- 完成！
--- =====================================================
--- 现在你的数据库安全了：
--- ✅ 任何人都可以读取活动数据（通过你的网站前端）
--- ✅ 只有使用 SERVICE_ROLE_KEY 才能写入/更新/删除数据
--- ✅ 即使 ANON KEY 泄露，攻击者也无法破坏数据
+CREATE POLICY "Public upload Datawhale event posters"
+ON storage.objects
+FOR INSERT
+WITH CHECK (
+  bucket_id = 'datawhale-event-posters'
+  AND (storage.extension(name)) IN ('jpg', 'jpeg', 'png', 'webp')
+);
 
-SELECT '✅ RLS setup completed successfully!' as status;
+NOTIFY pgrst, 'reload schema';
+
+SELECT 'Datawhale AI+X RLS setup completed' AS status;

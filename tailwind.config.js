@@ -8,19 +8,19 @@ export default {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#ff7a18', // Brighter orange for contrast
-          dark: '#f06400',
-          light: '#ffd8a8',
+          DEFAULT: '#a7f000',
+          dark: '#7fc400',
+          light: '#c9ff2b',
         },
-        accent: '#ffd8a8', // Lighter tan for glow accents
-        background: '#030303',
-        surface: 'rgba(255, 255, 255, 0.03)',
-        'surface-light': 'rgba(255, 255, 255, 0.08)',
+        accent: '#1764ff',
+        background: '#f7f8f1',
+        surface: 'rgba(255, 255, 255, 0.86)',
+        'surface-light': 'rgba(255, 255, 255, 0.96)',
       },
       fontFamily: {
-        sans: ['Inter', 'DM Sans', 'sans-serif'],
-        serif: ['Instrument Serif', 'serif'],
-        heading: ['Instrument Serif', 'serif'],
+        sans: ['Inter', 'DM Sans', 'Arial', 'Helvetica', 'sans-serif'],
+        serif: ['Inter', 'DM Sans', 'Arial', 'Helvetica', 'sans-serif'],
+        heading: ['Inter', 'DM Sans', 'Arial', 'Helvetica', 'sans-serif'],
       },
       animation: {
         'pulse-slow': 'pulse 6s cubic-bezier(0.4, 0, 0.6, 1) infinite',

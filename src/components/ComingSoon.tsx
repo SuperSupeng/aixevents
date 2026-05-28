@@ -8,10 +8,10 @@ interface ComingSoonProps {
   feature?: string;
 }
 
-const ComingSoon: React.FC<ComingSoonProps> = ({ 
-  isOpen, 
-  onClose, 
-  feature = 'This feature' 
+const ComingSoon: React.FC<ComingSoonProps> = ({
+  isOpen,
+  onClose,
+  feature = '这个功能'
 }) => {
   if (!isOpen) return null;
 
@@ -50,19 +50,19 @@ const ComingSoon: React.FC<ComingSoonProps> = ({
 
             {/* Title */}
             <h2 className="text-3xl font-serif italic text-white mb-4 leading-tight">
-              Coming Soon
+              即将上线
             </h2>
 
             {/* Description */}
             <p className="text-white/60 mb-8 leading-relaxed text-sm">
-              {feature} is currently under development. We're working hard to bring you the best experience!
+              {feature} 正在开发中，我们会尽快把它做成可用的体验。
             </p>
 
             {/* Email Notification (Optional) */}
             <div className="bg-white/[0.02] border border-white/[0.05] rounded-2xl p-6 mb-6">
               <div className="flex items-center gap-3 mb-4">
                 <Bell size={18} className="text-accent" />
-                <h3 className="text-white font-medium text-sm">Get notified when it's ready</h3>
+                <h3 className="text-white font-medium text-sm">上线时通知我</h3>
               </div>
               <div className="flex gap-2">
                 <input
@@ -71,7 +71,7 @@ const ComingSoon: React.FC<ComingSoonProps> = ({
                   className="flex-1 px-4 py-3 bg-white/[0.03] border border-white/[0.08] rounded-xl text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/10 transition-all"
                 />
                 <button className="px-6 py-3 bg-primary hover:bg-primary-dark text-white rounded-xl text-sm font-semibold transition-all hover:scale-105 active:scale-95">
-                  Notify Me
+                  通知我
                 </button>
               </div>
             </div>
@@ -81,7 +81,7 @@ const ComingSoon: React.FC<ComingSoonProps> = ({
               onClick={onClose}
               className="w-full px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-xl text-white text-sm font-medium transition-all"
             >
-              Got it
+              知道了
             </button>
           </div>
         </motion.div>

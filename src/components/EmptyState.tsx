@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, Search, Filter, Cpu, Link as LinkIcon } from 'lucide-react';
+import { Calendar, Search, Filter, Bot, Trophy, Wrench } from 'lucide-react';
 
 interface EmptyStateProps {
   type?: 'search' | 'filter' | 'calendar';
@@ -17,20 +17,20 @@ const EmptyState: React.FC<EmptyStateProps> = ({
   const configs = {
     search: {
       icon: Search,
-      title: 'No events found',
+      title: '没有找到活动',
       description: searchQuery 
-        ? `No results for "${searchQuery}"`
-        : 'Try adjusting your search terms',
+        ? `没有与「${searchQuery}」匹配的结果`
+        : '试试调整搜索关键词',
     },
     filter: {
       icon: Filter,
-      title: 'No matching events',
-      description: 'Try changing your filters to see more events',
+      title: '没有匹配活动',
+      description: '试试更换筛选条件查看更多活动',
     },
     calendar: {
       icon: Calendar,
-      title: 'No events this month',
-      description: 'Try navigating to a different month or clearing filters',
+      title: '这个月暂无活动',
+      description: '可以切换月份或清除筛选条件',
     },
   };
 
@@ -54,35 +54,35 @@ const EmptyState: React.FC<EmptyStateProps> = ({
             onClick={onReset}
             className="px-6 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-full text-sm text-white/70 hover:text-white transition-all font-medium"
           >
-            Clear filters
+            清除筛选
           </button>
         )}
         
         {/* Quick suggestions */}
         {onQuickFilter && (type === 'search' || type === 'filter') && (
           <div className="mt-4">
-            <p className="text-xs text-white/40 mb-3">Try exploring:</p>
+            <p className="text-xs text-white/40 mb-3">试试探索：</p>
             <div className="flex flex-wrap gap-2 justify-center">
               <button
-                onClick={() => onQuickFilter('AI')}
+                onClick={() => onQuickFilter('AI 实践')}
                 className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-primary/30 rounded-full text-white/60 hover:text-white transition-all text-xs"
               >
-                <Cpu size={12} />
-                <span>AI Events</span>
+                <Bot size={12} />
+                <span>AI 实践</span>
               </button>
               <button
-                onClick={() => onQuickFilter('Web3')}
+                onClick={() => onQuickFilter('黑客松')}
                 className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-primary/30 rounded-full text-white/60 hover:text-white transition-all text-xs"
               >
-                <LinkIcon size={12} />
-                <span>Web3 Events</span>
+                <Trophy size={12} />
+                <span>黑客松</span>
               </button>
               <button
-                onClick={() => onQuickFilter('Blockchain')}
+                onClick={() => onQuickFilter('工作坊')}
                 className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-primary/30 rounded-full text-white/60 hover:text-white transition-all text-xs"
               >
-                <LinkIcon size={12} />
-                <span>Blockchain</span>
+                <Wrench size={12} />
+                <span>工作坊</span>
               </button>
             </div>
           </div>

@@ -1,10 +1,11 @@
 import { TechEvent } from '../types';
+import { getActivityTypeLabel } from '../constants/activityTaxonomy';
 
 export interface EventTag {
   label: string;
   icon: string;
   color: string;
-  category: 'type' | 'price' | 'tech' | 'format';
+  category: 'type' | 'tech' | 'format';
 }
 
 // 从活动信息中智能识别标签
@@ -16,52 +17,61 @@ export const identifyTags = (event: TechEvent): EventTag[] => {
   const summary = event.summary.toLowerCase();
   const fullText = `${title} ${summary}`;
   
-  // 活动类型
-  if (fullText.includes('conference') || fullText.includes('conf ')) {
-    tags.push({ label: 'Conference', icon: '🎤', color: 'blue', category: 'type' });
-  } else if (fullText.includes('workshop')) {
-    tags.push({ label: 'Workshop', icon: '🛠️', color: 'purple', category: 'type' });
-  } else if (fullText.includes('meetup')) {
-    tags.push({ label: 'Meetup', icon: '👥', color: 'green', category: 'type' });
-  } else if (fullText.includes('webinar') || fullText.includes('online')) {
-    tags.push({ label: 'Webinar', icon: '💻', color: 'cyan', category: 'type' });
-  } else if (fullText.includes('hackathon')) {
-    tags.push({ label: 'Hackathon', icon: '🏆', color: 'yellow', category: 'type' });
-  } else if (fullText.includes('summit')) {
-    tags.push({ label: 'Summit', icon: '⛰️', color: 'indigo', category: 'type' });
+  if (event.activityType) {
+    const typeColorMap: Record<string, string> = {
+      meetup: 'green',
+      workshop: 'purple',
+      hackathon: 'yellow',
+      talk: 'blue',
+      training: 'cyan',
+      demo_day: 'orange',
+      conference: 'indigo',
+      competition: 'yellow',
+    };
+    tags.push({
+      label: getActivityTypeLabel(event.activityType),
+      icon: event.activityType === 'hackathon' ? '🏆' : event.activityType === 'workshop' ? '🛠️' : '📌',
+      color: typeColorMap[event.activityType] || 'blue',
+      category: 'type',
+    });
+  } else if (fullText.includes('conference') || fullText.includes('conf ') || fullText.includes('大会') || fullText.includes('会议')) {
+    tags.push({ label: '会议', icon: '🎤', color: 'blue', category: 'type' });
+  } else if (fullText.includes('workshop') || fullText.includes('工作坊') || fullText.includes('实操')) {
+    tags.push({ label: '工作坊', icon: '🛠️', color: 'purple', category: 'type' });
+  } else if (fullText.includes('hackathon') || fullText.includes('黑客松') || fullText.includes('创造营')) {
+    tags.push({ label: '黑客松', icon: '🏆', color: 'yellow', category: 'type' });
+  } else if (fullText.includes('webinar') || fullText.includes('online') || fullText.includes('线上')) {
+    tags.push({ label: '线上分享', icon: '💻', color: 'cyan', category: 'type' });
+  } else if (fullText.includes('meetup') || fullText.includes('沙龙') || fullText.includes('交流')) {
+    tags.push({ label: '社区活动', icon: '👥', color: 'green', category: 'type' });
+  } else if (fullText.includes('summit') || fullText.includes('峰会')) {
+    tags.push({ label: '峰会', icon: '⛰️', color: 'indigo', category: 'type' });
   }
   
-  // 价格标签
-  if (event.price.type === 'free') {
-    tags.push({ label: 'Free', icon: '💰', color: 'emerald', category: 'price' });
-  } else if (event.price.type === 'paid') {
-    tags.push({ label: 'Paid', icon: '💳', color: 'orange', category: 'price' });
-  }
+  // 技术领域标签只基于用户补充标签，不用系统默认的 AI+X 或活动类型反推。
+  const eventTags = (event.customTags || []).map(t => t.toLowerCase());
   
-  // 技术领域标签（基于 tags 字段）
-  const eventTags = event.tags.map(t => t.toLowerCase());
-  
-  if (eventTags.some(t => ['ai', 'ml', 'machine learning', 'deep learning'].includes(t))) {
-    tags.push({ label: 'AI/ML', icon: '🤖', color: 'purple', category: 'tech' });
+  if (eventTags.some(t => ['ai', 'ml', 'machine learning', 'deep learning', 'ai 实践'].includes(t))) {
+    tags.push({ label: 'AI 实践', icon: '🤖', color: 'purple', category: 'tech' });
   }
-  if (eventTags.some(t => ['web3', 'blockchain', 'crypto'].includes(t))) {
-    tags.push({ label: 'Web3', icon: '⛓️', color: 'indigo', category: 'tech' });
+  if (eventTags.some(t => ['黑客松', 'hackathon'].includes(t))) {
+    tags.push({ label: '作品挑战', icon: '🏁', color: 'yellow', category: 'tech' });
   }
-  if (eventTags.some(t => ['react', 'vue', 'angular', 'frontend'].includes(t))) {
-    tags.push({ label: 'Frontend', icon: '⚛️', color: 'cyan', category: 'tech' });
+  if (eventTags.some(t => ['开发者', 'developer'].includes(t))) {
+    tags.push({ label: '开发者', icon: '⌘', color: 'cyan', category: 'tech' });
   }
-  if (eventTags.some(t => ['devops', 'kubernetes', 'docker', 'cloud'].includes(t))) {
-    tags.push({ label: 'DevOps', icon: '☁️', color: 'blue', category: 'tech' });
+  if (eventTags.some(t => ['高校', '校园', 'campus'].includes(t))) {
+    tags.push({ label: '高校', icon: '🎓', color: 'blue', category: 'tech' });
   }
-  if (eventTags.some(t => ['javascript', 'typescript', 'js', 'ts'].includes(t))) {
-    tags.push({ label: 'JavaScript', icon: '🟨', color: 'yellow', category: 'tech' });
+  if (eventTags.some(t => ['产业', '企业应用', 'industry'].includes(t))) {
+    tags.push({ label: '产业场景', icon: '🏢', color: 'indigo', category: 'tech' });
   }
   
   // 格式标签
   if (event.format === 'online') {
-    tags.push({ label: 'Online', icon: '🌐', color: 'emerald', category: 'format' });
+    tags.push({ label: '线上', icon: '🌐', color: 'emerald', category: 'format' });
   } else if (event.format === 'hybrid') {
-    tags.push({ label: 'Hybrid', icon: '🔄', color: 'purple', category: 'format' });
+    tags.push({ label: '混合', icon: '🔄', color: 'purple', category: 'format' });
   }
   
   return tags;

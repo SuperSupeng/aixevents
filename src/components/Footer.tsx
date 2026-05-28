@@ -3,22 +3,24 @@ import Logo from './Logo';
 
 interface FooterProps {
   onCalendarClick: () => void;
-  onNewsletterClick: () => void;
-  onAPIClick: () => void;
+  onHackathonsClick: () => void;
+  onResourcesClick: () => void;
+  onSubscribeClick: () => void;
   onSubmitClick: () => void;
-  onSponsorshipsClick: () => void;
-  onWhatsAppClick: () => void;
+  onSupportClick: () => void;
+  onGroupClick: () => void;
   onPrivacyClick: () => void;
   onTermsClick: () => void;
 }
 
 const Footer: React.FC<FooterProps> = ({
   onCalendarClick,
-  onNewsletterClick,
-  onAPIClick,
+  onHackathonsClick,
+  onResourcesClick,
+  onSubscribeClick,
   onSubmitClick,
-  onSponsorshipsClick,
-  onWhatsAppClick,
+  onSupportClick,
+  onGroupClick,
   onPrivacyClick,
   onTermsClick
 }) => {
@@ -30,40 +32,38 @@ const Footer: React.FC<FooterProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 sm:gap-10 mb-12 sm:mb-20">
             <div className="md:col-span-2">
               <div className="flex items-center gap-3 mb-6">
-                <Logo size={32} />
-                <span className="text-xl font-bold tracking-tight text-white font-sans">
-                  GlobalTech<span className="text-primary-light">Events</span>
-                </span>
+                <Logo size={32} className="max-w-[220px]" />
               </div>
               <p className="text-white/80 max-w-sm leading-relaxed font-sans text-sm sm:text-[15px]">
-                Your gateway to the world's most influential tech events. From AI summits to developer conferences, discover, track, and never miss the moments that shape technology's future.
+                收录 AI+X 生态活动，帮助学习者、开发者、高校学生、产业从业者和个人创造者找到真实场景中的连接、实践与共创机会。
               </p>
             </div>
             <div>
-              <h4 className="text-white font-semibold mb-6 text-sm">Product</h4>
+              <h4 className="text-white font-semibold mb-6 text-sm">产品</h4>
               <ul className="space-y-4 text-white/75 text-sm">
-                <li><button onClick={onCalendarClick} className="hover:text-white transition-colors">Calendar</button></li>
-                <li><button onClick={onNewsletterClick} className="hover:text-white transition-colors">Newsletter</button></li>
-                <li><button onClick={onAPIClick} className="hover:text-white transition-colors">API Access</button></li>
+                <li><button onClick={onCalendarClick} className="hover:text-white transition-colors">活动日历</button></li>
+                <li><button onClick={onHackathonsClick} className="hover:text-white transition-colors">Hackathon 收录</button></li>
+                <li><button onClick={onResourcesClick} className="hover:text-white transition-colors">资源索引</button></li>
+                <li><button onClick={onSubscribeClick} className="hover:text-white transition-colors">订阅日历</button></li>
               </ul>
             </div>
             <div>
-              <h4 className="text-white font-semibold mb-6 text-sm">Community</h4>
+              <h4 className="text-white font-semibold mb-6 text-sm">社区</h4>
               <ul className="space-y-4 text-white/75 text-sm">
-                <li><button onClick={onSubmitClick} className="hover:text-white transition-colors">Submit Event</button></li>
-                <li><button onClick={onSponsorshipsClick} className="hover:text-white transition-colors">Sponsorships</button></li>
-                <li><button onClick={onWhatsAppClick} className="hover:text-white transition-colors">WhatsApp</button></li>
+                <li><button onClick={onSubmitClick} className="hover:text-white transition-colors">提交活动</button></li>
+                <li><button onClick={onSupportClick} className="hover:text-white transition-colors">生态支持</button></li>
+                <li><button onClick={onGroupClick} className="hover:text-white transition-colors">活动群</button></li>
               </ul>
             </div>
           </div>
           <div className="flex flex-col items-center justify-center gap-3 pt-6 sm:pt-10 border-t border-white/10 text-white/65 text-xs sm:text-sm font-sans text-center">
-            <p>© 2026 AIXEvents. Indexing the future of technology.</p>
+            <p>© 2026 Datawhale AI+X 活动日历. 让 AI+X 在更多城市、高校与产业场景持续发生。</p>
             <div className="flex items-center gap-4 text-white/65 text-xs">
-              <button onClick={onPrivacyClick} className="hover:text-white transition-colors">Privacy Policy</button>
+              <button onClick={onPrivacyClick} className="hover:text-white transition-colors">隐私政策</button>
               <span>·</span>
-              <button onClick={onTermsClick} className="hover:text-white transition-colors">Terms of Service</button>
+              <button onClick={onTermsClick} className="hover:text-white transition-colors">服务条款</button>
             </div>
-            <p className="text-white/55 text-[10px] sm:text-xs">Made with ❤️ for the global tech community</p>
+            <p className="text-white/55 text-[10px] sm:text-xs">活动提交确认后公开展示。</p>
           </div>
         </div>
       </footer>

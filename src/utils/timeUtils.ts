@@ -27,7 +27,7 @@ export function getTimeUrgency(eventStartTime: string): TimeUrgency | null {
   if (hoursDiff < 24) {
     if (isToday(startTime)) {
       return {
-        label: 'Today',
+        label: '今天',
         type: 'urgent',
         color: 'text-red-400',
         bgColor: 'bg-red-400/10',
@@ -39,7 +39,7 @@ export function getTimeUrgency(eventStartTime: string): TimeUrgency | null {
   // 明天
   if (isTomorrow(startTime)) {
     return {
-      label: 'Tomorrow',
+      label: '明天',
       type: 'urgent',
       color: 'text-orange-400',
       bgColor: 'bg-orange-400/10',
@@ -50,7 +50,7 @@ export function getTimeUrgency(eventStartTime: string): TimeUrgency | null {
   // 本周
   if (isThisWeek(startTime, { weekStartsOn: 0 })) {
     return {
-      label: 'This Week',
+      label: '本周',
       type: 'soon',
       color: 'text-yellow-400',
       bgColor: 'bg-yellow-400/10',
@@ -61,7 +61,7 @@ export function getTimeUrgency(eventStartTime: string): TimeUrgency | null {
   // 下周（7-14天）
   if (daysDiff >= 7 && daysDiff < 14) {
     return {
-      label: 'Next Week',
+      label: '下周',
       type: 'upcoming',
       color: 'text-blue-400',
       bgColor: 'bg-blue-400/10',
@@ -72,7 +72,7 @@ export function getTimeUrgency(eventStartTime: string): TimeUrgency | null {
   // 本月（14-30天）
   if (daysDiff >= 14 && daysDiff < 30) {
     return {
-      label: 'This Month',
+      label: '本月',
       type: 'upcoming',
       color: 'text-primary',
       bgColor: 'bg-primary/10',
@@ -83,7 +83,7 @@ export function getTimeUrgency(eventStartTime: string): TimeUrgency | null {
   // 下月（30-60天）
   if (daysDiff >= 30 && daysDiff < 60) {
     return {
-      label: 'Next Month',
+      label: '下月',
       type: 'future',
       color: 'text-white/40',
       bgColor: 'bg-white/5',
@@ -106,23 +106,23 @@ export function getCountdownText(eventStartTime: string): string {
   const daysDiff = differenceInDays(startTime, now);
 
   if (hoursDiff < 0) {
-    return 'Started';
+    return '已开始';
   }
 
   if (hoursDiff < 1) {
-    return 'Starting soon';
+    return '即将开始';
   }
 
   if (hoursDiff < 24) {
-    return `In ${hoursDiff}h`;
+    return `${hoursDiff} 小时后`;
   }
 
   if (daysDiff === 1) {
-    return 'Tomorrow';
+    return '明天';
   }
 
   if (daysDiff < 7) {
-    return `In ${daysDiff}d`;
+    return `${daysDiff} 天后`;
   }
 
   return '';

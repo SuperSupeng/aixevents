@@ -6,19 +6,39 @@ const formatICalDate = (date: Date): string => {
   return format(date, "yyyyMMdd'T'HHmmss'Z'");
 };
 
+const getEventLocation = (event: TechEvent): string => {
+  if (event.location) {
+    return [event.location.address, event.location.city, event.location.country].filter(Boolean).join(', ');
+  }
+
+  return event.format === 'online' ? '线上活动' : '';
+};
+
+const getCalendarDetails = (event: TechEvent): string => {
+  const organizers = event.organizers?.length ? event.organizers.join(' / ') : event.organizer.name;
+  const detailUrl = event.links.registration || (event.links.officialSite !== '#' ? event.links.officialSite : '');
+  return `${event.summary}\n\n主办方：${organizers}${detailUrl ? `\n\n活动详情：${detailUrl}` : ''}`;
+};
+
+const getDownloadName = (title: string): string => {
+  const normalizedTitle = title
+    .trim()
+    .replace(/[\\/:*?"<>|]+/g, '')
+    .replace(/\s+/g, '-');
+
+  return `${normalizedTitle || 'datawhale-aix-event'}.ics`;
+};
+
 // 生成 .ics 文件内容
 export const generateICS = (event: TechEvent): string => {
   const startDate = new Date(event.startTime);
   const endDate = new Date(event.endTime);
-  
-  const locationStr = event.location 
-    ? `${event.location.city}, ${event.location.country}`
-    : event.format === 'online' ? 'Online Event' : '';
+  const locationStr = getEventLocation(event);
   
   const icsContent = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//AIXEvents//Event Calendar//EN',
+    'PRODID:-//Datawhale//AI+X Calendar//ZH-CN',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     'BEGIN:VEVENT',
@@ -26,12 +46,12 @@ export const generateICS = (event: TechEvent): string => {
     `DTEND:${formatICalDate(endDate)}`,
     `DTSTAMP:${formatICalDate(new Date())}`,
     `SUMMARY:${event.title}`,
-    `DESCRIPTION:${event.summary}\\n\\nOrganizer: ${event.organizer.name}\\n\\nMore info: ${event.links.officialSite}`,
+    `DESCRIPTION:${getCalendarDetails(event).replace(/\n/g, '\\n')}`,
     `LOCATION:${locationStr}`,
     `URL:${event.links.officialSite}`,
     `STATUS:CONFIRMED`,
     `SEQUENCE:0`,
-    `UID:${event.id}@aixevents.com`,
+    `UID:${event.id}@datawhale.club`,
     'END:VEVENT',
     'END:VCALENDAR'
   ].join('\r\n');
@@ -45,7 +65,7 @@ export const downloadICS = (event: TechEvent): void => {
   const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
-  link.download = `${event.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.ics`;
+  link.download = getDownloadName(event.title);
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -57,17 +77,15 @@ export const getGoogleCalendarUrl = (event: TechEvent): string => {
   const startDate = format(new Date(event.startTime), "yyyyMMdd'T'HHmmss'Z'");
   const endDate = format(new Date(event.endTime), "yyyyMMdd'T'HHmmss'Z'");
   
-  const locationStr = event.location 
-    ? `${event.location.city}, ${event.location.country}`
-    : event.format === 'online' ? 'Online Event' : '';
+  const locationStr = getEventLocation(event);
   
   const params = new URLSearchParams({
     action: 'TEMPLATE',
     text: event.title,
     dates: `${startDate}/${endDate}`,
-    details: `${event.summary}\n\nOrganizer: ${event.organizer.name}\n\nMore info: ${event.links.officialSite}`,
+    details: getCalendarDetails(event),
     location: locationStr,
-    sprop: 'website:aixevents.com'
+    sprop: 'website:datawhale.club'
   });
   
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
@@ -78,9 +96,7 @@ export const getOutlookUrl = (event: TechEvent): string => {
   const startDate = new Date(event.startTime).toISOString();
   const endDate = new Date(event.endTime).toISOString();
   
-  const locationStr = event.location 
-    ? `${event.location.city}, ${event.location.country}`
-    : event.format === 'online' ? 'Online Event' : '';
+  const locationStr = getEventLocation(event);
   
   const params = new URLSearchParams({
     path: '/calendar/action/compose',
@@ -88,7 +104,7 @@ export const getOutlookUrl = (event: TechEvent): string => {
     subject: event.title,
     startdt: startDate,
     enddt: endDate,
-    body: `${event.summary}\n\nOrganizer: ${event.organizer.name}\n\nMore info: ${event.links.officialSite}`,
+    body: getCalendarDetails(event),
     location: locationStr
   });
   

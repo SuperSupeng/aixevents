@@ -11,7 +11,8 @@ import {
   addMonths, 
   subMonths 
 } from 'date-fns';
-import { ChevronLeft, ChevronRight, Globe } from 'lucide-react';
+import { zhCN } from 'date-fns/locale';
+import { ChevronLeft, ChevronRight, Globe, Rss } from 'lucide-react';
 import { TechEvent } from '../types';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -24,13 +25,15 @@ function cn(...inputs: ClassValue[]) {
 interface CalendarProps {
   events: TechEvent[];
   onEventClick: (event: TechEvent) => void;
+  onSubscribeClick?: () => void;
 }
 
-const Calendar: React.FC<CalendarProps> = ({ events, onEventClick }) => {
+const Calendar: React.FC<CalendarProps> = ({ events, onEventClick, onSubscribeClick }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [userTimezone, setUserTimezone] = useState<string>('');
   const [timezoneOffset, setTimezoneOffset] = useState<string>('');
   const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
+  const [hasUserSelectedMonth, setHasUserSelectedMonth] = useState(false);
 
   useEffect(() => {
     // 获取用户的浏览器时区
@@ -54,14 +57,19 @@ const Calendar: React.FC<CalendarProps> = ({ events, onEventClick }) => {
   const days = eachDayOfInterval({ start: startDate, end: endDate });
 
   const nextMonth = () => {
+    setHasUserSelectedMonth(true);
     setCurrentDate(addMonths(currentDate, 1));
     setExpandedDays(new Set()); // 切换月份时重置展开状态
   };
   const prevMonth = () => {
+    setHasUserSelectedMonth(true);
     setCurrentDate(subMonths(currentDate, 1));
     setExpandedDays(new Set()); // 切换月份时重置展开状态
   };
-  const goToToday = () => setCurrentDate(new Date());
+  const goToToday = () => {
+    setHasUserSelectedMonth(true);
+    setCurrentDate(new Date());
+  };
 
   const toggleDayExpanded = (dayKey: string) => {
     setExpandedDays(prev => {
@@ -80,33 +88,49 @@ const Calendar: React.FC<CalendarProps> = ({ events, onEventClick }) => {
     isSameMonth(new Date(event.startTime), currentDate)
   );
 
+  useEffect(() => {
+    if (hasUserSelectedMonth || events.length === 0 || hasEventsThisMonth) return;
+    setCurrentDate(new Date(events[0].startTime));
+  }, [events, hasEventsThisMonth, hasUserSelectedMonth]);
+
   return (
-    <div className="glass-panel overflow-hidden border border-white/[0.05]">
+    <div className="glass-panel overflow-hidden border border-black/10">
       {/* Calendar Header */}
-      <div className="p-8 border-b border-white/[0.05] bg-white/[0.02]">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-3xl font-serif italic text-white">
-            {format(currentDate, 'MMMM yyyy')}
+      <div className="p-6 sm:p-8 border-b border-black/10 bg-white/70">
+        <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <h2 className="text-3xl font-black text-black">
+            {format(currentDate, 'yyyy年M月', { locale: zhCN })}
           </h2>
-          <div className="flex items-center gap-3 sm:gap-6">
+          <div className="flex flex-wrap items-center gap-2 sm:justify-end sm:gap-3">
+            {onSubscribeClick && (
+              <button
+                onClick={onSubscribeClick}
+                data-testid="calendar-subscribe-button"
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-black/15 bg-white px-3 text-sm font-black text-accent shadow-[3px_3px_0_rgba(23,100,255,0.14)] transition-all hover:border-black/30 hover:bg-primary/20 hover:text-black active:scale-95"
+                aria-label="订阅日历"
+              >
+                <Rss size={16} />
+                <span className="whitespace-nowrap">订阅日历</span>
+              </button>
+            )}
             <button 
               onClick={goToToday}
-              className="px-4 py-2 text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 rounded-lg transition-all border border-white/10 hover:border-white/20"
+              className="h-10 rounded-md border border-black/10 px-4 text-sm font-black text-black/60 transition-all hover:border-black/25 hover:bg-primary/30 hover:text-black"
             >
-              Today
+              今天
             </button>
-            <div className="flex items-center gap-1 bg-white/5 rounded-lg p-1 border border-white/10">
+            <div className="flex h-10 items-center gap-1 rounded-md border border-black/10 bg-white p-1">
               <button 
                 onClick={prevMonth}
-                className="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded-md transition-all"
-                aria-label="Previous month"
+                className="p-2 text-black/50 hover:text-black hover:bg-primary/30 rounded-md transition-all"
+                aria-label="上个月"
               >
                 <ChevronLeft size={20} />
               </button>
               <button 
                 onClick={nextMonth}
-                className="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded-md transition-all"
-                aria-label="Next month"
+                className="p-2 text-black/50 hover:text-black hover:bg-primary/30 rounded-md transition-all"
+                aria-label="下个月"
               >
                 <ChevronRight size={20} />
               </button>
@@ -115,17 +139,17 @@ const Calendar: React.FC<CalendarProps> = ({ events, onEventClick }) => {
         </div>
         {/* Timezone Indicator */}
         {userTimezone && (
-          <div className="flex items-center gap-2 text-xs text-white/50">
-            <Globe size={14} className="text-white/40" />
-            <span>All times shown in your local timezone: <span className="text-white/70 font-medium">{userTimezone}</span> <span className="text-primary/70">({timezoneOffset})</span></span>
+          <div className="flex items-center gap-2 text-xs text-black/50">
+            <Globe size={14} className="text-accent" />
+            <span>所有时间已按你的本地时区显示：<span className="text-black/70 font-bold">{userTimezone}</span> <span className="text-accent">({timezoneOffset})</span></span>
           </div>
         )}
       </div>
 
       {/* Weekdays Header */}
-      <div className="calendar-grid bg-white/[0.01] border-b border-white/[0.05]">
-        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-          <div key={day} className="py-4 text-center text-[10px] font-bold text-white/20 uppercase tracking-[0.2em]">
+      <div className="calendar-grid bg-black/[0.02] border-b border-black/10">
+        {['周日', '周一', '周二', '周三', '周四', '周五', '周六'].map(day => (
+          <div key={day} className="py-4 text-center text-[10px] font-black text-black/40 uppercase tracking-[0.2em]">
             {day}
           </div>
         ))}
@@ -151,22 +175,22 @@ const Calendar: React.FC<CalendarProps> = ({ events, onEventClick }) => {
             <div 
               key={day.toString()} 
               className={cn(
-                "min-h-[140px] p-4 border-r border-white/[0.05] transition-all group",
+                "min-h-[140px] p-4 border-r border-black/10 transition-all group",
                 !isLastRow && "border-b", // 最后一行不显示底部边框
-                !isCurrentMonth ? "bg-black/20" : "bg-transparent hover:bg-white/[0.02]",
+                !isCurrentMonth ? "bg-black/[0.035]" : "bg-transparent hover:bg-primary/[0.08]",
                 idx % 7 === 6 && "border-r-0"
               )}
             >
               <div className="flex justify-between items-center mb-3">
                 <span className={cn(
                   "text-sm font-medium w-8 h-8 flex items-center justify-center rounded-full transition-all",
-                  isToday ? "bg-white text-black font-bold shadow-xl shadow-white/10" : 
-                  isCurrentMonth ? "text-white/80" : "text-white/20"
+                  isToday ? "bg-primary text-black font-black border border-black shadow-[3px_3px_0_rgba(5,5,5,0.92)]" :
+                  isCurrentMonth ? "text-black/80 font-bold" : "text-black/30"
                 )}>
                   {format(day, 'd')}
                 </span>
                 {dayEvents.length > 0 && (
-                  <span className="text-[10px] text-white/40 font-medium">
+                  <span className="text-[10px] text-black/50 font-bold">
                     {dayEvents.length}
                   </span>
                 )}
@@ -177,7 +201,7 @@ const Calendar: React.FC<CalendarProps> = ({ events, onEventClick }) => {
                   <button
                     key={event.id}
                     onClick={() => onEventClick(event)}
-                    className="w-full text-left px-2.5 py-1.5 text-[10px] leading-tight rounded-lg bg-primary/15 border border-primary/30 text-white hover:bg-primary/25 hover:border-primary/40 transition-all truncate shadow-sm"
+                    className="w-full text-left px-2.5 py-1.5 text-[10px] leading-tight rounded-md bg-black border border-black !text-white hover:bg-accent hover:border-accent transition-all truncate shadow-sm font-bold"
                   >
                     <span className="font-medium">{event.title}</span>
                   </button>
@@ -185,9 +209,9 @@ const Calendar: React.FC<CalendarProps> = ({ events, onEventClick }) => {
                 {dayEvents.length > 3 && (
                   <button
                     onClick={() => toggleDayExpanded(dayKey)}
-                    className="w-full text-left px-2.5 py-1 text-[10px] text-white/50 hover:text-white/80 hover:bg-white/5 rounded-lg transition-all font-medium"
+                    className="w-full text-left px-2.5 py-1 text-[10px] text-black/50 hover:text-black hover:bg-primary/20 rounded-md transition-all font-bold"
                   >
-                    {isExpanded ? '− Show less' : `+ ${dayEvents.length - 3} more`}
+                    {isExpanded ? '− 收起' : `+ ${dayEvents.length - 3} 场`}
                   </button>
                 )}
               </div>

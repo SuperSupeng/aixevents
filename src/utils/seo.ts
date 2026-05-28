@@ -16,13 +16,13 @@ interface SEOMetadata {
  */
 export function getHomeSEO(): SEOMetadata {
   return {
-    title: 'AIXEvents - Discover World\'s Best Tech Events & Conferences',
-    description: 'Your gateway to the world\'s tech events. Find AI summits, developer conferences, hackathons, and tech meetups worldwide. Free event calendar with 1000+ tech events.',
-    keywords: 'tech events, developer conferences, AI summit, hackathons, tech calendar, technology events, developer meetup, tech conference 2026, global tech events',
-    ogTitle: 'AIXEvents - Your Gateway to Tech Events Worldwide',
-    ogDescription: 'Discover, track, and never miss tech conferences, AI summits, hackathons, and meetups. 1000+ events across 60+ countries.',
+    title: 'Datawhale AI+X 活动日历',
+    description: 'Datawhale AI+X 活动日历连接 AI 学习者、开发者、高校学生、产业从业者和个人创造者，推动 AI+X 在城市、高校与产业场景中持续发生。',
+    keywords: 'Datawhale, AI活动, AI+X, 科技活动, 开发者活动, 高校活动, 产业活动, AI实践, 活动日历, 活动提交',
+    ogTitle: 'Datawhale AI+X 活动日历',
+    ogDescription: '发现、提交并订阅 AI+X 生态活动，让 AI 学习走向真实场景、动手实践、作品展示和生态共建。',
     twitterCard: 'summary_large_image',
-    canonicalUrl: 'https://aixevents.com',
+    canonicalUrl: 'https://datawhale.club',
   };
 }
 
@@ -30,25 +30,25 @@ export function getHomeSEO(): SEOMetadata {
  * 生成活动详情页 SEO metadata
  */
 export function getEventSEO(event: TechEvent): SEOMetadata {
-  const eventDate = new Date(event.startTime).toLocaleDateString('en-US', {
+  const eventDate = new Date(event.startTime).toLocaleDateString('zh-CN', {
     year: 'numeric',
     month: 'long',
     day: 'numeric'
   });
   
   const location = event.format === 'online' 
-    ? 'Online Event' 
+    ? '线上活动'
     : `${event.location?.city}, ${event.location?.country}`;
 
   return {
-    title: `${event.title} - ${eventDate} | AIXEvents`,
-    description: `${event.summary.substring(0, 155)}... Join this ${event.format} tech event. ${event.price.type === 'free' ? 'Free admission' : event.price.range}.`,
-    keywords: `${event.tags.join(', ')}, ${event.title}, tech event, ${location}, ${eventDate}`,
+    title: `${event.title} - ${eventDate} | Datawhale AI+X 活动日历`,
+    description: `${event.summary.substring(0, 155)}... 查看这场${event.format === 'online' ? '线上' : event.format === 'hybrid' ? '混合' : '线下'}科技活动。${event.price.type === 'free' ? '免费参与' : event.price.range}。`,
+    keywords: `${event.tags.join(', ')}, ${event.title}, 科技活动, ${location}, ${eventDate}`,
     ogTitle: event.title,
     ogDescription: event.summary,
     ogImage: event.coverImage,
     twitterCard: event.coverImage ? 'summary_large_image' : 'summary',
-    canonicalUrl: `https://aixevents.com/event/${event.id}`,
+    canonicalUrl: `https://datawhale.club/event/${event.id}`,
   };
 }
 
@@ -57,13 +57,13 @@ export function getEventSEO(event: TechEvent): SEOMetadata {
  */
 export function getTagSEO(tag: string): SEOMetadata {
   return {
-    title: `${tag} Events & Conferences 2026 | AIXEvents`,
-    description: `Discover upcoming ${tag} events, conferences, and meetups worldwide. Find the best ${tag} tech events, workshops, and networking opportunities.`,
-    keywords: `${tag} events, ${tag} conferences, ${tag} meetups, ${tag} summit, ${tag} hackathon, ${tag} workshop`,
-    ogTitle: `Best ${tag} Events & Conferences`,
-    ogDescription: `Explore ${tag} events happening around the world. Stay updated with the latest ${tag} conferences and meetups.`,
+    title: `${tag} 活动与大会 2026 | Datawhale AI+X 活动日历`,
+    description: `发现全球即将举行的 ${tag} 活动、会议、峰会、工作坊和社区聚会。`,
+    keywords: `${tag} 活动, ${tag} 大会, ${tag} 聚会, ${tag} 峰会, ${tag} 黑客松, ${tag} 工作坊`,
+    ogTitle: `${tag} 活动与大会`,
+    ogDescription: `探索全球 ${tag} 活动，持续关注最新会议、聚会和实践机会。`,
     twitterCard: 'summary',
-    canonicalUrl: `https://aixevents.com/tag/${tag.toLowerCase()}`,
+    canonicalUrl: `https://datawhale.club/tag/${tag.toLowerCase()}`,
   };
 }
 
@@ -72,13 +72,13 @@ export function getTagSEO(tag: string): SEOMetadata {
  */
 export function getLocationSEO(location: string): SEOMetadata {
   return {
-    title: `Tech Events in ${location} 2026 | AIXEvents`,
-    description: `Find tech conferences, developer meetups, and AI summits in ${location}. Discover upcoming technology events happening in ${location}.`,
-    keywords: `tech events ${location}, developer conferences ${location}, tech meetup ${location}, AI summit ${location}, hackathon ${location}`,
-    ogTitle: `Tech Events in ${location}`,
-    ogDescription: `Explore upcoming tech events, conferences, and meetups in ${location}. Connect with the tech community.`,
+    title: `${location} 科技活动 2026 | Datawhale AI+X 活动日历`,
+    description: `查找 ${location} 的科技大会、开发者聚会、AI 峰会和黑客松活动。`,
+    keywords: `${location} 科技活动, ${location} 开发者大会, ${location} 科技聚会, ${location} AI峰会, ${location} 黑客松`,
+    ogTitle: `${location} 科技活动`,
+    ogDescription: `探索 ${location} 即将举行的科技活动、会议和社区聚会。`,
     twitterCard: 'summary',
-    canonicalUrl: `https://aixevents.com/location/${location.toLowerCase().replace(/\s+/g, '-')}`,
+    canonicalUrl: `https://datawhale.club/location/${location.toLowerCase().replace(/\s+/g, '-')}`,
   };
 }
 

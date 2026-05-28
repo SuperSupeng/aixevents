@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 import { TechEvent } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Calendar, MapPin, Globe, User, ShieldCheck, ArrowUpRight, ChevronDown, Download, Info, Link2 } from 'lucide-react';
+import { X, Calendar, MapPin, Globe, User, ArrowUpRight, ChevronDown, Download, Info, Link2 } from 'lucide-react';
 import { format } from 'date-fns';
-import { 
-  downloadICS, 
-  getGoogleCalendarUrl, 
+import { zhCN } from 'date-fns/locale';
+import {
+  downloadICS,
+  getGoogleCalendarUrl,
   getOutlookUrl,
-  addToAppleCalendar 
+  addToAppleCalendar
 } from '../utils/calendar';
 import { identifyTags, getTagColorClasses } from '../utils/tags';
+import { getActivityTypeLabel } from '../constants/activityTaxonomy';
 
 interface EventDetailProps {
   event: TechEvent | null;
@@ -21,41 +23,50 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onClose, onToast }) =>
   const [showCalendarDropdown, setShowCalendarDropdown] = useState(false);
 
   if (!event) return null;
-  
+
   const smartTags = identifyTags(event);
+  const detailUrl = event.links.registration || event.links.officialSite;
+  const hasDetailUrl = Boolean(detailUrl && detailUrl !== '#');
+  const formatLabel = event.format === 'online' ? '线上活动' : event.format === 'hybrid' ? '线上 + 线下' : '线下活动';
+  const locationLabel = event.format === 'online'
+    ? '线上'
+    : [event.location?.city, event.location?.address].filter(Boolean).join(' · ') || '地点待定';
+  const primaryTag = getActivityTypeLabel(event.activityType);
+  const organizerLabel = event.organizers?.length ? event.organizers.join(' / ') : event.organizer.name;
 
   const handleAddToCalendar = (type: 'google' | 'apple' | 'outlook' | 'ics') => {
     let message = '';
     switch (type) {
       case 'google':
         window.open(getGoogleCalendarUrl(event), '_blank');
-        message = 'Opening Google Calendar...';
+        message = '正在打开 Google Calendar...';
         break;
       case 'apple':
         addToAppleCalendar(event);
-        message = 'Calendar file downloaded!';
+        message = '日历文件已下载';
         break;
       case 'outlook':
         window.open(getOutlookUrl(event), '_blank');
-        message = 'Opening Outlook Calendar...';
+        message = '正在打开 Outlook Calendar...';
         break;
       case 'ics':
         downloadICS(event);
-        message = 'Calendar file downloaded!';
+        message = '日历文件已下载';
         break;
     }
     setShowCalendarDropdown(false);
-    if (onToast) {
-      onToast(message);
-    }
+    onToast?.(message);
   };
 
   const handleCopyLink = async () => {
+    if (!hasDetailUrl || !detailUrl) {
+      onToast?.('这场活动暂时没有公开链接，请查看海报二维码');
+      return;
+    }
+
     try {
-      await navigator.clipboard.writeText(event.links.officialSite);
-      if (onToast) {
-        onToast('Link copied to clipboard!');
-      }
+      await navigator.clipboard.writeText(detailUrl);
+      onToast?.('链接已复制');
     } catch (err) {
       console.error('Failed to copy link:', err);
     }
@@ -71,182 +82,191 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onClose, onToast }) =>
           onClick={onClose}
           className="absolute inset-0 bg-black/60 backdrop-blur-md"
         />
-        
+
         <motion.div
-          initial={{ opacity: 0, scale: 0.9, y: 40 }}
+          initial={{ opacity: 0, scale: 0.94, y: 34 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.9, y: 40 }}
-          className="relative w-full max-w-2xl bg-[#0a0a0a] border border-white/[0.08] rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col"
+          exit={{ opacity: 0, scale: 0.94, y: 34 }}
+          className="relative flex max-h-[88vh] w-full max-w-4xl flex-col overflow-hidden rounded-lg border-2 border-black bg-white text-black shadow-[8px_8px_0_rgba(5,5,5,0.92)]"
         >
-          {/* Decorative Gradient */}
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-accent to-primary opacity-50"></div>
-          
-          <button 
+          <button
             onClick={onClose}
-            className="absolute top-8 right-8 p-3 rounded-full bg-white/5 hover:bg-white/10 text-white/40 hover:text-white transition-all z-20"
+            className="absolute right-5 top-5 z-20 border-2 border-black bg-white p-2 text-black transition-colors hover:bg-primary"
+            aria-label="关闭活动详情"
           >
             <X size={20} />
           </button>
 
-          <div className="p-10 pt-16 overflow-y-auto max-h-[85vh]">
-            {/* Smart Tags */}
-            {smartTags.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-6">
-                {smartTags.map((tag, idx) => {
-                  const colors = getTagColorClasses(tag.color);
-                  return (
-                    <span
-                      key={idx}
-                      className={`flex items-center gap-2 text-xs font-medium ${colors.text} ${colors.bg} px-3 py-1.5 rounded-lg border ${colors.border}`}
-                    >
-                      <span>{tag.icon}</span>
-                      {tag.label}
-                    </span>
-                  );
-                })}
-              </div>
-            )}
-            
-            <div className="flex flex-wrap gap-3 mb-6">
-               {event.format === 'online' ? (
-                <span className="flex items-center gap-2 text-[10px] font-bold text-emerald-400 uppercase tracking-[0.2em] bg-emerald-400/10 px-4 py-1.5 rounded-full border border-emerald-400/20">
-                  <Globe size={14} /> Online
-                </span>
-              ) : (
-                <span className="flex items-center gap-2 text-[10px] font-bold text-primary-light uppercase tracking-[0.2em] bg-primary/10 px-4 py-1.5 rounded-full border border-primary/20">
-                  <MapPin size={14} /> {event.location?.city}, {event.location?.country}
-                </span>
-              )}
-              <span className="flex items-center gap-2 text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] bg-white/[0.03] px-4 py-1.5 rounded-full border border-white/[0.05]">
-                <User size={14} /> {event.organizer.name}
-              </span>
-            </div>
-
-            <h2 className="text-5xl font-serif italic text-white mb-8 leading-[1.1]">
-              {event.title}
-            </h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-              <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/[0.05]">
-                <h4 className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em] mb-4">Date & Time</h4>
-                <div className="flex items-center gap-4 text-white">
-                  <Calendar size={20} className="text-primary flex-shrink-0" />
-                  <div>
-                    <p className="text-lg font-medium">{format(new Date(event.startTime), 'MMMM do, yyyy')}</p>
-                    <p className="text-sm text-white/70 mb-1">{format(new Date(event.startTime), 'HH:mm')} <span className="text-white/50">(Your Local Time)</span></p>
-                    <p className="text-xs text-white/40">Event timezone: {event.timezone}</p>
+          <div className="overflow-y-auto">
+            <div className="grid gap-0 md:grid-cols-[minmax(0,0.88fr)_minmax(0,1.12fr)]">
+              <aside className="border-b-2 border-black bg-black/[0.035] p-5 md:border-b-0 md:border-r-2">
+                {event.coverImage ? (
+                  <div className="overflow-hidden rounded-md border-2 border-black bg-white">
+                    <img
+                      src={event.coverImage}
+                      alt={`${event.title} 活动海报`}
+                      className="max-h-[62vh] w-full object-contain"
+                      loading="lazy"
+                    />
                   </div>
-                </div>
-              </div>
-
-              <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/[0.05]">
-                <h4 className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em] mb-4">Investment</h4>
-                <div className="flex items-center gap-4 text-white">
-                  <ShieldCheck size={20} className="text-accent" />
-                  <div>
-                    <p className="text-lg font-medium capitalize">{event.price.type === 'free' ? 'Complementary' : 'Paid Event'}</p>
-                    {event.price.range && <p className="text-xs text-white/40">{event.price.range}</p>}
+                ) : (
+                  <div className="flex min-h-[20rem] flex-col justify-between rounded-md border-2 border-black bg-white p-5">
+                    <span className="text-[10px] font-black uppercase tracking-[0.22em] text-accent">DATAWHALE</span>
+                    <div>
+                      <p className="text-6xl font-black leading-none">AI+X</p>
+                      <p className="mt-2 text-sm font-black text-black/55">活动日历</p>
+                    </div>
                   </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="mb-12">
-              <h4 className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em] mb-4">Manifesto</h4>
-              <p className="text-white/60 leading-relaxed font-sans text-lg">
-                {event.summary}
-              </p>
-            </div>
-
-            {/* Original Tags */}
-            <div className="mb-12">
-              <h4 className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em] mb-3">Topics</h4>
-              <div className="flex flex-wrap gap-2">
-                {event.tags.map(tag => (
-                  <span key={tag} className="text-xs text-white/50 bg-white/[0.02] px-3 py-1.5 rounded-lg border border-white/[0.05]">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col sm:flex-row gap-4">
-                <button 
-                  onClick={() => window.open(event.links.officialSite, '_blank')}
-                  className="flex-1 btn-primary flex items-center justify-center gap-3 !py-5"
-                >
-                  Official Website <ArrowUpRight size={20} />
-                </button>
-                
-                <button
-                  onClick={handleCopyLink}
-                  className="flex-1 sm:flex-none btn-secondary flex items-center justify-center gap-3 !py-5 sm:px-8"
-                >
-                  <Link2 size={20} /> Copy Link
-                </button>
-              </div>
-              
-              {/* Add to Calendar Dropdown */}
-              <div className="relative">
-                <button 
-                  onClick={() => setShowCalendarDropdown(!showCalendarDropdown)}
-                  className="w-full btn-secondary flex items-center justify-center gap-3 !py-5"
-                >
-                  <Calendar size={20} /> Add to Calendar <ChevronDown size={18} />
-                </button>
-                
-                {showCalendarDropdown && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="absolute top-full left-0 right-0 mt-2 bg-[#0a0a0a] border border-white/10 rounded-2xl overflow-hidden shadow-2xl z-10"
-                  >
-                    <button
-                      onClick={() => handleAddToCalendar('google')}
-                      className="w-full px-6 py-4 text-left text-white/80 hover:bg-white/5 hover:text-white transition-all flex items-center gap-3 text-sm"
-                    >
-                      <Globe size={16} className="text-blue-400" />
-                      Google Calendar
-                    </button>
-                    <button
-                      onClick={() => handleAddToCalendar('apple')}
-                      className="w-full px-6 py-4 text-left text-white/80 hover:bg-white/5 hover:text-white transition-all flex items-center gap-3 text-sm border-t border-white/5"
-                    >
-                      <Calendar size={16} className="text-white/60" />
-                      Apple Calendar
-                    </button>
-                    <button
-                      onClick={() => handleAddToCalendar('outlook')}
-                      className="w-full px-6 py-4 text-left text-white/80 hover:bg-white/5 hover:text-white transition-all flex items-center gap-3 text-sm border-t border-white/5"
-                    >
-                      <Globe size={16} className="text-cyan-400" />
-                      Outlook
-                    </button>
-                    <button
-                      onClick={() => handleAddToCalendar('ics')}
-                      className="w-full px-6 py-4 text-left text-white/80 hover:bg-white/5 hover:text-white transition-all flex items-center gap-3 text-sm border-t border-white/5"
-                    >
-                      <Download size={16} className="text-white/60" />
-                      Download .ics
-                    </button>
-                  </motion.div>
                 )}
-              </div>
-            </div>
-            
-            <div className="mt-12 pt-8 border-t border-white/[0.05]">
-              <div className="flex items-start gap-3 mb-4 text-[10px] text-white/30">
-                <Info size={14} className="flex-shrink-0 mt-0.5" />
-                <p className="leading-relaxed">
-                  Tags are automatically generated based on event information and may not be 100% accurate. 
-                  Please refer to the official website for complete details.
-                </p>
-              </div>
-              <div className="flex items-center justify-between text-[9px] text-white/20 font-bold uppercase tracking-[0.3em]">
-                <span>Index: {event.links.source}</span>
-                <span>Updated: 2026</span>
-              </div>
+              </aside>
+
+              <section className="min-w-0 p-6 sm:p-8">
+                <div className="mb-5 flex flex-wrap gap-2 pr-12">
+                  <span className="border border-black bg-primary px-2.5 py-1 text-[10px] font-black text-black">
+                    {primaryTag}
+                  </span>
+                  <span className="border border-black/15 bg-black/[0.035] px-2.5 py-1 text-[10px] font-black text-black/65">
+                    {formatLabel}
+                  </span>
+                </div>
+
+                <h2 className="mb-6 text-3xl font-black leading-tight text-black sm:text-4xl">
+                  {event.title}
+                </h2>
+
+                <div className="mb-7 grid gap-3 border-y-2 border-black/12 py-5">
+                  <div className="grid gap-1 sm:grid-cols-[5rem_1fr] sm:gap-4">
+                    <div className="flex items-center gap-2 text-xs font-black text-accent">
+                      <Calendar size={15} />
+                      时间
+                    </div>
+                    <div className="text-sm font-black leading-6 text-black">
+                      {format(new Date(event.startTime), 'yyyy年M月d日 HH:mm', { locale: zhCN })}
+                      <span className="ml-2 text-xs font-bold text-black/45">你的本地时间</span>
+                    </div>
+                  </div>
+                  <div className="grid gap-1 sm:grid-cols-[5rem_1fr] sm:gap-4">
+                    <div className="flex items-center gap-2 text-xs font-black text-accent">
+                      {event.format === 'online' ? <Globe size={15} /> : <MapPin size={15} />}
+                      地点
+                    </div>
+                    <div className="text-sm font-black leading-6 text-black">{locationLabel}</div>
+                  </div>
+                  <div className="grid gap-1 sm:grid-cols-[5rem_1fr] sm:gap-4">
+                    <div className="flex items-center gap-2 text-xs font-black text-accent">
+                      <User size={15} />
+                      主办
+                    </div>
+                    <div className="text-sm font-black leading-6 text-black">{organizerLabel}</div>
+                  </div>
+                </div>
+
+                <div className="mb-7">
+                  <h4 className="mb-3 text-xs font-black text-black/45">活动简介</h4>
+                  <p className="whitespace-pre-line text-base font-bold leading-8 text-black/72">
+                    {event.summary}
+                  </p>
+                </div>
+
+                {(smartTags.length > 0 || (event.customTags || []).length > 0) && (
+                  <div className="mb-7">
+                    <h4 className="mb-3 text-xs font-black text-black/45">标签</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {smartTags.map((tag, idx) => {
+                        const colors = getTagColorClasses(tag.color);
+                        return (
+                          <span
+                            key={`smart-${idx}`}
+                            className={`flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-black ${colors.text} ${colors.bg} ${colors.border}`}
+                          >
+                            <span>{tag.icon}</span>
+                            {tag.label}
+                          </span>
+                        );
+                      })}
+                      {(event.customTags || []).map((tag) => (
+                        <span key={tag} className="rounded-md border border-black/10 bg-black/[0.035] px-2.5 py-1 text-xs font-black text-black/62">
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid gap-3">
+                  <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+                    <button
+                      onClick={() => {
+                        if (hasDetailUrl && detailUrl) window.open(detailUrl, '_blank');
+                      }}
+                      disabled={!hasDetailUrl}
+                      className="btn-primary flex items-center justify-center gap-3 px-5 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-55"
+                    >
+                      {hasDetailUrl ? '报名/详情' : '以海报二维码为准'} <ArrowUpRight size={18} />
+                    </button>
+
+                    {hasDetailUrl && (
+                      <button
+                        onClick={handleCopyLink}
+                        className="btn-secondary flex items-center justify-center gap-3 px-5 py-3 text-sm"
+                      >
+                        <Link2 size={18} /> 复制链接
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowCalendarDropdown(!showCalendarDropdown)}
+                      className="btn-secondary flex w-full items-center justify-center gap-3 px-5 py-3 text-sm"
+                    >
+                      <Calendar size={18} /> 添加到日历 <ChevronDown size={16} />
+                    </button>
+
+                    {showCalendarDropdown && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="absolute left-0 right-0 top-full z-10 mt-2 overflow-hidden rounded-md border-2 border-black bg-white shadow-[5px_5px_0_rgba(5,5,5,0.92)]"
+                      >
+                        <button
+                          onClick={() => handleAddToCalendar('google')}
+                          className="flex w-full items-center gap-3 px-5 py-3 text-left text-sm font-black text-black/72 transition-all hover:bg-primary/25 hover:text-black"
+                        >
+                          <Globe size={16} className="text-accent" />
+                          Google Calendar
+                        </button>
+                        <button
+                          onClick={() => handleAddToCalendar('apple')}
+                          className="flex w-full items-center gap-3 border-t border-black/10 px-5 py-3 text-left text-sm font-black text-black/72 transition-all hover:bg-primary/25 hover:text-black"
+                        >
+                          <Calendar size={16} className="text-accent" />
+                          Apple 日历
+                        </button>
+                        <button
+                          onClick={() => handleAddToCalendar('outlook')}
+                          className="flex w-full items-center gap-3 border-t border-black/10 px-5 py-3 text-left text-sm font-black text-black/72 transition-all hover:bg-primary/25 hover:text-black"
+                        >
+                          <Globe size={16} className="text-accent" />
+                          Outlook
+                        </button>
+                        <button
+                          onClick={() => handleAddToCalendar('ics')}
+                          className="flex w-full items-center gap-3 border-t border-black/10 px-5 py-3 text-left text-sm font-black text-black/72 transition-all hover:bg-primary/25 hover:text-black"
+                        >
+                          <Download size={16} className="text-accent" />
+                          下载 .ics
+                        </button>
+                      </motion.div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="mt-7 flex items-start gap-2 border-t border-black/10 pt-4 text-xs font-bold leading-5 text-black/45">
+                  <Info size={14} className="mt-0.5 shrink-0" />
+                  <p>完整信息请以主办方官方页面、报名页或海报二维码为准。</p>
+                </div>
+              </section>
             </div>
           </div>
         </motion.div>

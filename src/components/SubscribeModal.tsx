@@ -42,7 +42,7 @@ const SubscribeModal: React.FC<SubscribeModalProps> = ({
       await navigator.clipboard.writeText(subscribeUrl);
       setCopied(true);
       if (onToast) {
-        onToast('Calendar URL copied to clipboard!');
+        onToast('日历订阅链接已复制');
       }
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
@@ -53,7 +53,7 @@ const SubscribeModal: React.FC<SubscribeModalProps> = ({
   const handleDownloadIcs = () => {
     window.open(subscribeUrl, '_blank');
     if (onToast) {
-      onToast('Calendar file downloading...');
+      onToast('日历文件正在下载...');
     }
   };
 
@@ -62,12 +62,12 @@ const SubscribeModal: React.FC<SubscribeModalProps> = ({
     // 创建一个隐藏的 a 标签来触发下载
     const link = document.createElement('a');
     link.href = subscribeUrl;
-    link.download = 'globaltechevents.ics';
+    link.download = 'datawhale-aix-calendar.ics';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     if (onToast) {
-      onToast('Calendar file downloaded - open to add to Calendar');
+      onToast('日历文件已下载，打开即可添加');
     }
   };
 
@@ -79,23 +79,23 @@ const SubscribeModal: React.FC<SubscribeModalProps> = ({
       // 打开 Google Calendar 的 "Other calendars" 添加页面
       window.open('https://calendar.google.com/calendar/u/0/r/settings/addbyurl', '_blank');
       if (onToast) {
-        onToast('URL copied! Paste it in Google Calendar.');
+        onToast('链接已复制，请粘贴到 Google Calendar。');
       }
     } catch (err) {
       // 如果复制失败，仍然打开页面
       window.open('https://calendar.google.com/calendar/u/0/r/settings/addbyurl', '_blank');
       if (onToast) {
-        onToast('Opening Google Calendar - copy the URL above.');
+        onToast('正在打开 Google Calendar，请复制上方链接。');
       }
     }
   };
 
   const handleSubscribeOutlook = () => {
     // Outlook web subscription - 使用正确的 URL 格式
-    const outlookUrl = `https://outlook.live.com/calendar/0/addfromweb?url=${encodeURIComponent(subscribeUrl)}&name=AIXEvents`;
+    const outlookUrl = `https://outlook.live.com/calendar/0/addfromweb?url=${encodeURIComponent(subscribeUrl)}&name=${encodeURIComponent('Datawhale AI+X 活动日历')}`;
     window.open(outlookUrl, '_blank');
     if (onToast) {
-      onToast('Opening Outlook...');
+      onToast('正在打开 Outlook...');
     }
   };
 
@@ -135,13 +135,13 @@ const SubscribeModal: React.FC<SubscribeModalProps> = ({
             </div>
 
             <h2 className="text-2xl font-bold text-white mb-2">
-              Subscribe to Calendar
+              订阅活动日历
             </h2>
             <p className="text-white/60 text-sm mb-8">
-              Stay updated with all global tech events. Your calendar will auto-sync when new events are added.
+              及时同步全球 AI 与科技活动。新活动加入后，你的日历会自动更新。
               {(formatFilter !== 'all' || locationFilter !== 'all') && (
                 <span className="block mt-2 text-primary-light text-xs">
-                  Current filters will be applied to your subscription.
+                  当前筛选条件会应用到订阅链接。
                 </span>
               )}
             </p>
@@ -149,7 +149,7 @@ const SubscribeModal: React.FC<SubscribeModalProps> = ({
             {/* Subscription URL */}
             <div className="mb-8">
               <label className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-2 block">
-                Subscription URL
+                订阅链接
               </label>
               <div className="flex items-center gap-2">
                 <div className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white/70 font-mono truncate">
@@ -158,7 +158,7 @@ const SubscribeModal: React.FC<SubscribeModalProps> = ({
                 <button
                   onClick={handleCopyUrl}
                   className="p-3 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-xl text-white/60 hover:text-white transition-all"
-                  title="Copy URL"
+                  title="复制链接"
                 >
                   {copied ? <Check size={18} className="text-green-400" /> : <Copy size={18} />}
                 </button>
@@ -174,8 +174,8 @@ const SubscribeModal: React.FC<SubscribeModalProps> = ({
                 <div className="flex items-center gap-3">
                   <Calendar size={20} className="text-white/60 group-hover:text-white" />
                   <div className="text-left">
-                    <div className="font-medium">Apple Calendar / macOS</div>
-                    <div className="text-xs text-white/40 mt-0.5">Downloads .ics, open to add</div>
+                    <div className="font-medium">Apple 日历 / macOS</div>
+                    <div className="text-xs text-white/40 mt-0.5">下载 .ics 后打开添加</div>
                   </div>
                 </div>
                 <Download size={16} className="text-white/40 group-hover:text-white/60" />
@@ -192,7 +192,7 @@ const SubscribeModal: React.FC<SubscribeModalProps> = ({
                   </svg>
                   <div className="text-left">
                     <div className="font-medium">Google Calendar</div>
-                    <div className="text-xs text-white/40 mt-0.5">Copies URL, then paste</div>
+                    <div className="text-xs text-white/40 mt-0.5">复制链接后粘贴订阅</div>
                   </div>
                 </div>
                 <ExternalLink size={16} className="text-white/40 group-hover:text-white/60" />
@@ -217,15 +217,15 @@ const SubscribeModal: React.FC<SubscribeModalProps> = ({
               >
                 <div className="flex items-center gap-3">
                   <Download size={20} className="text-white/60 group-hover:text-white" />
-                  <span className="font-medium">Download .ics file</span>
+                  <span className="font-medium">下载 .ics 文件</span>
                 </div>
-                <span className="text-xs text-white/40">One-time</span>
+                <span className="text-xs text-white/40">一次性导入</span>
               </button>
             </div>
 
             {/* Footer Note */}
             <p className="mt-6 text-[11px] text-white/30 text-center">
-              Calendar updates automatically every hour. No account required.
+              日历每小时自动更新，无需注册账号。
             </p>
           </div>
         </motion.div>

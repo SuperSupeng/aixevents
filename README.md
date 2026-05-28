@@ -18,7 +18,7 @@ Datawhale AI+X 活动日历用于收录、筛选、订阅和展示 AI+X 生态�
 - React + TypeScript + Vite
 - Tailwind CSS
 - Supabase Database / Storage / RPC
-- Cloudflare Pages Functions
+- Cloudflare Workers Static Assets
 - Vercel Functions 兼容保留
 
 ## 本地开发
@@ -64,16 +64,19 @@ supabase_rls_setup.sql
 - `database/datawhale_storage_init.sql`
 - `database/datawhale_edit_functions_init.sql`
 
-## Cloudflare Pages 部署
+## Cloudflare Workers 部署
 
 推荐配置：
 
 - Framework preset: `Vite`
 - Build command: `npm run build`
+- Deploy command: `npx wrangler deploy`
 - Build output directory: `dist`
 - Node.js version: `20`
 
-需要在 Cloudflare Pages 的环境变量中配置：
+项目根目录的 `wrangler.jsonc` 会让 Wrangler 直接使用 `dist` 静态资源，并把 `/api/*` 交给 `src/worker.ts` 处理，避免 Wrangler 自动配置 Vite 时报 Vite 版本错误。
+
+需要在 Cloudflare 的环境变量中配置：
 
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_ANON_KEY`
@@ -82,13 +85,11 @@ supabase_rls_setup.sql
 - `STATS_API_KEY`
 - `IP_HASH_SALT`
 
-Cloudflare Pages 会自动读取：
+Worker 会提供：
 
-- `public/_headers`
-- `public/_redirects`
-- `functions/api/calendar.ts`
-- `functions/api/review-submission.ts`
-- `functions/api/stats.ts`
+- `/api/calendar`
+- `/api/review-submission`
+- `/api/stats`
 
 ## 审核与推荐
 

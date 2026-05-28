@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 
 type Env = {
-  VITE_SUPABASE_URL: string;
-  SUPABASE_SERVICE_ROLE_KEY: string;
+  VITE_SUPABASE_URL?: string;
+  SUPABASE_SERVICE_ROLE_KEY?: string;
   STATS_API_KEY?: string;
 };
 
@@ -28,6 +28,9 @@ export async function onRequestGet(context: { request: Request; env: Env }) {
 
   if (!env.STATS_API_KEY || apiKey !== env.STATS_API_KEY) {
     return jsonResponse({ error: 'Unauthorized' }, 401);
+  }
+  if (!env.VITE_SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) {
+    return jsonResponse({ error: 'Server configuration is missing' }, 500);
   }
 
   try {

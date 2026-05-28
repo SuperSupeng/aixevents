@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 
 type Env = {
-  VITE_SUPABASE_URL: string;
-  SUPABASE_SERVICE_ROLE_KEY: string;
+  VITE_SUPABASE_URL?: string;
+  SUPABASE_SERVICE_ROLE_KEY?: string;
   REVIEW_ADMIN_TOKEN?: string;
 };
 
@@ -62,6 +62,9 @@ export async function onRequest(context: { request: Request; env: Env }) {
 
   if (request.method === 'OPTIONS') return onRequestOptions();
   if (!isAuthorized(request, env.REVIEW_ADMIN_TOKEN)) return jsonResponse({ error: 'Unauthorized' }, 401);
+  if (!env.VITE_SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) {
+    return jsonResponse({ error: 'Server configuration is missing' }, 500);
+  }
 
   const supabase = createClient(env.VITE_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
     auth: { persistSession: false },

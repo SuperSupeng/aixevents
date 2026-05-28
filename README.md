@@ -18,8 +18,7 @@ Datawhale AI+X 活动日历用于收录、筛选、订阅和展示 AI+X 生态�
 - React + TypeScript + Vite
 - Tailwind CSS
 - Supabase Database / Storage / RPC
-- Cloudflare Workers Static Assets
-- Vercel Functions 兼容保留
+- Cloudflare Pages / Pages Functions
 
 ## 本地开发
 
@@ -44,6 +43,8 @@ STATS_API_KEY=...
 IP_HASH_SALT=...
 ```
 
+可从 `.env.example` 复制一份到 `.env.local` 后再填写。
+
 ## 数据库初始化
 
 在 Supabase SQL Editor 执行：
@@ -64,19 +65,20 @@ supabase_rls_setup.sql
 - `database/datawhale_storage_init.sql`
 - `database/datawhale_edit_functions_init.sql`
 
-## Cloudflare Workers 部署
+## Cloudflare Pages 部署
 
 推荐配置：
 
 - Framework preset: `Vite`
 - Build command: `npm run build`
-- Deploy command: `npx wrangler deploy`
 - Build output directory: `dist`
+- Deploy command: 留空
 - Node.js version: `20`
+- Production branch: `master`
 
-项目根目录的 `wrangler.jsonc` 会让 Wrangler 直接使用 `dist` 静态资源，并把 `/api/*` 交给 `src/worker.ts` 处理，避免 Wrangler 自动配置 Vite 时报 Vite 版本错误。SPA fallback 由 `wrangler.jsonc` 的 `not_found_handling` 处理，不需要额外的 `_redirects` 文件。
+项目使用 Cloudflare Pages Functions，`functions/api/*` 会提供服务端接口，`public/_redirects` 会把前端路由 fallback 到 `index.html`。
 
-需要在 Cloudflare 的环境变量中配置。注意：`VITE_*` 变量必须在构建时可用，否则前端拿不到 Supabase 公开连接信息。
+需要在 Cloudflare Pages 项目的 `Settings -> Environment variables` 中配置。注意：`VITE_*` 变量必须在构建时可用，配置后要重新部署，否则前端拿不到 Supabase 公开连接信息。
 
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_ANON_KEY`
@@ -85,11 +87,13 @@ supabase_rls_setup.sql
 - `STATS_API_KEY`
 - `IP_HASH_SALT`
 
-Worker 会提供：
+Pages Functions 会提供：
 
 - `/api/calendar`
 - `/api/review-submission`
 - `/api/stats`
+
+如果只想绑定子域名，不接管根域名，可以在 Pages 的 `Custom domains` 添加子域名，然后在当前 DNS 服务商添加 CNAME 指向 Pages 默认域名。
 
 ## 审核与推荐
 
@@ -101,5 +105,3 @@ Worker 会提供：
 ## 安全说明
 
 安全模型与检查项见 [SECURITY_CHECKLIST.md](./SECURITY_CHECKLIST.md)。
-
-Last deployment trigger: 2026-05-28T19:14:56Z

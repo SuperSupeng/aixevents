@@ -9,8 +9,8 @@ export const supabase = createClient(
   supabaseUrl || 'https://missing-supabase-url.supabase.co',
   supabaseAnonKey || 'missing-supabase-anon-key',
   {
-  auth: {
-    persistSession: false, // 暂时不需要用户会话
-  },
+    auth: {
+      persistSession: false, // 暂时不需要用户会话
+    },
   }
 );

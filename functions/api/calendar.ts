@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 
 type Env = {
-  VITE_SUPABASE_URL: string;
-  SUPABASE_SERVICE_ROLE_KEY: string;
+  VITE_SUPABASE_URL?: string;
+  SUPABASE_SERVICE_ROLE_KEY?: string;
   IP_HASH_SALT?: string;
 };
 
@@ -135,6 +135,10 @@ export async function onRequestOptions(): Promise<Response> {
 export async function onRequestGet(context: { request: Request; env: Env; waitUntil: (promise: Promise<unknown>) => void }) {
   const { request, env } = context;
   const url = new URL(request.url);
+  if (!env.VITE_SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) {
+    return jsonResponse({ error: 'Server configuration is missing' }, 500);
+  }
+
   const supabase = createClient(env.VITE_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
     auth: { persistSession: false },
   });

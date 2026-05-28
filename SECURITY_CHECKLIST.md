@@ -9,7 +9,7 @@ Last updated: 2026-05-29
 - Public users cannot select, update, or delete rows directly from `datawhale_events`.
 - Edit links use a random token; only `edit_token_hash` is stored in the database.
 - Approved-event edits are stored in `pending_update` and do not change the public event until reviewed.
-- Admin review uses server-side Vercel functions with `SUPABASE_SERVICE_ROLE_KEY` and `REVIEW_ADMIN_TOKEN`.
+- Admin review uses server-side Cloudflare Pages Functions with `SUPABASE_SERVICE_ROLE_KEY` and `REVIEW_ADMIN_TOKEN`.
 - Poster uploads go to `datawhale-event-posters`, limited to JPG, PNG, WebP, and 5 MB.
 
 ## Required Supabase Setup
@@ -40,6 +40,8 @@ Server-only:
 
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `REVIEW_ADMIN_TOKEN`
+- `STATS_API_KEY`
+- `IP_HASH_SALT`
 
 Do not expose server-only values in Vite code or browser logs.
 

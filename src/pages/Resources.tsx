@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { ArrowLeft, Calendar, Globe2 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { ArrowLeft, BookOpen, Calendar, ExternalLink, FileText, Globe2, Radio, Rss, Users } from 'lucide-react';
 
 interface ResourcesProps {
   onBack: () => void;
@@ -8,6 +8,13 @@ interface ResourcesProps {
 const Resources: React.FC<ResourcesProps> = ({ onBack }) => {
   const calendars = [
     {
+      region: 'Datawhale',
+      title: 'AI+X 活动日历',
+      description: '订阅已经确认收录的 AI+X 生态活动。',
+      subscribeUrl: '/api/calendar',
+      sourceName: 'Datawhale AI+X',
+    },
+    {
       region: '中国',
       title: '中国 AI 里程碑',
       description: '重要 AI 发布、政策、融资与技术突破。',
@@ -15,13 +22,31 @@ const Resources: React.FC<ResourcesProps> = ({ onBack }) => {
       sourceName: '知乎 AI 日历',
       sourceUrl: 'https://www.zhihu.com/ailab/app/calendar',
     },
+  ];
+
+  const resourceGroups = [
     {
-      region: '全球',
-      title: '全球 AI 动态',
-      description: '跨地区 AI 关键时刻与产业变化。',
-      subscribeUrl: '',
+      icon: <Calendar size={22} />,
+      title: '活动日历',
+      body: '按城市、线上线下和活动类型发现 AI+X 生态活动。',
+    },
+    {
+      icon: <Users size={22} />,
+      title: '生态共建',
+      body: '面向高校、城市、产业伙伴和社区组织者开放活动提交。',
+    },
+    {
+      icon: <BookOpen size={22} />,
+      title: '学习实践',
+      body: '优先关注真实场景、动手任务和作品展示。',
+    },
+    {
+      icon: <FileText size={22} />,
+      title: '可信资源',
+      body: '持续整理日历源、活动信息和高信号 AI 资源。',
     },
   ];
+
   const chinaCalendar = calendars.find((calendar) => calendar.region === '中国');
   const [zhihuEvents, setZhihuEvents] = useState<Array<{ date: string; title: string; url?: string }>>([]);
   const [zhihuLoading, setZhihuLoading] = useState(false);
@@ -66,9 +91,9 @@ const Resources: React.FC<ResourcesProps> = ({ onBack }) => {
         if (isMounted) {
           setZhihuEvents(events);
         }
-      } catch (error) {
+      } catch {
         if (isMounted) {
-          setZhihuError('暂时无法加载日历源，请通过链接直接订阅。');
+          setZhihuError('暂时无法加载外部日历源，可以通过订阅链接直接打开。');
         }
       } finally {
         if (isMounted) {
@@ -83,175 +108,153 @@ const Resources: React.FC<ResourcesProps> = ({ onBack }) => {
     };
   }, [chinaCalendar?.subscribeUrl]);
 
-  const hasZhihuEvents = useMemo(() => zhihuEvents.length > 0, [zhihuEvents.length]);
-
   return (
-    <div className="poster-app min-h-screen bg-[#030303] text-white py-20 px-4">
-      <div className="max-w-5xl mx-auto">
+    <div className="poster-app min-h-screen px-4 py-24 text-black sm:px-6">
+      <div className="relative z-10 mx-auto max-w-7xl">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-white/60 hover:text-white transition-colors mb-10"
+          className="mb-8 inline-flex items-center gap-2 text-sm font-black text-black/60 transition-colors hover:text-accent"
         >
-          <ArrowLeft size={20} />
+          <ArrowLeft size={18} />
           <span>返回首页</span>
         </button>
 
-        <header className="mb-12">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-white/60 text-xs font-medium">
-            <Globe2 size={14} />
-            全球 AI 资源
+        <header className="grid gap-6 border-2 border-black bg-white/90 p-5 shadow-[7px_7px_0_rgba(5,5,5,0.92)] sm:p-7 lg:grid-cols-[1fr_24rem] lg:items-end">
+          <div className="min-w-0">
+            <div className="mb-5 inline-flex items-center gap-2 border-2 border-black bg-white px-3 py-1 text-xs font-black uppercase tracking-wide">
+              <Globe2 size={15} className="text-accent" />
+              AI+X Resources
+            </div>
+            <h1 className="max-w-3xl text-4xl font-black leading-[1.02] text-black sm:text-6xl">
+              资源与订阅
+            </h1>
+            <p className="mt-5 max-w-3xl text-base font-bold leading-8 text-black/70 sm:text-lg">
+              这里收录活动订阅、AI 里程碑和生态共建入口。资源页保持轻量，重点帮助你找到可订阅、可追踪、可参与的信息源。
+            </p>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold mt-6 mb-4">
-            全球 AI 进展、日历与信号
-          </h1>
-          <p className="text-white/60 text-base md:text-lg max-w-3xl">
-            汇总不同地区的 AI 里程碑与高可信资源。你可以先订阅区域日历，后续我们会持续扩展全球覆盖。
-          </p>
+
+          <div className="border-2 border-black bg-[#f7f8f1] p-5">
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-accent">Current Focus</p>
+            <p className="mt-3 text-2xl font-black leading-tight text-black">
+              让活动信息从分散传播变成稳定入口。
+            </p>
+          </div>
         </header>
 
-        <section className="mb-14">
-          <h2 className="text-2xl font-semibold mb-4">AI 进展</h2>
-          <p className="text-white/55 text-sm mb-6">
-            订阅区域 AI 里程碑日历。每个日历都保持轻量，只收录高信号事件。
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <section className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {resourceGroups.map((item) => (
+            <article key={item.title} className="border-2 border-black/15 bg-white/90 p-5 shadow-[4px_4px_0_rgba(23,100,255,0.12)]">
+              <div className="mb-4 inline-flex text-accent drop-shadow-[3px_3px_0_rgba(167,240,0,0.75)]">
+                {item.icon}
+              </div>
+              <h2 className="text-xl font-black leading-tight text-black">{item.title}</h2>
+              <p className="mt-2 text-sm font-bold leading-6 text-black/60">{item.body}</p>
+            </article>
+          ))}
+        </section>
+
+        <section className="mt-10">
+          <div className="mb-4 flex flex-col gap-2 border-b-2 border-dashed border-black/20 pb-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.16em] text-accent">Calendar Feeds</p>
+              <h2 className="mt-2 text-3xl font-black text-black">可订阅日历</h2>
+            </div>
+            <p className="max-w-xl text-sm font-bold leading-6 text-black/60">
+              建议优先订阅 Datawhale AI+X 活动日历，外部日历作为补充参考。
+            </p>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-2">
             {calendars.map((calendar) => (
-              <div
-                key={calendar.title}
-                className="bg-white/5 border border-white/10 rounded-2xl p-6 flex flex-col gap-4"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-xs uppercase tracking-widest text-white/40">
-                    {calendar.region}
-                  </span>
-                  <Calendar size={18} className="text-primary" />
+              <article key={calendar.title} className="border-2 border-black bg-white/90 p-5 shadow-[5px_5px_0_rgba(5,5,5,0.9)]">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-[0.16em] text-accent">{calendar.region}</p>
+                    <h3 className="mt-2 text-2xl font-black leading-tight text-black">{calendar.title}</h3>
+                  </div>
+                  <Rss size={24} className="shrink-0 text-accent" />
                 </div>
-                <div>
-                  <h3 className="text-lg font-semibold">{calendar.title}</h3>
-                  <p className="text-white/60 text-sm mt-2">{calendar.description}</p>
-                </div>
+                <p className="mt-3 text-sm font-bold leading-7 text-black/60">{calendar.description}</p>
                 {calendar.sourceName && calendar.sourceUrl && (
                   <a
                     href={calendar.sourceUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs text-white/50 hover:text-white transition-colors"
+                    className="mt-3 inline-flex items-center gap-1 text-xs font-black text-black/50 transition-colors hover:text-accent"
                   >
-                    来源：{calendar.sourceName}
+                    来源：{calendar.sourceName} <ExternalLink size={12} />
                   </a>
                 )}
-                {calendar.subscribeUrl ? (
-                  <a
-                    href={calendar.subscribeUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center rounded-full border border-white/15 px-4 py-2 text-sm text-white/80 hover:text-white hover:border-white/30 transition-colors"
-                  >
-                    订阅日历
-                  </a>
-                ) : (
-                  <span className="text-xs text-white/40">
-                    订阅链接即将补充。
-                  </span>
-                )}
-              </div>
+                <a
+                  href={calendar.subscribeUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-secondary mt-5 inline-flex items-center justify-center gap-2 px-5 py-3 text-sm"
+                >
+                  订阅日历 <ExternalLink size={16} />
+                </a>
+              </article>
             ))}
           </div>
         </section>
 
         {chinaCalendar && (
-          <section className="mb-14">
-            <h2 className="text-2xl font-semibold mb-4">中国 AI 里程碑</h2>
-            <p className="text-white/55 text-sm mb-6">
-              我们订阅源日历并展示近期条目。来源：{chinaCalendar.sourceName}。
-            </p>
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+          <section className="mt-10 grid gap-5 lg:grid-cols-[1fr_22rem]">
+            <div className="border-2 border-black/15 bg-white/90 p-5">
+              <div className="mb-5 flex items-center gap-2">
+                <Radio size={20} className="text-accent" />
+                <h2 className="text-2xl font-black text-black">中国 AI 里程碑</h2>
+              </div>
+
               {zhihuLoading && (
-                <p className="text-white/50 text-sm">正在加载日历源...</p>
+                <p className="text-sm font-bold text-black/50">正在加载日历源...</p>
               )}
               {!zhihuLoading && zhihuError && (
-                <div className="text-white/50 text-sm">
-                  <p>{zhihuError}</p>
-                </div>
+                <p className="text-sm font-bold leading-6 text-black/50">{zhihuError}</p>
               )}
-              {!zhihuLoading && !zhihuError && hasZhihuEvents && (
-                <ul className="space-y-4">
+              {!zhihuLoading && !zhihuError && zhihuEvents.length > 0 && (
+                <ul className="divide-y divide-black/10">
                   {zhihuEvents.map((event) => (
-                    <li
-                      key={`${event.date}-${event.title}`}
-                      className="border-b border-white/10 pb-4 last:border-b-0 last:pb-0"
-                    >
-                      <p className="text-xs uppercase tracking-widest text-white/40">
-                        {event.date}
-                      </p>
-                      <p className="text-white/80 text-sm mt-2">{event.title}</p>
-                      {event.url && (
-                        <a
-                          href={event.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs text-primary-light hover:text-white transition-colors mt-2 inline-block"
-                        >
-                          查看详情
-                        </a>
-                      )}
+                    <li key={`${event.date}-${event.title}`} className="grid gap-2 py-4 sm:grid-cols-[7rem_1fr]">
+                      <p className="text-xs font-black text-accent">{event.date}</p>
+                      <div>
+                        <p className="text-sm font-bold leading-6 text-black/80">{event.title}</p>
+                        {event.url && (
+                          <a
+                            href={event.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-1 inline-flex items-center gap-1 text-xs font-black text-black/50 transition-colors hover:text-accent"
+                          >
+                            查看详情 <ExternalLink size={12} />
+                          </a>
+                        )}
+                      </div>
                     </li>
                   ))}
                 </ul>
               )}
-              {!zhihuLoading && !zhihuError && !hasZhihuEvents && (
-                <p className="text-white/50 text-sm">
-                  暂无加载结果。可以直接订阅或稍后刷新。
-                </p>
+              {!zhihuLoading && !zhihuError && zhihuEvents.length === 0 && (
+                <p className="text-sm font-bold leading-6 text-black/50">暂无加载结果。可以直接订阅或稍后刷新。</p>
               )}
-              <div className="mt-6 text-xs text-white/40 flex items-center justify-between gap-4">
-                <span>更想用自己的日历应用？可以通过 ICS 链接订阅。</span>
-                <a
-                  href={chinaCalendar.subscribeUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary-light hover:text-white transition-colors"
-                >
-                  打开 ICS
-                </a>
-              </div>
             </div>
+
+            <aside className="border-2 border-black bg-primary p-5 text-black shadow-[5px_5px_0_rgba(5,5,5,0.9)]">
+              <p className="text-xs font-black uppercase tracking-[0.16em]">Contribute</p>
+              <h2 className="mt-3 text-2xl font-black leading-tight">共建资源入口</h2>
+              <p className="mt-3 text-sm font-bold leading-7 text-black/70">
+                如果你有可信的区域日历、活动资源或 AI 生态信息源，可以通过首页活动群反馈给社区。
+              </p>
+              <button
+                type="button"
+                onClick={onBack}
+                className="mt-5 inline-flex w-full items-center justify-center border-2 border-black bg-white px-4 py-3 text-sm font-black text-accent shadow-[4px_4px_0_rgba(23,100,255,0.22)] transition-transform hover:-translate-y-0.5"
+              >
+                返回首页
+              </button>
+            </aside>
           </section>
         )}
-
-        <section className="mb-14">
-          <h2 className="text-2xl font-semibold mb-4">精选 AI 资源</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-              <h3 className="text-lg font-semibold">研究与评测</h3>
-              <p className="text-white/60 text-sm mt-2">
-                持续整理报告、评测与可信基准。
-              </p>
-              <p className="text-white/40 text-xs mt-4">即将上线。</p>
-            </div>
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-              <h3 className="text-lg font-semibold">工具与开源</h3>
-              <p className="text-white/60 text-sm mt-2">
-                精选正在塑造下一波 AI 的工具与仓库。
-              </p>
-              <p className="text-white/40 text-xs mt-4">即将上线。</p>
-            </div>
-          </div>
-        </section>
-
-        <section className="bg-primary/10 border border-primary/20 rounded-2xl p-6">
-          <h2 className="text-lg font-semibold mb-2">贡献资源</h2>
-          <p className="text-white/70 text-sm">
-            如果你有可信的区域日历或资源，欢迎通过首页的活动群二维码分享给社区。
-          </p>
-          <button
-            type="button"
-            onClick={onBack}
-            className="inline-flex items-center justify-center rounded-full border border-primary/40 px-4 py-2 text-sm text-primary-light hover:text-white hover:border-primary/80 transition-colors mt-4"
-          >
-            返回首页扫码加入
-          </button>
-        </section>
       </div>
     </div>
   );

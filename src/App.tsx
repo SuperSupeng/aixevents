@@ -62,6 +62,47 @@ const PixelWhale: React.FC = () => {
   );
 };
 
+const GroupQrModal: React.FC<{ onClose: () => void }> = ({ onClose }) => (
+  <AnimatePresence>
+    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        className="absolute inset-0 bg-black/60 backdrop-blur-md"
+      />
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96, y: 24 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.96, y: 24 }}
+        className="relative w-full max-w-sm rounded-lg border-2 border-black bg-white p-6 text-black shadow-[8px_8px_0_rgba(5,5,5,0.92)]"
+      >
+        <button
+          onClick={onClose}
+          className="absolute right-4 top-4 border-2 border-black bg-white p-2 transition-colors hover:bg-primary"
+          aria-label="关闭活动群二维码"
+        >
+          <X size={18} />
+        </button>
+        <div className="mb-5 pr-10">
+          <p className="text-xs font-black uppercase tracking-[0.18em] text-accent">AI+X 活动群</p>
+          <h2 className="mt-2 text-3xl font-black leading-tight">扫码加入活动群</h2>
+          <p className="mt-2 text-sm font-bold leading-6 text-black/60">微信扫码获取活动同步、生态伙伴活动与共创信息。</p>
+        </div>
+        <div className="rounded-md border-2 border-black bg-white p-3">
+          <img
+            src="/brand/activity-group-qr.png"
+            alt="AI+X 活动群二维码"
+            className="aspect-square w-full"
+            loading="lazy"
+          />
+        </div>
+      </motion.div>
+    </div>
+  </AnimatePresence>
+);
+
 const App: React.FC = () => {
   const initialRoute = useMemo(getRouteFromPath, []);
 
@@ -203,7 +244,13 @@ const App: React.FC = () => {
   }
 
   if (currentPage === 'resources') {
-    return <Resources onBack={navigateToHome} />;
+    return (
+      <>
+        <Resources onBack={navigateToHome} onGroupClick={openGroupQrModal} />
+        {showGroupQrModal && <GroupQrModal onClose={() => setShowGroupQrModal(false)} />}
+        <Toast toasts={toasts} onRemove={removeToast} />
+      </>
+    );
   }
 
   if (currentPage === 'hackathons') {
@@ -625,46 +672,7 @@ const App: React.FC = () => {
         onSubmitted={success}
       />
 
-      <AnimatePresence>
-        {showGroupQrModal && (
-          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowGroupQrModal(false)}
-              className="absolute inset-0 bg-black/60 backdrop-blur-md"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.96, y: 24 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.96, y: 24 }}
-              className="relative w-full max-w-sm rounded-lg border-2 border-black bg-white p-6 text-black shadow-[8px_8px_0_rgba(5,5,5,0.92)]"
-            >
-              <button
-                onClick={() => setShowGroupQrModal(false)}
-                className="absolute right-4 top-4 border-2 border-black bg-white p-2 transition-colors hover:bg-primary"
-                aria-label="关闭活动群二维码"
-              >
-                <X size={18} />
-              </button>
-              <div className="mb-5 pr-10">
-                <p className="text-xs font-black uppercase tracking-[0.18em] text-accent">AI+X 活动群</p>
-                <h2 className="mt-2 text-3xl font-black leading-tight">扫码加入活动群</h2>
-                <p className="mt-2 text-sm font-bold leading-6 text-black/60">微信扫码获取活动同步、生态伙伴活动与共创信息。</p>
-              </div>
-              <div className="rounded-md border-2 border-black bg-white p-3">
-                <img
-                  src="/brand/activity-group-qr.png"
-                  alt="AI+X 活动群二维码"
-                  className="aspect-square w-full"
-                  loading="lazy"
-                />
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      {showGroupQrModal && <GroupQrModal onClose={() => setShowGroupQrModal(false)} />}
 
       {/* Toast Notifications */}
       <Toast toasts={toasts} onRemove={removeToast} />

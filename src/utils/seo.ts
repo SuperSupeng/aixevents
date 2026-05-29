@@ -18,7 +18,7 @@ export interface SEOMetadata {
   type?: 'website' | 'article';
 }
 
-export type SeoPage = 'home' | 'privacy' | 'terms' | 'resources' | 'hackathons' | 'edit';
+export type SeoPage = 'home' | 'privacy' | 'terms' | 'resources' | 'hackathons' | 'partners' | 'edit';
 
 export const PAGE_SEO: Record<SeoPage, SEOMetadata> = {
   home: {
@@ -38,6 +38,12 @@ export const PAGE_SEO: Record<SeoPage, SEOMetadata> = {
     description: '订阅 Datawhale AI+X 活动日历，查看 AI 里程碑和生态资源入口，持续追踪 AI+X 活动、日历源与共建信息。',
     keywords: 'AI资源, 日历订阅, ICS订阅, AI里程碑, AI生态资源, Datawhale AI+X',
     canonicalPath: '/resources',
+  },
+  partners: {
+    title: '生态伙伴｜Datawhale AI+X 活动日历',
+    description: 'Datawhale AI+X 活动日历生态伙伴页，收录共同推动 AI+X 活动发生的社区、高校、科技企业、媒体、政府园区、投资机构和在地社区伙伴。',
+    keywords: 'Datawhale AI+X 生态伙伴, AI社区, 高校伙伴, 科技企业, 媒体伙伴, 在地社区, 活动共建',
+    canonicalPath: '/partners',
   },
   privacy: {
     title: '隐私政策｜Datawhale AI+X 活动日历',

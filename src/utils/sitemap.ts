@@ -27,6 +27,12 @@ export function generateSitemap(_events: TechEvent[]): string {
       priority: '0.7',
     },
     {
+      loc: `${baseUrl}/partners`,
+      lastmod: today,
+      changefreq: 'weekly',
+      priority: '0.7',
+    },
+    {
       loc: `${baseUrl}/privacy`,
       lastmod: today,
       changefreq: 'monthly',

@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Zap, ChevronDown, Loader2, MessageCircle, CalendarDays, Link as LinkIcon, BookOpen, PencilLine, TrendingUp, X } from 'lucide-react';
+import { Zap, ChevronDown, Loader2, MessageCircle, CalendarDays, X } from 'lucide-react';
 import { TechEvent, ViewMode } from './types';
 import { useEvents, useLocations } from './hooks/useEvents';
 import { fetchEventById } from './api/events';
@@ -17,14 +17,16 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import Resources from './pages/Resources';
 import Hackathons from './pages/Hackathons';
+import Partners from './pages/Partners';
 import QuickFilters from './components/QuickFilters';
 import FeaturedEvents from './components/FeaturedEvents';
+import PartnerLogoWall from './components/PartnerLogoWall';
 import SubscribeModal from './components/SubscribeModal';
 import SubmitEventModal from './components/SubmitEventModal';
 import { useToast } from './hooks/useToast';
 import { generateBaseSchema, generateEventSchema, getEventSEO, getPageSEO, injectStructuredData, removeStructuredData, updatePageSEO } from './utils/seo';
 
-type Page = 'home' | 'privacy' | 'terms' | 'resources' | 'hackathons' | 'edit' | 'event';
+type Page = 'home' | 'privacy' | 'terms' | 'resources' | 'hackathons' | 'partners' | 'edit' | 'event';
 
 function getRouteFromPath(): { page: Page; editToken?: string; eventId?: string } {
   const path = window.location.pathname.replace(/\/+$/, '') || '/';
@@ -32,6 +34,7 @@ function getRouteFromPath(): { page: Page; editToken?: string; eventId?: string 
   if (path === '/terms') return { page: 'terms' };
   if (path === '/resources') return { page: 'resources' };
   if (path === '/hackathons') return { page: 'hackathons' };
+  if (path === '/partners') return { page: 'partners' };
   if (path.startsWith('/events/')) {
     const eventId = decodeURIComponent(path.replace('/events/', '').trim());
     if (eventId) return { page: 'event', eventId };
@@ -262,6 +265,13 @@ const App: React.FC = () => {
     window.scrollTo(0, 0);
   };
 
+  const navigateToPartners = () => {
+    setCurrentPage('partners');
+    resetRouteState();
+    window.history.pushState({}, '', '/partners');
+    window.scrollTo(0, 0);
+  };
+
   const openEventDetail = (event: TechEvent) => {
     const encodedId = encodeURIComponent(event.id);
     setSelectedEvent(event);
@@ -286,29 +296,6 @@ const App: React.FC = () => {
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
-
-  const posterFeatures = [
-    {
-      icon: <LinkIcon size={34} strokeWidth={2.6} />,
-      title: '连接',
-      body: '连接城市、高校与真实场景',
-    },
-    {
-      icon: <BookOpen size={34} strokeWidth={2.6} />,
-      title: '学习',
-      body: '从知识输入走向动手实践',
-    },
-    {
-      icon: <PencilLine size={34} strokeWidth={2.6} />,
-      title: '创造',
-      body: '用 AI 做出可展示的作品',
-    },
-    {
-      icon: <TrendingUp size={34} strokeWidth={2.6} />,
-      title: '成长',
-      body: '让作品被更多人看见',
-    },
-  ];
 
   // 如果在法律页面，只显示该页面
   if (currentPage === 'privacy') {
@@ -343,12 +330,23 @@ const App: React.FC = () => {
     );
   }
 
+  if (currentPage === 'partners') {
+    return (
+      <>
+        <Partners onBack={navigateToHome} onGroupClick={openGroupQrModal} />
+        {showGroupQrModal && <GroupQrModal onClose={() => setShowGroupQrModal(false)} />}
+        <Toast toasts={toasts} onRemove={removeToast} />
+      </>
+    );
+  }
+
   if (currentPage === 'edit') {
     return (
       <div className="poster-app min-h-screen relative overflow-x-hidden">
         <Navbar
           onExploreClick={navigateToHome}
           onHackathonsClick={navigateToHackathons}
+          onPartnersClick={navigateToPartners}
           onResourcesClick={navigateToResources}
           onSubmitClick={() => setShowSubmitEventModal(true)}
         />
@@ -384,6 +382,7 @@ const App: React.FC = () => {
         <Navbar
           onExploreClick={navigateToHome}
           onHackathonsClick={navigateToHackathons}
+          onPartnersClick={navigateToPartners}
           onResourcesClick={navigateToResources}
           onSubmitClick={() => setShowSubmitEventModal(true)}
         />
@@ -433,6 +432,7 @@ const App: React.FC = () => {
       <Navbar 
         onExploreClick={scrollToCalendar}
         onHackathonsClick={navigateToHackathons}
+        onPartnersClick={navigateToPartners}
         onResourcesClick={navigateToResources}
         onSubmitClick={() => setShowSubmitEventModal(true)}
       />
@@ -448,7 +448,7 @@ const App: React.FC = () => {
               className="poster-kicker"
             >
               <span className="w-2 h-2 bg-primary block" />
-              AI+X 生态活动持续收录中
+              Datawhale AI+X 活动日历
             </motion.div>
 
             <div className="poster-hero-grid">
@@ -472,25 +472,14 @@ const App: React.FC = () => {
                   </motion.div>
                 </h1>
 
-                <motion.div
-                  initial={{ opacity: 0, y: 14 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.65, delay: 0.4 }}
-                  className="poster-organizers"
-                >
-                  <div><strong>发起方：</strong><span>Datawhale</span></div>
-                  <div><strong>活动：</strong><span>AI 学习者、开发者、高校学生与创造者共同参与</span></div>
-                  <div><strong>目标：</strong><span>用 AI 解决真实问题，让作品进入生态循环</span></div>
-                </motion.div>
-
                 <motion.p
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.7, delay: 0.46 }}
                   className="poster-hero-quote"
                 >
-                  <span className="block">让你在真实场景中，</span>
-                  <span className="block">亲手用 AI 完成一件作品。</span>
+                  <span className="block">找到值得去的</span>
+                  <span className="block">AI 科技活动。</span>
                 </motion.p>
                 <motion.div
                   initial={{ opacity: 0 }}
@@ -544,17 +533,17 @@ const App: React.FC = () => {
                       <span>生态活动索引</span>
                     </div>
                     <div className="poster-data-row">
-                      <strong>主题：</strong>
-                      <span>AI/开发者/创业/OPC</span>
+                      <strong>收录：</strong>
+                      <span>Meetup / Workshop / Hackathon</span>
                     </div>
                     <div className="poster-data-row">
-                      <strong>覆盖：</strong>
-                      <span>28 省份 / 50+ 城市 / 300+ 高校</span>
+                      <strong>共建：</strong>
+                      <span>社区 / 高校 / 城市 / 产业</span>
                     </div>
                   </div>
                   <div className="poster-rule mt-8 mb-5" />
                   <p className="poster-info-card-title">
-                    找到值得去的 AI 科技活动。
+                    活动信息持续收录中。
                   </p>
                 </div>
                 <div className="poster-whale-wrap" aria-hidden>
@@ -563,21 +552,6 @@ const App: React.FC = () => {
                 </div>
               </motion.aside>
             </div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.65, delay: 0.72 }}
-              className="poster-feature-strip"
-            >
-              {posterFeatures.map((feature) => (
-                <div key={feature.title} className="poster-feature">
-                  <div className="pixel-icon mb-4">{feature.icon}</div>
-                  <h3 className="text-2xl sm:text-3xl font-black text-black mb-1">{feature.title}</h3>
-                  <p className="text-sm sm:text-base font-bold text-black/70 leading-snug">{feature.body}</p>
-                </div>
-              ))}
-            </motion.div>
           </div>
 
           {/* 滚动指示器 */}
@@ -636,6 +610,8 @@ const App: React.FC = () => {
             </div>
           </div>
         </section>
+
+        <PartnerLogoWall onViewAll={navigateToPartners} />
 
         {/* Filter & Search */}
         <div ref={calendarRef} className="relative z-20 content-section scroll-mt-28 sm:scroll-mt-32 max-w-7xl mx-auto px-4 sm:px-6 pt-24 sm:pt-32 pb-32 sm:pb-40">
@@ -765,6 +741,7 @@ const App: React.FC = () => {
       <Footer 
         onCalendarClick={scrollToCalendar}
         onHackathonsClick={navigateToHackathons}
+        onPartnersClick={navigateToPartners}
         onResourcesClick={navigateToResources}
         onSubscribeClick={() => setShowSubscribeModal(true)}
         onSubmitClick={() => setShowSubmitEventModal(true)}

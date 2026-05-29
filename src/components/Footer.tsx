@@ -4,6 +4,7 @@ import Logo from './Logo';
 interface FooterProps {
   onCalendarClick: () => void;
   onHackathonsClick: () => void;
+  onPartnersClick: () => void;
   onResourcesClick: () => void;
   onSubscribeClick: () => void;
   onSubmitClick: () => void;
@@ -16,6 +17,7 @@ interface FooterProps {
 const Footer: React.FC<FooterProps> = ({
   onCalendarClick,
   onHackathonsClick,
+  onPartnersClick,
   onResourcesClick,
   onSubscribeClick,
   onSubmitClick,
@@ -43,6 +45,7 @@ const Footer: React.FC<FooterProps> = ({
               <ul className="space-y-4 text-white/75 text-sm">
                 <li><button onClick={onCalendarClick} className="hover:text-white transition-colors">活动日历</button></li>
                 <li><button onClick={onHackathonsClick} className="hover:text-white transition-colors">Hackathon 收录</button></li>
+                <li><button onClick={onPartnersClick} className="hover:text-white transition-colors">生态伙伴</button></li>
                 <li><button onClick={onResourcesClick} className="hover:text-white transition-colors">资源索引</button></li>
                 <li><button onClick={onSubscribeClick} className="hover:text-white transition-colors">订阅日历</button></li>
               </ul>

@@ -469,7 +469,7 @@
 
 .poster-hero-section {
   min-height: auto;
-  padding: clamp(7.5rem, 12vh, 9rem) clamp(1rem, 3vw, 1.5rem) clamp(3.5rem, 7vh, 5.5rem);
+  padding: clamp(8rem, 12vh, 9.5rem) clamp(1rem, 3vw, 1.5rem) clamp(3.5rem, 7vh, 5.5rem);
 }
 
 .poster-hero-shell {
@@ -1058,8 +1058,8 @@
   }
 
   .poster-hero-section {
-    padding-top: clamp(5.75rem, 9vh, 7.25rem);
-    padding-bottom: clamp(2rem, 4vh, 3rem);
+    padding-top: clamp(6.9rem, 10.5vh, 7.8rem);
+    padding-bottom: clamp(1.55rem, 3vh, 2.35rem);
   }
 
   .poster-hero-grid {
@@ -1140,7 +1140,7 @@
   }
 
   .poster-feature-strip {
-    margin-top: clamp(2rem, 3.3vw, 3rem);
+    margin-top: clamp(1.45rem, 2.7vw, 2.35rem);
   }
 
   .poster-feature {

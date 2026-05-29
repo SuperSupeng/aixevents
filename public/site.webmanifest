@@ -1,0 +1,18 @@
+{
+  "name": "Datawhale AI+X 活动日历",
+  "short_name": "AI+X 日历",
+  "description": "发现、提交和订阅 Datawhale AI+X 生态活动。",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7f8f1",
+  "theme_color": "#a7f000",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "64x64",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

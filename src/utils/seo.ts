@@ -1,154 +1,169 @@
 import { TechEvent } from '../types';
 
-interface SEOMetadata {
+const runtimeOrigin = typeof window !== 'undefined' ? window.location.origin : 'https://aixevents.com';
+
+export const SITE_URL = (import.meta.env.VITE_PUBLIC_SITE_URL || runtimeOrigin).replace(/\/$/, '');
+export const SITE_NAME = 'Datawhale AI+X 活动日历';
+export const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.svg`;
+
+export interface SEOMetadata {
   title: string;
   description: string;
   keywords: string;
-  ogTitle: string;
-  ogDescription: string;
+  canonicalPath: string;
+  ogTitle?: string;
+  ogDescription?: string;
   ogImage?: string;
-  twitterCard: 'summary' | 'summary_large_image';
-  canonicalUrl: string;
+  robots?: string;
+  type?: 'website' | 'article';
 }
 
-/**
- * 生成首页 SEO metadata
- */
-export function getHomeSEO(): SEOMetadata {
-  return {
-    title: 'Datawhale AI+X 活动日历',
-    description: 'Datawhale AI+X 活动日历连接 AI 学习者、开发者、高校学生、产业从业者和个人创造者，推动 AI+X 在城市、高校与产业场景中持续发生。',
-    keywords: 'Datawhale, AI活动, AI+X, 科技活动, 开发者活动, 高校活动, 产业活动, AI实践, 活动日历, 活动提交',
-    ogTitle: 'Datawhale AI+X 活动日历',
-    ogDescription: '发现、提交并订阅 AI+X 生态活动，让 AI 学习走向真实场景、动手实践、作品展示和生态共建。',
-    twitterCard: 'summary_large_image',
-    canonicalUrl: 'https://datawhale.club',
-  };
+export type SeoPage = 'home' | 'privacy' | 'terms' | 'resources' | 'hackathons' | 'edit';
+
+export const PAGE_SEO: Record<SeoPage, SEOMetadata> = {
+  home: {
+    title: 'Datawhale AI+X 活动日历｜发现、提交和订阅 AI+X 生态活动',
+    description: 'Datawhale AI+X 活动日历收录 AI 实践、开发者、高校、产业、创业和 OPC 等生态活动，帮助学习者、开发者和生态伙伴找到真实场景中的连接、实践与共创机会。',
+    keywords: 'Datawhale, AI+X, AI活动日历, AI实践, 开发者活动, 高校活动, 产业活动, 创业活动, OPC, 黑客松, Workshop, Meetup, 活动提交',
+    canonicalPath: '/',
+  },
+  hackathons: {
+    title: 'AI+X Hackathon 与作品挑战｜Datawhale AI+X 活动日历',
+    description: '收录 AI 黑客松、创造营、作品挑战和 Agent 实战活动，帮助开发者、高校学生和个人创造者发现可参与、可产出的 AI+X 实践机会。',
+    keywords: 'AI黑客松, Hackathon, AI作品挑战, Agent实战, 创造营, Datawhale, AI+X活动',
+    canonicalPath: '/hackathons',
+  },
+  resources: {
+    title: 'AI+X 资源与日历订阅｜Datawhale AI+X 活动日历',
+    description: '订阅 Datawhale AI+X 活动日历，查看 AI 里程碑和生态资源入口，持续追踪 AI+X 活动、日历源与共建信息。',
+    keywords: 'AI资源, 日历订阅, ICS订阅, AI里程碑, AI生态资源, Datawhale AI+X',
+    canonicalPath: '/resources',
+  },
+  privacy: {
+    title: '隐私政策｜Datawhale AI+X 活动日历',
+    description: '了解 Datawhale AI+X 活动日历如何处理活动提交、联系信息、海报上传、订阅统计和基础访问数据。',
+    keywords: 'Datawhale AI+X 隐私政策, 活动日历隐私, 数据处理',
+    canonicalPath: '/privacy',
+  },
+  terms: {
+    title: '服务条款｜Datawhale AI+X 活动日历',
+    description: 'Datawhale AI+X 活动日历的服务条款，包含活动提交、审核收录、活动信息展示、订阅和资源共建相关规则。',
+    keywords: 'Datawhale AI+X 服务条款, 活动提交规则, 活动日历条款',
+    canonicalPath: '/terms',
+  },
+  edit: {
+    title: '活动信息修改｜Datawhale AI+X 活动日历',
+    description: '通过私有编辑链接修改已提交的 AI+X 活动信息。修改内容会进入确认流程，确认通过后再公开展示。',
+    keywords: 'Datawhale AI+X 活动修改, 活动信息编辑',
+    canonicalPath: '/edit',
+    robots: 'noindex,nofollow',
+  },
+};
+
+export function getPageSEO(page: SeoPage): SEOMetadata {
+  return PAGE_SEO[page] || PAGE_SEO.home;
 }
 
-/**
- * 生成活动详情页 SEO metadata
- */
-export function getEventSEO(event: TechEvent): SEOMetadata {
-  const eventDate = new Date(event.startTime).toLocaleDateString('zh-CN', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-  
-  const location = event.format === 'online' 
-    ? '线上活动'
-    : `${event.location?.city}, ${event.location?.country}`;
-
-  return {
-    title: `${event.title} - ${eventDate} | Datawhale AI+X 活动日历`,
-    description: `${event.summary.substring(0, 155)}... 查看这场${event.format === 'online' ? '线上' : event.format === 'hybrid' ? '混合' : '线下'}科技活动。${event.price.type === 'free' ? '免费参与' : event.price.range}。`,
-    keywords: `${event.tags.join(', ')}, ${event.title}, 科技活动, ${location}, ${eventDate}`,
-    ogTitle: event.title,
-    ogDescription: event.summary,
-    ogImage: event.coverImage,
-    twitterCard: event.coverImage ? 'summary_large_image' : 'summary',
-    canonicalUrl: `https://datawhale.club/event/${event.id}`,
-  };
+export function canonicalUrl(path: string): string {
+  if (!path || path === '/') return `${SITE_URL}/`;
+  return `${SITE_URL}${path.startsWith('/') ? path : `/${path}`}`;
 }
 
-/**
- * 生成标签页 SEO metadata
- */
-export function getTagSEO(tag: string): SEOMetadata {
-  return {
-    title: `${tag} 活动与大会 2026 | Datawhale AI+X 活动日历`,
-    description: `发现全球即将举行的 ${tag} 活动、会议、峰会、工作坊和社区聚会。`,
-    keywords: `${tag} 活动, ${tag} 大会, ${tag} 聚会, ${tag} 峰会, ${tag} 黑客松, ${tag} 工作坊`,
-    ogTitle: `${tag} 活动与大会`,
-    ogDescription: `探索全球 ${tag} 活动，持续关注最新会议、聚会和实践机会。`,
-    twitterCard: 'summary',
-    canonicalUrl: `https://datawhale.club/tag/${tag.toLowerCase()}`,
-  };
+export function absoluteUrl(url?: string): string {
+  if (!url) return DEFAULT_OG_IMAGE;
+  if (/^https?:\/\//i.test(url)) return url;
+  return `${SITE_URL}${url.startsWith('/') ? url : `/${url}`}`;
 }
 
-/**
- * 生成地区页 SEO metadata
- */
-export function getLocationSEO(location: string): SEOMetadata {
-  return {
-    title: `${location} 科技活动 2026 | Datawhale AI+X 活动日历`,
-    description: `查找 ${location} 的科技大会、开发者聚会、AI 峰会和黑客松活动。`,
-    keywords: `${location} 科技活动, ${location} 开发者大会, ${location} 科技聚会, ${location} AI峰会, ${location} 黑客松`,
-    ogTitle: `${location} 科技活动`,
-    ogDescription: `探索 ${location} 即将举行的科技活动、会议和社区聚会。`,
-    twitterCard: 'summary',
-    canonicalUrl: `https://datawhale.club/location/${location.toLowerCase().replace(/\s+/g, '-')}`,
-  };
-}
+export function updatePageSEO(metadata: SEOMetadata) {
+  const canonical = canonicalUrl(metadata.canonicalPath);
+  const ogTitle = metadata.ogTitle || metadata.title;
+  const ogDescription = metadata.ogDescription || metadata.description;
+  const image = absoluteUrl(metadata.ogImage || DEFAULT_OG_IMAGE);
 
-/**
- * 更新页面 meta 标签
- */
-export function updateMetaTags(metadata: SEOMetadata) {
-  // Title
   document.title = metadata.title;
-
-  // Meta Description
   updateOrCreateMetaTag('name', 'description', metadata.description);
   updateOrCreateMetaTag('name', 'keywords', metadata.keywords);
+  updateOrCreateMetaTag('name', 'robots', metadata.robots || 'index,follow,max-image-preview:large');
 
-  // Open Graph
-  updateOrCreateMetaTag('property', 'og:title', metadata.ogTitle);
-  updateOrCreateMetaTag('property', 'og:description', metadata.ogDescription);
-  updateOrCreateMetaTag('property', 'og:url', metadata.canonicalUrl);
-  updateOrCreateMetaTag('property', 'og:type', 'website');
-  
-  if (metadata.ogImage) {
-    updateOrCreateMetaTag('property', 'og:image', metadata.ogImage);
-  }
+  updateOrCreateMetaTag('property', 'og:site_name', SITE_NAME);
+  updateOrCreateMetaTag('property', 'og:locale', 'zh_CN');
+  updateOrCreateMetaTag('property', 'og:type', metadata.type || 'website');
+  updateOrCreateMetaTag('property', 'og:title', ogTitle);
+  updateOrCreateMetaTag('property', 'og:description', ogDescription);
+  updateOrCreateMetaTag('property', 'og:url', canonical);
+  updateOrCreateMetaTag('property', 'og:image', image);
+  updateOrCreateMetaTag('property', 'og:image:alt', `${SITE_NAME} 海报`);
+  updateOrCreateMetaTag('property', 'og:image:width', '1200');
+  updateOrCreateMetaTag('property', 'og:image:height', '630');
 
-  // Twitter Card
-  updateOrCreateMetaTag('name', 'twitter:card', metadata.twitterCard);
-  updateOrCreateMetaTag('name', 'twitter:title', metadata.ogTitle);
-  updateOrCreateMetaTag('name', 'twitter:description', metadata.ogDescription);
-  
-  if (metadata.ogImage) {
-    updateOrCreateMetaTag('name', 'twitter:image', metadata.ogImage);
-  }
+  updateOrCreateMetaTag('name', 'twitter:card', 'summary_large_image');
+  updateOrCreateMetaTag('name', 'twitter:title', ogTitle);
+  updateOrCreateMetaTag('name', 'twitter:description', ogDescription);
+  updateOrCreateMetaTag('name', 'twitter:image', image);
 
-  // Canonical URL
-  updateOrCreateLinkTag('canonical', metadata.canonicalUrl);
+  updateOrCreateLinkTag('canonical', canonical);
 }
 
-/**
- * 辅助函数：更新或创建 meta 标签
- */
-function updateOrCreateMetaTag(attribute: string, name: string, content: string) {
-  let element = document.querySelector(`meta[${attribute}="${name}"]`) as HTMLMetaElement;
-  
-  if (!element) {
-    element = document.createElement('meta');
-    element.setAttribute(attribute, name);
-    document.head.appendChild(element);
+export function injectStructuredData(id: string, payload: unknown) {
+  const scriptId = `structured-data-${id}`;
+  let script = document.getElementById(scriptId) as HTMLScriptElement | null;
+
+  if (!script) {
+    script = document.createElement('script');
+    script.id = scriptId;
+    script.type = 'application/ld+json';
+    document.head.appendChild(script);
   }
-  
-  element.content = content;
+
+  script.text = JSON.stringify(payload);
 }
 
-/**
- * 辅助函数：更新或创建 link 标签
- */
-function updateOrCreateLinkTag(rel: string, href: string) {
-  let element = document.querySelector(`link[rel="${rel}"]`) as HTMLLinkElement;
-  
-  if (!element) {
-    element = document.createElement('link');
-    element.rel = rel;
-    document.head.appendChild(element);
-  }
-  
-  element.href = href;
+export function removeStructuredData(id: string) {
+  document.getElementById(`structured-data-${id}`)?.remove();
 }
 
-/**
- * 生成 JSON-LD 结构化数据（活动）
- */
+export function generateBaseSchema(page: SeoPage) {
+  const metadata = getPageSEO(page);
+  const url = canonicalUrl(metadata.canonicalPath);
+
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'Organization',
+        '@id': `${SITE_URL}/#organization`,
+        name: 'Datawhale',
+        url: SITE_URL,
+        logo: absoluteUrl('/brand/datawhale-logo-color.png'),
+      },
+      {
+        '@type': 'WebSite',
+        '@id': `${SITE_URL}/#website`,
+        name: SITE_NAME,
+        url: SITE_URL,
+        publisher: { '@id': `${SITE_URL}/#organization` },
+        inLanguage: 'zh-CN',
+        potentialAction: {
+          '@type': 'SearchAction',
+          target: `${SITE_URL}/?q={search_term_string}`,
+          'query-input': 'required name=search_term_string',
+        },
+      },
+      {
+        '@type': page === 'home' ? 'CollectionPage' : 'WebPage',
+        '@id': `${url}#webpage`,
+        url,
+        name: metadata.title,
+        description: metadata.description,
+        isPartOf: { '@id': `${SITE_URL}/#website` },
+        about: { '@id': `${SITE_URL}/#organization` },
+        inLanguage: 'zh-CN',
+      },
+    ],
+  };
+}
+
 export function generateEventSchema(event: TechEvent): string {
   const schema = {
     '@context': 'https://schema.org',
@@ -158,14 +173,14 @@ export function generateEventSchema(event: TechEvent): string {
     startDate: event.startTime,
     endDate: event.endTime,
     eventStatus: 'https://schema.org/EventScheduled',
-    eventAttendanceMode: event.format === 'online' 
+    eventAttendanceMode: event.format === 'online'
       ? 'https://schema.org/OnlineEventAttendanceMode'
       : event.format === 'hybrid'
-      ? 'https://schema.org/MixedEventAttendanceMode'
-      : 'https://schema.org/OfflineEventAttendanceMode',
+        ? 'https://schema.org/MixedEventAttendanceMode'
+        : 'https://schema.org/OfflineEventAttendanceMode',
     location: event.format === 'online' ? {
       '@type': 'VirtualLocation',
-      url: event.links.officialSite
+      url: event.links.officialSite,
     } : {
       '@type': 'Place',
       name: event.location?.city,
@@ -173,20 +188,20 @@ export function generateEventSchema(event: TechEvent): string {
         '@type': 'PostalAddress',
         addressLocality: event.location?.city,
         addressCountry: event.location?.country,
-      }
+      },
     },
-    image: event.coverImage ? [event.coverImage] : [],
+    image: event.coverImage ? [absoluteUrl(event.coverImage)] : [DEFAULT_OG_IMAGE],
     organizer: {
       '@type': 'Organization',
       name: event.organizer.name,
-      url: event.links.officialSite
+      url: event.links.officialSite,
     },
     offers: event.price.type === 'free' ? {
       '@type': 'Offer',
       price: '0',
-      priceCurrency: 'USD',
+      priceCurrency: 'CNY',
       availability: 'https://schema.org/InStock',
-      url: event.links.registration || event.links.officialSite
+      url: event.links.registration || event.links.officialSite,
     } : undefined,
     url: event.links.officialSite,
     isAccessibleForFree: event.price.type === 'free',
@@ -195,19 +210,26 @@ export function generateEventSchema(event: TechEvent): string {
   return JSON.stringify(schema);
 }
 
-/**
- * 注入结构化数据到页面
- */
-export function injectSchema(schemaJson: string) {
-  // 移除旧的 schema
-  const oldSchema = document.querySelector('script[type="application/ld+json"]');
-  if (oldSchema) {
-    oldSchema.remove();
+function updateOrCreateMetaTag(attribute: 'name' | 'property', name: string, content: string) {
+  let element = document.querySelector(`meta[${attribute}="${name}"]`) as HTMLMetaElement | null;
+
+  if (!element) {
+    element = document.createElement('meta');
+    element.setAttribute(attribute, name);
+    document.head.appendChild(element);
   }
 
-  // 注入新的 schema
-  const script = document.createElement('script');
-  script.type = 'application/ld+json';
-  script.text = schemaJson;
-  document.head.appendChild(script);
+  element.content = content;
+}
+
+function updateOrCreateLinkTag(rel: string, href: string) {
+  let element = document.querySelector(`link[rel="${rel}"]`) as HTMLLinkElement | null;
+
+  if (!element) {
+    element = document.createElement('link');
+    element.rel = rel;
+    document.head.appendChild(element);
+  }
+
+  element.href = href;
 }

@@ -21,6 +21,7 @@ import FeaturedEvents from './components/FeaturedEvents';
 import SubscribeModal from './components/SubscribeModal';
 import SubmitEventModal from './components/SubmitEventModal';
 import { useToast } from './hooks/useToast';
+import { generateBaseSchema, getPageSEO, injectStructuredData, removeStructuredData, updatePageSEO } from './utils/seo';
 
 type Page = 'home' | 'privacy' | 'terms' | 'resources' | 'hackathons' | 'edit';
 
@@ -155,14 +156,21 @@ const App: React.FC = () => {
     return events;
   }, [events]);
 
+  React.useEffect(() => {
+    updatePageSEO(getPageSEO(currentPage));
+    injectStructuredData('page', generateBaseSchema(currentPage));
+
+    return () => {
+      removeStructuredData('page');
+    };
+  }, [currentPage]);
+
   // 处理页面导航（更新 URL 和状态）
   const navigateToPrivacy = () => {
     setCurrentPage('privacy');
     setEditToken('');
     window.history.pushState({}, '', '/privacy');
     window.scrollTo(0, 0);
-    // 更新页面 meta 标签
-    document.title = '隐私政策 - Datawhale AI+X 活动日历';
   };
 
   const navigateToTerms = () => {
@@ -170,8 +178,6 @@ const App: React.FC = () => {
     setEditToken('');
     window.history.pushState({}, '', '/terms');
     window.scrollTo(0, 0);
-    // 更新页面 meta 标签
-    document.title = '服务条款 - Datawhale AI+X 活动日历';
   };
 
   const navigateToHome = () => {
@@ -179,8 +185,6 @@ const App: React.FC = () => {
     setEditToken('');
     window.history.pushState({}, '', '/');
     window.scrollTo(0, 0);
-    // 恢复主页 title
-    document.title = 'Datawhale AI+X 活动日历';
   };
 
   const navigateToResources = () => {
@@ -188,7 +192,6 @@ const App: React.FC = () => {
     setEditToken('');
     window.history.pushState({}, '', '/resources');
     window.scrollTo(0, 0);
-    document.title = '资源 - Datawhale AI+X 活动日历';
   };
 
   const navigateToHackathons = () => {
@@ -196,7 +199,6 @@ const App: React.FC = () => {
     setEditToken('');
     window.history.pushState({}, '', '/hackathons');
     window.scrollTo(0, 0);
-    document.title = 'Hackathon - Datawhale AI+X 活动日历';
   };
 
   // 处理浏览器前进/后退按钮

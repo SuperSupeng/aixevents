@@ -32,6 +32,7 @@ npm run dev
 ```bash
 VITE_SUPABASE_URL=...
 VITE_SUPABASE_ANON_KEY=...
+VITE_PUBLIC_SITE_URL=https://你的正式域名
 ```
 
 服务端接口需要额外环境变量：
@@ -82,10 +83,13 @@ supabase_rls_setup.sql
 
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_ANON_KEY`
+- `VITE_PUBLIC_SITE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `REVIEW_ADMIN_TOKEN`
 - `STATS_API_KEY`
 - `IP_HASH_SALT`
+
+`VITE_PUBLIC_SITE_URL` 用于 canonical、Open Graph、Twitter Card 和结构化数据的绝对地址。绑定正式域名后，把它改成最终访问域名并重新部署。
 
 Pages Functions 会提供：
 

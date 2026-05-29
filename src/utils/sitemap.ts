@@ -3,43 +3,41 @@ import { TechEvent } from '../types';
 /**
  * 生成 XML Sitemap
  */
-export function generateSitemap(events: TechEvent[]): string {
-  const baseUrl = 'https://datawhale.club';
+export function generateSitemap(_events: TechEvent[]): string {
+  const baseUrl = (import.meta.env.VITE_PUBLIC_SITE_URL || 'https://aixevents.com').replace(/\/$/, '');
   const today = new Date().toISOString().split('T')[0];
 
   const urls = [
-    // 首页
     {
-      loc: baseUrl,
+      loc: `${baseUrl}/`,
       lastmod: today,
       changefreq: 'daily',
       priority: '1.0',
     },
-    // 活动页
-    ...events.map(event => ({
-      loc: `${baseUrl}/event/${event.id}`,
+    {
+      loc: `${baseUrl}/hackathons`,
       lastmod: today,
       changefreq: 'weekly',
       priority: '0.8',
-    })),
-    // 标签页（从活动中提取所有标签）
-    ...Array.from(new Set(events.flatMap(e => e.tags))).map(tag => ({
-      loc: `${baseUrl}/tag/${tag.toLowerCase().replace(/\s+/g, '-')}`,
+    },
+    {
+      loc: `${baseUrl}/resources`,
       lastmod: today,
       changefreq: 'weekly',
       priority: '0.7',
-    })),
-    // 地区页
-    ...Array.from(new Set(
-      events
-        .filter(e => e.location)
-        .map(e => `${e.location!.city}, ${e.location!.country}`)
-    )).map(location => ({
-      loc: `${baseUrl}/location/${location.toLowerCase().replace(/\s+/g, '-')}`,
+    },
+    {
+      loc: `${baseUrl}/privacy`,
       lastmod: today,
-      changefreq: 'weekly',
-      priority: '0.7',
-    })),
+      changefreq: 'monthly',
+      priority: '0.3',
+    },
+    {
+      loc: `${baseUrl}/terms`,
+      lastmod: today,
+      changefreq: 'monthly',
+      priority: '0.3',
+    },
   ];
 
   const urlsXml = urls.map(url => `
@@ -60,11 +58,16 @@ ${urlsXml}
  * 生成 robots.txt 内容
  */
 export function generateRobotsTxt(): string {
+  const baseUrl = (import.meta.env.VITE_PUBLIC_SITE_URL || 'https://aixevents.com').replace(/\/$/, '');
+
   return `# Datawhale AI+X 活动日历 Robots.txt
 User-agent: *
 Allow: /
-Disallow: /api/
-Disallow: /_next/
+Disallow: /edit/
+Disallow: /api/review-submission
+Disallow: /api/stats
+Disallow: /*?edit=
+Allow: /api/calendar
 
 # AI Crawlers (Allow all for GEO optimization)
 User-agent: GPTBot
@@ -92,6 +95,6 @@ User-agent: Googlebot
 Allow: /
 
 # Sitemap
-Sitemap: https://datawhale.club/sitemap.xml
+Sitemap: ${baseUrl}/sitemap.xml
 `;
 }

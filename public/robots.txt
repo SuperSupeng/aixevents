@@ -1,7 +1,11 @@
-# AIXEvents Robots.txt
+# Datawhale AI+X 活动日历 Robots.txt
 User-agent: *
 Allow: /
-Disallow: /api/
+Disallow: /edit/
+Disallow: /api/review-submission
+Disallow: /api/stats
+Disallow: /*?edit=
+Allow: /api/calendar
 
 # AI Crawlers (Allow all for GEO optimization)
 User-agent: GPTBot

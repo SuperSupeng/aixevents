@@ -659,13 +659,13 @@
 
 .poster-whale-wrap {
   position: relative;
-  min-height: clamp(8rem, 14vw, 10rem);
+  min-height: clamp(10rem, 16vw, 13rem);
   display: grid;
   place-items: center;
 }
 
 .poster-whale {
-  width: min(100%, clamp(12rem, 18vw, 17rem));
+  width: min(100%, clamp(15rem, 22vw, 20rem));
   height: auto;
   color: var(--poster-blue);
   overflow: visible;
@@ -693,7 +693,7 @@
   position: absolute;
   left: 50%;
   bottom: 0.25rem;
-  width: 10.5rem;
+  width: 12rem;
   height: 1.4rem;
   transform: translateX(-50%);
   background: url("data:image/svg+xml,%3Csvg%20width='192'%20height='24'%20viewBox='0%200%20192%2024'%20xmlns='http://www.w3.org/2000/svg'%3E%3Cpath%20d='M0%2012C8%204%2016%204%2024%2012C32%2020%2040%2020%2048%2012C56%204%2064%204%2072%2012C80%2020%2088%2020%2096%2012C104%204%20112%204%20120%2012C128%2020%20136%2020%20144%2012C152%204%20160%204%20168%2012C176%2020%20184%2020%20192%2012'%20fill='none'%20stroke='%231764ff'%20stroke-width='5'/%3E%3C/svg%3E") center / contain no-repeat;
@@ -1126,16 +1126,16 @@
   }
 
   .poster-whale-wrap {
-    min-height: clamp(6.4rem, 10vw, 7.6rem);
+    min-height: clamp(7.6rem, 12vw, 9rem);
   }
 
   .poster-whale {
-    width: min(100%, clamp(9.5rem, 13.5vw, 11.75rem));
+    width: min(100%, clamp(12rem, 16vw, 14rem));
     filter: drop-shadow(6px 6px 0 rgba(167, 240, 0, 0.35));
   }
 
   .poster-squiggle {
-    width: 8.2rem;
+    width: 9.4rem;
     height: 1rem;
   }
 

@@ -60,7 +60,7 @@ const PixelWhale: React.FC = () => {
   ];
 
   return (
-    <svg className="poster-whale" viewBox="0 0 192 112" aria-hidden>
+    <svg className="poster-whale" viewBox="0 0 144 96" preserveAspectRatio="xMidYMid meet" aria-hidden>
       {pixels.map(([x, y]) => (
         <rect key={`${x}-${y}`} x={x * 8} y={y * 8} width="8" height="8" />
       ))}

@@ -33,4 +33,4 @@ User-agent: Googlebot
 Allow: /
 
 # Sitemap
-Sitemap: https://aixevents.com/sitemap.xml
+Sitemap: https://aixevents.datawhale.cn/sitemap.xml

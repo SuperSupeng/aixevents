@@ -20,9 +20,10 @@ import EmptyState from './EmptyState';
 
 interface WeekViewProps {
   events: TechEvent[];
+  onEventClick?: (event: TechEvent) => void;
 }
 
-const WeekView: React.FC<WeekViewProps> = ({ events }) => {
+const WeekView: React.FC<WeekViewProps> = ({ events, onEventClick }) => {
   const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 })); // Monday
   const [selectedEvent, setSelectedEvent] = useState<TechEvent | null>(null);
 
@@ -66,6 +67,14 @@ const WeekView: React.FC<WeekViewProps> = ({ events }) => {
   const goToPreviousWeek = () => setCurrentWeekStart(subWeeks(currentWeekStart, 1));
   const goToNextWeek = () => setCurrentWeekStart(addWeeks(currentWeekStart, 1));
   const goToToday = () => setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }));
+  const handleEventClick = (event: TechEvent) => {
+    if (onEventClick) {
+      onEventClick(event);
+      return;
+    }
+
+    setSelectedEvent(event);
+  };
 
   // Get events for specific day and hour
   const getEventsForDayAndHour = (day: Date, hour: number) => {
@@ -190,7 +199,7 @@ const WeekView: React.FC<WeekViewProps> = ({ events }) => {
               return (
                 <button
                   key={event.id}
-                  onClick={() => setSelectedEvent(event)}
+                  onClick={() => handleEventClick(event)}
                   className="flex items-start gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-primary/30 transition-all text-left group"
                 >
                   <div className="flex-1 min-w-0">
@@ -284,7 +293,7 @@ const WeekView: React.FC<WeekViewProps> = ({ events }) => {
                         return (
                           <button
                             key={event.id}
-                            onClick={() => setSelectedEvent(event)}
+                            onClick={() => handleEventClick(event)}
                             className="absolute left-1 right-1 bg-primary/20 border border-primary/40 rounded-lg p-1.5 text-left hover:bg-primary/30 hover:border-primary/60 transition-all overflow-hidden group z-10"
                             style={style}
                           >

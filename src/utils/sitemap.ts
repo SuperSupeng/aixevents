@@ -4,7 +4,7 @@ import { TechEvent } from '../types';
  * 生成 XML Sitemap
  */
 export function generateSitemap(_events: TechEvent[]): string {
-  const baseUrl = (import.meta.env.VITE_PUBLIC_SITE_URL || 'https://aixevents.com').replace(/\/$/, '');
+  const baseUrl = (import.meta.env.VITE_PUBLIC_SITE_URL || 'https://aixevents.datawhale.cn').replace(/\/$/, '');
   const today = new Date().toISOString().split('T')[0];
 
   const urls = [
@@ -58,7 +58,7 @@ ${urlsXml}
  * 生成 robots.txt 内容
  */
 export function generateRobotsTxt(): string {
-  const baseUrl = (import.meta.env.VITE_PUBLIC_SITE_URL || 'https://aixevents.com').replace(/\/$/, '');
+  const baseUrl = (import.meta.env.VITE_PUBLIC_SITE_URL || 'https://aixevents.datawhale.cn').replace(/\/$/, '');
 
   return `# Datawhale AI+X 活动日历 Robots.txt
 User-agent: *

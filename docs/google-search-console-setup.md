@@ -22,7 +22,7 @@
 
 1. 访问 [Google Search Console](https://search.google.com/search-console)
 2. 点击 "Add Property" → 选择 "Domain"
-3. 输入：`aixevents.com`（不带 https://）
+3. 输入：`aixevents.datawhale.cn`（不带 https://）
 4. 选择验证方法：**DNS record**
 5. Google 会给你一个 TXT 记录，例如：
    ```
@@ -159,10 +159,10 @@ User-agent: ClaudeBot
 Allow: /
 
 # Sitemap
-Sitemap: https://aixevents.com/sitemap.xml
+Sitemap: https://aixevents.datawhale.cn/sitemap.xml
 ```
 
-2. 部署后，访问 `https://aixevents.com/robots.txt` 确认可访问
+2. 部署后，访问 `https://aixevents.datawhale.cn/robots.txt` 确认可访问
 
 ---
 
@@ -172,7 +172,7 @@ Sitemap: https://aixevents.com/sitemap.xml
 
 1. 在 GSC 顶部搜索框输入完整 URL：
    ```
-   https://aixevents.com
+   https://aixevents.datawhale.cn
    ```
 
 2. 如果显示"URL is not on Google"，点击 "Request Indexing"
@@ -289,7 +289,7 @@ A:
 提交前确认：
 
 - [ ] 网站已部署到 Vercel
-- [ ] 域名已绑定（aixevents.com）
+- [ ] 域名已绑定（aixevents.datawhale.cn）
 - [ ] SSL 证书有效（https://）
 - [ ] Sitemap.xml 可访问
 - [ ] Robots.txt 已部署

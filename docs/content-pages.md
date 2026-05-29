@@ -142,7 +142,7 @@ Join our Discord community or email us at hello@aixevents.com
 The AIXEvents API provides programmatic access to our comprehensive 
 database of technology events worldwide.
 
-**Base URL:** `https://aixevents.com/api`
+**Base URL:** `https://aixevents.datawhale.cn/api`
 
 **Rate Limits:** 100 requests per hour (subject to change)
 
@@ -166,7 +166,7 @@ Retrieve a list of tech events.
 
 **Example Request:**
 ```bash
-curl "https://aixevents.com/api/events?location=San%20Francisco&tag=AI&limit=10"
+curl "https://aixevents.datawhale.cn/api/events?location=San%20Francisco&tag=AI&limit=10"
 ```
 
 **Response:**
@@ -211,7 +211,7 @@ Retrieve a specific event by ID.
 
 **Example Request:**
 ```bash
-curl "https://aixevents.com/api/events/evt_123abc"
+curl "https://aixevents.datawhale.cn/api/events/evt_123abc"
 ```
 
 **Response:**
@@ -230,7 +230,7 @@ Retrieve all available tags.
 
 **Example Request:**
 ```bash
-curl "https://aixevents.com/api/tags"
+curl "https://aixevents.datawhale.cn/api/tags"
 ```
 
 **Response:**
@@ -251,7 +251,7 @@ Retrieve all available locations.
 
 **Example Request:**
 ```bash
-curl "https://aixevents.com/api/locations"
+curl "https://aixevents.datawhale.cn/api/locations"
 ```
 
 **Response:**
@@ -302,7 +302,7 @@ interface TechEvent {
 ## RSS Feed
 Subscribe to new events via RSS:
 ```
-https://aixevents.com/feed.xml
+https://aixevents.datawhale.cn/feed.xml
 ```
 
 ---

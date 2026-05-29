@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { TechEvent } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Calendar, MapPin, Globe, User, ArrowUpRight, ChevronDown, Download, Info, Link2 } from 'lucide-react';
+import { X, Calendar, MapPin, Globe, User, ArrowUpRight, ChevronDown, Download, Info, Share2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import {
@@ -17,9 +17,10 @@ interface EventDetailProps {
   event: TechEvent | null;
   onClose: () => void;
   onToast?: (message: string) => void;
+  shareUrl?: string;
 }
 
-const EventDetail: React.FC<EventDetailProps> = ({ event, onClose, onToast }) => {
+const EventDetail: React.FC<EventDetailProps> = ({ event, onClose, onToast, shareUrl }) => {
   const [showCalendarDropdown, setShowCalendarDropdown] = useState(false);
 
   if (!event) return null;
@@ -27,6 +28,11 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onClose, onToast }) =>
   const smartTags = identifyTags(event);
   const detailUrl = event.links.registration || event.links.officialSite;
   const hasDetailUrl = Boolean(detailUrl && detailUrl !== '#');
+  const internalShareUrl = shareUrl || (
+    typeof window !== 'undefined'
+      ? `${window.location.origin}/events/${encodeURIComponent(event.id)}`
+      : `/events/${encodeURIComponent(event.id)}`
+  );
   const formatLabel = event.format === 'online' ? '线上活动' : event.format === 'hybrid' ? '线上 + 线下' : '线下活动';
   const locationLabel = event.format === 'online'
     ? '线上'
@@ -59,16 +65,11 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onClose, onToast }) =>
   };
 
   const handleCopyLink = async () => {
-    if (!hasDetailUrl || !detailUrl) {
-      onToast?.('这场活动暂时没有公开链接，请查看海报二维码');
-      return;
-    }
-
     try {
-      await navigator.clipboard.writeText(detailUrl);
-      onToast?.('链接已复制');
+      await navigator.clipboard.writeText(internalShareUrl);
+      onToast?.('活动分享链接已复制');
     } catch (err) {
-      console.error('Failed to copy link:', err);
+      onToast?.('复制失败，请稍后再试');
     }
   };
 
@@ -205,14 +206,12 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onClose, onToast }) =>
                       {hasDetailUrl ? '报名/详情' : '以海报二维码为准'} <ArrowUpRight size={18} />
                     </button>
 
-                    {hasDetailUrl && (
-                      <button
-                        onClick={handleCopyLink}
-                        className="btn-secondary flex items-center justify-center gap-3 px-5 py-3 text-sm"
-                      >
-                        <Link2 size={18} /> 复制链接
-                      </button>
-                    )}
+                    <button
+                      onClick={handleCopyLink}
+                      className="btn-secondary flex items-center justify-center gap-3 px-5 py-3 text-sm"
+                    >
+                      <Share2 size={18} /> 复制分享链接
+                    </button>
                   </div>
 
                   <div className="relative">

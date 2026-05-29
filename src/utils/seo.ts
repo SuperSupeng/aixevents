@@ -1,6 +1,6 @@
 import { TechEvent } from '../types';
 
-const runtimeOrigin = typeof window !== 'undefined' ? window.location.origin : 'https://aixevents.com';
+const runtimeOrigin = typeof window !== 'undefined' ? window.location.origin : 'https://aixevents.datawhale.cn';
 
 export const SITE_URL = (import.meta.env.VITE_PUBLIC_SITE_URL || runtimeOrigin).replace(/\/$/, '');
 export const SITE_NAME = 'Datawhale AI+X 活动日历';
@@ -62,6 +62,34 @@ export const PAGE_SEO: Record<SeoPage, SEOMetadata> = {
 
 export function getPageSEO(page: SeoPage): SEOMetadata {
   return PAGE_SEO[page] || PAGE_SEO.home;
+}
+
+export function getEventSEO(event: TechEvent): SEOMetadata {
+  const organizerName = event.organizers?.length
+    ? event.organizers.join(' / ')
+    : event.organizer?.name || '活动主办方';
+  const description = event.summary?.trim()
+    ? event.summary.trim().replace(/\s+/g, ' ').slice(0, 155)
+    : `${organizerName} 发起的 AI+X 生态活动，查看活动时间、地点、主办方、海报和报名信息。`;
+  const tags = [
+    event.title,
+    organizerName,
+    event.activityType,
+    ...(event.customTags || []),
+    'Datawhale AI+X',
+    'AI活动日历',
+  ].filter(Boolean);
+
+  return {
+    title: `${event.title}｜${SITE_NAME}`,
+    description,
+    keywords: tags.join(', '),
+    canonicalPath: `/events/${encodeURIComponent(event.id)}`,
+    ogTitle: event.title,
+    ogDescription: description,
+    ogImage: event.coverImage || DEFAULT_OG_IMAGE,
+    type: 'article',
+  };
 }
 
 export function canonicalUrl(path: string): string {
@@ -164,7 +192,9 @@ export function generateBaseSchema(page: SeoPage) {
   };
 }
 
-export function generateEventSchema(event: TechEvent): string {
+export function generateEventSchema(event: TechEvent) {
+  const eventUrl = canonicalUrl(`/events/${encodeURIComponent(event.id)}`);
+  const externalUrl = event.links.registration || event.links.officialSite || eventUrl;
   const schema = {
     '@context': 'https://schema.org',
     '@type': 'Event',
@@ -193,21 +223,21 @@ export function generateEventSchema(event: TechEvent): string {
     image: event.coverImage ? [absoluteUrl(event.coverImage)] : [DEFAULT_OG_IMAGE],
     organizer: {
       '@type': 'Organization',
-      name: event.organizer.name,
+      name: event.organizer?.name || event.organizers?.join(' / ') || 'Datawhale AI+X',
       url: event.links.officialSite,
     },
-    offers: event.price.type === 'free' ? {
+    offers: event.price?.type === 'free' ? {
       '@type': 'Offer',
       price: '0',
       priceCurrency: 'CNY',
       availability: 'https://schema.org/InStock',
-      url: event.links.registration || event.links.officialSite,
+      url: externalUrl,
     } : undefined,
-    url: event.links.officialSite,
-    isAccessibleForFree: event.price.type === 'free',
+    url: eventUrl,
+    isAccessibleForFree: event.price?.type === 'free',
   };
 
-  return JSON.stringify(schema);
+  return schema;
 }
 
 function updateOrCreateMetaTag(attribute: 'name' | 'property', name: string, content: string) {

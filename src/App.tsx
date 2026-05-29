@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, ChevronDown, Loader2, MessageCircle, CalendarDays, Link as LinkIcon, BookOpen, PencilLine, TrendingUp, X } from 'lucide-react';
 import { TechEvent, ViewMode } from './types';
 import { useEvents, useLocations } from './hooks/useEvents';
+import { fetchEventById } from './api/events';
 import Calendar from './components/Calendar';
 import WeekView from './components/WeekView';
 import ListView from './components/ListView';
@@ -21,16 +22,20 @@ import FeaturedEvents from './components/FeaturedEvents';
 import SubscribeModal from './components/SubscribeModal';
 import SubmitEventModal from './components/SubmitEventModal';
 import { useToast } from './hooks/useToast';
-import { generateBaseSchema, getPageSEO, injectStructuredData, removeStructuredData, updatePageSEO } from './utils/seo';
+import { generateBaseSchema, generateEventSchema, getEventSEO, getPageSEO, injectStructuredData, removeStructuredData, updatePageSEO } from './utils/seo';
 
-type Page = 'home' | 'privacy' | 'terms' | 'resources' | 'hackathons' | 'edit';
+type Page = 'home' | 'privacy' | 'terms' | 'resources' | 'hackathons' | 'edit' | 'event';
 
-function getRouteFromPath(): { page: Page; editToken?: string } {
-  const path = window.location.pathname;
+function getRouteFromPath(): { page: Page; editToken?: string; eventId?: string } {
+  const path = window.location.pathname.replace(/\/+$/, '') || '/';
   if (path === '/privacy') return { page: 'privacy' };
   if (path === '/terms') return { page: 'terms' };
   if (path === '/resources') return { page: 'resources' };
   if (path === '/hackathons') return { page: 'hackathons' };
+  if (path.startsWith('/events/')) {
+    const eventId = decodeURIComponent(path.replace('/events/', '').trim());
+    if (eventId) return { page: 'event', eventId };
+  }
   if (path.startsWith('/edit/')) {
     return { page: 'edit', editToken: decodeURIComponent(path.replace('/edit/', '').trim()) };
   }
@@ -39,16 +44,19 @@ function getRouteFromPath(): { page: Page; editToken?: string } {
 
 const PixelWhale: React.FC = () => {
   const pixels = [
-    [4, 5], [5, 4], [5, 5], [6, 3], [6, 4], [6, 5], [7, 3], [7, 4], [7, 5], [8, 3], [8, 4], [8, 5],
-    [9, 2], [9, 3], [9, 4], [9, 5], [10, 2], [10, 3], [10, 4], [10, 5], [11, 3], [11, 4], [11, 5],
-    [12, 4], [12, 5], [13, 5], [14, 4], [14, 5], [15, 3], [15, 4], [15, 5], [16, 2], [16, 3], [16, 4],
-    [3, 6], [4, 6], [5, 6], [6, 6], [7, 6], [8, 6], [9, 6], [10, 6], [11, 6], [12, 6], [13, 6], [14, 6], [15, 6],
-    [2, 7], [3, 7], [4, 7], [5, 7], [6, 7], [7, 7], [8, 7], [9, 7], [10, 7], [11, 7], [12, 7], [13, 7], [14, 7],
-    [2, 8], [3, 8], [4, 8], [5, 8], [6, 8], [8, 8], [9, 8], [10, 8], [11, 8], [12, 8], [13, 8],
-    [3, 9], [4, 9], [5, 9], [6, 9], [7, 9], [8, 9], [9, 9], [10, 9], [11, 9], [12, 9],
+    [6, 0], [7, 1], [5, 1], [7, 2],
+    [5, 3], [6, 3], [7, 3], [8, 3], [9, 3], [10, 3], [11, 3],
+    [3, 4], [4, 4], [5, 4], [6, 4], [7, 4], [8, 4], [9, 4], [10, 4], [11, 4], [12, 4],
+    [1, 5], [3, 5], [4, 5], [5, 5], [6, 5], [7, 5], [8, 5], [9, 5], [10, 5], [11, 5], [12, 5], [13, 5],
+    [0, 6], [1, 6], [2, 6], [3, 6], [4, 6], [5, 6], [6, 6], [7, 6], [8, 6], [9, 6], [10, 6], [11, 6], [12, 6], [13, 6],
+    [1, 7], [2, 7], [3, 7], [4, 7], [5, 7], [6, 7], [7, 7], [8, 7], [9, 7], [10, 7], [11, 7], [12, 7], [13, 7],
+    [0, 8], [1, 8], [3, 8], [4, 8], [5, 8], [6, 8], [7, 8], [8, 8], [9, 8], [10, 8], [11, 8], [12, 8],
+    [3, 9], [4, 9], [5, 9], [6, 9], [7, 9], [8, 9], [9, 9], [10, 9], [11, 9],
     [5, 10], [6, 10], [7, 10], [8, 10], [9, 10],
-    [16, 5], [17, 5], [18, 4], [19, 3], [19, 4], [20, 2], [20, 5], [21, 2], [21, 5],
-    [8, 0], [9, 1], [11, 0], [12, 1],
+  ];
+  const accentPixels = [
+    [14, 5], [15, 4], [15, 6], [16, 3], [16, 7],
+    [2, 3], [3, 2], [4, 2],
   ];
 
   return (
@@ -56,9 +64,12 @@ const PixelWhale: React.FC = () => {
       {pixels.map(([x, y]) => (
         <rect key={`${x}-${y}`} x={x * 8} y={y * 8} width="8" height="8" />
       ))}
-      <rect x="56" y="64" width="8" height="8" className="poster-whale-eye" />
-      <rect x="48" y="88" width="40" height="8" className="poster-whale-smile" />
-      <rect x="64" y="96" width="32" height="8" className="poster-whale-smile" />
+      {accentPixels.map(([x, y]) => (
+        <rect key={`accent-${x}-${y}`} x={x * 8} y={y * 8} width="8" height="8" className="poster-whale-accent" />
+      ))}
+      <rect x="88" y="48" width="8" height="8" className="poster-whale-eye" />
+      <rect x="72" y="72" width="40" height="8" className="poster-whale-smile" />
+      <rect x="64" y="80" width="24" height="8" className="poster-whale-smile" />
     </svg>
   );
 };
@@ -116,6 +127,9 @@ const App: React.FC = () => {
   const [comingSoonFeature, setComingSoonFeature] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState<Page>(initialRoute.page);
   const [editToken, setEditToken] = useState(initialRoute.editToken || '');
+  const [eventId, setEventId] = useState(initialRoute.eventId || '');
+  const [routeEvent, setRouteEvent] = useState<TechEvent | null>(null);
+  const [routeEventLoading, setRouteEventLoading] = useState(false);
   const [showSubscribeModal, setShowSubscribeModal] = useState(false);
   const [showSubmitEventModal, setShowSubmitEventModal] = useState(false);
   const [showGroupQrModal, setShowGroupQrModal] = useState(false);
@@ -157,48 +171,105 @@ const App: React.FC = () => {
   }, [events]);
 
   React.useEffect(() => {
-    updatePageSEO(getPageSEO(currentPage));
-    injectStructuredData('page', generateBaseSchema(currentPage));
+    const basePage = currentPage === 'event' ? 'home' : currentPage;
+    const eventForSEO = currentPage === 'event' ? routeEvent : null;
+
+    updatePageSEO(eventForSEO ? getEventSEO(eventForSEO) : getPageSEO(basePage));
+    injectStructuredData('page', generateBaseSchema(basePage));
+
+    if (eventForSEO) {
+      injectStructuredData('event', generateEventSchema(eventForSEO));
+    } else {
+      removeStructuredData('event');
+    }
 
     return () => {
       removeStructuredData('page');
+      removeStructuredData('event');
     };
-  }, [currentPage]);
+  }, [currentPage, routeEvent]);
+
+  React.useEffect(() => {
+    if (currentPage !== 'event' || !eventId) {
+      setRouteEvent(null);
+      setRouteEventLoading(false);
+      return;
+    }
+
+    const cachedEvent = events.find((event) => event.id === eventId);
+    if (cachedEvent) {
+      setRouteEvent(cachedEvent);
+      setRouteEventLoading(false);
+      return;
+    }
+
+    let isActive = true;
+    setRouteEventLoading(true);
+
+    fetchEventById(eventId)
+      .then((event) => {
+        if (isActive) setRouteEvent(event);
+      })
+      .finally(() => {
+        if (isActive) setRouteEventLoading(false);
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [currentPage, eventId, events]);
 
   // 处理页面导航（更新 URL 和状态）
+  const resetRouteState = () => {
+    setEditToken('');
+    setEventId('');
+    setSelectedEvent(null);
+    setRouteEvent(null);
+  };
+
   const navigateToPrivacy = () => {
     setCurrentPage('privacy');
-    setEditToken('');
+    resetRouteState();
     window.history.pushState({}, '', '/privacy');
     window.scrollTo(0, 0);
   };
 
   const navigateToTerms = () => {
     setCurrentPage('terms');
-    setEditToken('');
+    resetRouteState();
     window.history.pushState({}, '', '/terms');
     window.scrollTo(0, 0);
   };
 
   const navigateToHome = () => {
     setCurrentPage('home');
-    setEditToken('');
+    resetRouteState();
     window.history.pushState({}, '', '/');
     window.scrollTo(0, 0);
   };
 
   const navigateToResources = () => {
     setCurrentPage('resources');
-    setEditToken('');
+    resetRouteState();
     window.history.pushState({}, '', '/resources');
     window.scrollTo(0, 0);
   };
 
   const navigateToHackathons = () => {
     setCurrentPage('hackathons');
-    setEditToken('');
+    resetRouteState();
     window.history.pushState({}, '', '/hackathons');
     window.scrollTo(0, 0);
+  };
+
+  const openEventDetail = (event: TechEvent) => {
+    const encodedId = encodeURIComponent(event.id);
+    setSelectedEvent(event);
+    setRouteEvent(event);
+    setEventId(event.id);
+    setEditToken('');
+    setCurrentPage('event');
+    window.history.pushState({}, '', `/events/${encodedId}`);
   };
 
   // 处理浏览器前进/后退按钮
@@ -207,6 +278,9 @@ const App: React.FC = () => {
       const route = getRouteFromPath();
       setCurrentPage(route.page);
       setEditToken(route.editToken || '');
+      setEventId(route.eventId || '');
+      setSelectedEvent(null);
+      setRouteEvent(null);
     };
 
     window.addEventListener('popstate', handlePopState);
@@ -293,6 +367,61 @@ const App: React.FC = () => {
           onClose={navigateToHome}
           onSubmitted={success}
         />
+        <Toast toasts={toasts} onRemove={removeToast} />
+      </div>
+    );
+  }
+
+  if (currentPage === 'event') {
+    const displayEvent = routeEvent || selectedEvent;
+    const shareId = displayEvent?.id || eventId;
+    const shareUrl = shareId
+      ? `${window.location.origin}/events/${encodeURIComponent(shareId)}`
+      : `${window.location.origin}/`;
+
+    return (
+      <div className="poster-app min-h-screen relative overflow-x-hidden">
+        <Navbar
+          onExploreClick={navigateToHome}
+          onHackathonsClick={navigateToHackathons}
+          onResourcesClick={navigateToResources}
+          onSubmitClick={() => setShowSubmitEventModal(true)}
+        />
+        <main className="relative z-10 flex min-h-screen items-center justify-center px-4 py-28">
+          {!displayEvent && (
+            <div className="max-w-xl rounded-lg border-2 border-black bg-white p-6 text-black shadow-[8px_8px_0_rgba(5,5,5,0.92)]">
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-accent">Datawhale AI+X</p>
+              <h1 className="mt-3 text-3xl font-black leading-tight">
+                {routeEventLoading ? '活动加载中' : '活动暂时不可访问'}
+              </h1>
+              <p className="mt-3 text-sm font-bold leading-7 text-black/62">
+                {routeEventLoading
+                  ? '正在读取公开活动详情。'
+                  : '这场活动可能尚未公开、已下架，或链接地址不完整。'}
+              </p>
+              {!routeEventLoading && (
+                <button
+                  onClick={navigateToHome}
+                  className="btn-primary mt-5 inline-flex items-center justify-center gap-2 px-5 py-3 text-sm"
+                >
+                  返回活动日历 <Zap size={16} />
+                </button>
+              )}
+            </div>
+          )}
+        </main>
+        <EventDetail
+          event={displayEvent}
+          onClose={navigateToHome}
+          onToast={success}
+          shareUrl={shareUrl}
+        />
+        <SubmitEventModal
+          isOpen={showSubmitEventModal}
+          onClose={() => setShowSubmitEventModal(false)}
+          onSubmitted={success}
+        />
+        {showGroupQrModal && <GroupQrModal onClose={() => setShowGroupQrModal(false)} />}
         <Toast toasts={toasts} onRemove={removeToast} />
       </div>
     );
@@ -549,7 +678,7 @@ const App: React.FC = () => {
           {!searchQuery && !tagFilter && locationFilter === 'all' && formatFilter === 'all' && events.length > 0 && (
             <FeaturedEvents 
               events={filteredEvents}
-              onEventClick={setSelectedEvent}
+              onEventClick={openEventDetail}
             />
           )}
 
@@ -587,7 +716,7 @@ const App: React.FC = () => {
                 >
                   <Calendar 
                     events={filteredEvents} 
-                    onEventClick={setSelectedEvent} 
+                    onEventClick={openEventDetail} 
                     onSubscribeClick={() => setShowSubscribeModal(true)}
                   />
                 </motion.div>
@@ -601,6 +730,7 @@ const App: React.FC = () => {
                 >
                   <WeekView 
                     events={filteredEvents} 
+                    onEventClick={openEventDetail}
                   />
                 </motion.div>
               ) : (
@@ -613,7 +743,7 @@ const App: React.FC = () => {
                 >
                   <ListView
                     events={filteredEvents}
-                    onEventClick={setSelectedEvent}
+                    onEventClick={openEventDetail}
                     searchQuery={searchQuery}
                     onReset={() => {
                       setSearchQuery('');

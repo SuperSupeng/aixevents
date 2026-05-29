@@ -191,7 +191,7 @@ const openDiscord = () => {
 
 From AI summits to developer conferences, hackathons to meetups—join thousands of tech enthusiasts exploring what's next.
 
-🔗 Website: https://aixevents.com
+🔗 Website: https://aixevents.datawhale.cn
 ```
 
 ---

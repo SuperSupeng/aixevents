@@ -1,31 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://aixevents.com/</loc>
+    <loc>https://aixevents.datawhale.cn/</loc>
     <lastmod>2026-05-29</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://aixevents.com/hackathons</loc>
+    <loc>https://aixevents.datawhale.cn/hackathons</loc>
     <lastmod>2026-05-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://aixevents.com/resources</loc>
+    <loc>https://aixevents.datawhale.cn/resources</loc>
     <lastmod>2026-05-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://aixevents.com/privacy</loc>
+    <loc>https://aixevents.datawhale.cn/privacy</loc>
     <lastmod>2026-05-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://aixevents.com/terms</loc>
+    <loc>https://aixevents.datawhale.cn/terms</loc>
     <lastmod>2026-05-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>

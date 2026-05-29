@@ -110,7 +110,7 @@ Yes, AIXEvents is completely free...
 ## AIXEvents API
 
 ### Base URL
-`https://aixevents.com/api`
+`https://aixevents.datawhale.cn/api`
 
 ### Endpoints
 
@@ -125,7 +125,7 @@ Retrieve a list of tech events.
 
 **Example:**
 ```bash
-curl https://aixevents.com/api/events?location=San%20Francisco&tag=AI
+curl https://aixevents.datawhale.cn/api/events?location=San%20Francisco&tag=AI
 ```
 
 **Response:**

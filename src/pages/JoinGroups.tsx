@@ -243,7 +243,7 @@ const JoinGroups: React.FC<JoinGroupsProps> = ({ onBack, onCalendarClick, onSubm
             </section>
           </section>
 
-          <aside className={`${hasRequestedCity ? 'order-first ' : ''}lg:sticky lg:top-24 lg:order-none`}>
+          <aside className="lg:sticky lg:top-24">
             <div className="border-2 border-black bg-white p-5 shadow-[7px_7px_0_rgba(5,5,5,0.92)] sm:p-6">
               <div className="flex items-start justify-between gap-4">
                 <div>

@@ -106,7 +106,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   // 检查是否有激活的筛选条件
   const hasActiveFilters = searchQuery || formatFilter !== 'all' || locationFilter !== 'all';
   const segmentButtonClass =
-    'flex h-full min-w-[5.75rem] flex-none items-center justify-center gap-2 rounded-md px-3 text-sm font-black leading-none transition-all active:scale-[0.98] whitespace-nowrap sm:min-w-0 sm:flex-1';
+    'flex h-full min-w-0 flex-1 items-center justify-center gap-1.5 rounded-md px-2 text-xs font-black leading-none transition-all active:scale-[0.98] whitespace-nowrap sm:gap-2 sm:px-3 sm:text-sm';
   const segmentActiveClass = 'border border-black/20 bg-primary text-black';
   const segmentInactiveClass = 'text-black/60 hover:bg-black/[0.035] hover:text-black';
   const viewActiveClass = 'border border-accent bg-accent !text-white';

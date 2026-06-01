@@ -187,23 +187,25 @@ const Calendar: React.FC<CalendarProps> = ({ events, onEventClick, onSubscribeCl
         )}
       </div>
 
-      {/* Weekdays Header */}
-      <div className="calendar-grid bg-black/[0.02] border-b border-black/10">
-        {['周日', '周一', '周二', '周三', '周四', '周五', '周六'].map(day => (
-          <div key={day} className="py-4 text-center text-[10px] font-black text-black/40 uppercase tracking-[0.2em]">
-            {day}
-          </div>
-        ))}
-      </div>
-
-      {/* Empty State or Days Grid */}
       {!hasEventsThisMonth ? (
         <div className="p-8">
           <EmptyState type="calendar" onReset={goToToday} />
         </div>
       ) : (
-        <div className="calendar-grid">
-          {days.map((day, idx) => {
+        <div className="calendar-month-scroll">
+          <div className="calendar-month-grid-shell">
+            {/* Weekdays Header */}
+            <div className="calendar-grid bg-black/[0.02] border-b border-black/10">
+              {['周日', '周一', '周二', '周三', '周四', '周五', '周六'].map(day => (
+                <div key={day} className="py-4 text-center text-[10px] font-black text-black/40 uppercase tracking-[0.2em]">
+                  {day}
+                </div>
+              ))}
+            </div>
+
+            {/* Days Grid */}
+            <div className="calendar-grid">
+              {days.map((day, idx) => {
           const dayEvents = events
             .filter(event => eventOverlapsRange(event, startOfDay(day), endOfDay(day)))
             .sort((a, b) => {
@@ -218,62 +220,64 @@ const Calendar: React.FC<CalendarProps> = ({ events, onEventClick, onSubscribeCl
           const isExpanded = expandedDays.has(dayKey);
           const displayLimit = isExpanded ? dayEvents.length : 3;
 
-          return (
-            <div 
-              key={day.toString()} 
-              className={cn(
-                "min-h-[140px] p-4 border-r border-black/10 transition-all group",
-                !isLastRow && "border-b", // 最后一行不显示底部边框
-                !isCurrentMonth ? "bg-black/[0.035]" : "bg-transparent hover:bg-primary/[0.08]",
-                idx % 7 === 6 && "border-r-0"
-              )}
-            >
-              <div className="flex justify-between items-center mb-3">
-                <span className={cn(
-                  "text-sm font-medium w-8 h-8 flex items-center justify-center rounded-full transition-all",
-                  isToday ? "bg-primary text-black font-black border border-black shadow-[3px_3px_0_rgba(5,5,5,0.92)]" :
-                  isCurrentMonth ? "text-black/80 font-bold" : "text-black/30"
-                )}>
-                  {format(day, 'd')}
-                </span>
-                {dayEvents.length > 0 && (
-                  <span className="text-[10px] text-black/50 font-bold">
-                    {dayEvents.length}
-                  </span>
-                )}
-              </div>
-              
-              <div className="space-y-1.5">
-                {dayEvents.slice(0, displayLimit).map(event => {
-                  const isMultiDay = isMultiDayEvent(event);
+              return (
+                <div
+                  key={day.toString()}
+                  className={cn(
+                    "min-h-[140px] p-4 border-r border-black/10 transition-all group",
+                    !isLastRow && "border-b", // 最后一行不显示底部边框
+                    !isCurrentMonth ? "bg-black/[0.035]" : "bg-transparent hover:bg-primary/[0.08]",
+                    idx % 7 === 6 && "border-r-0"
+                  )}
+                >
+                  <div className="flex justify-between items-center mb-3">
+                    <span className={cn(
+                      "text-sm font-medium w-8 h-8 flex items-center justify-center rounded-full transition-all",
+                      isToday ? "bg-primary text-black font-black border border-black shadow-[3px_3px_0_rgba(5,5,5,0.92)]" :
+                      isCurrentMonth ? "text-black/80 font-bold" : "text-black/30"
+                    )}>
+                      {format(day, 'd')}
+                    </span>
+                    {dayEvents.length > 0 && (
+                      <span className="text-[10px] text-black/50 font-bold">
+                        {dayEvents.length}
+                      </span>
+                    )}
+                  </div>
 
-                  return (
-                    <button
-                      key={event.id}
-                      onClick={() => onEventClick(event)}
-                      className={cn(
-                        "w-full truncate rounded-md border px-2.5 py-1.5 text-left text-[10px] font-bold leading-tight shadow-sm transition-all",
-                        isMultiDay
-                          ? "border-accent/45 bg-primary/35 text-black hover:border-accent hover:bg-primary/55"
-                          : "border-black bg-black !text-white hover:border-accent hover:bg-accent"
-                      )}
-                    >
-                      <span className="font-medium">{getMonthEventLabel(event, day)}</span>
-                    </button>
-                  );
-                })}
-                {dayEvents.length > 3 && (
-                  <button
-                    onClick={() => toggleDayExpanded(dayKey)}
-                    className="w-full text-left px-2.5 py-1 text-[10px] text-black/50 hover:text-black hover:bg-primary/20 rounded-md transition-all font-bold"
-                  >
-                    {isExpanded ? '− 收起' : `+ ${dayEvents.length - 3} 场`}
-                  </button>
-                )}
-              </div>
+                  <div className="space-y-1.5">
+                    {dayEvents.slice(0, displayLimit).map(event => {
+                      const isMultiDay = isMultiDayEvent(event);
+
+                      return (
+                        <button
+                          key={event.id}
+                          onClick={() => onEventClick(event)}
+                          className={cn(
+                            "w-full truncate rounded-md border px-2.5 py-1.5 text-left text-[10px] font-bold leading-tight shadow-sm transition-all",
+                            isMultiDay
+                              ? "border-accent/45 bg-primary/35 text-black hover:border-accent hover:bg-primary/55"
+                              : "border-black bg-black !text-white hover:border-accent hover:bg-accent"
+                          )}
+                        >
+                          <span className="font-medium">{getMonthEventLabel(event, day)}</span>
+                        </button>
+                      );
+                    })}
+                    {dayEvents.length > 3 && (
+                      <button
+                        onClick={() => toggleDayExpanded(dayKey)}
+                        className="w-full text-left px-2.5 py-1 text-[10px] text-black/50 hover:text-black hover:bg-primary/20 rounded-md transition-all font-bold"
+                      >
+                        {isExpanded ? '− 收起' : `+ ${dayEvents.length - 3} 场`}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
             </div>
-          );
-        })}
+          </div>
         </div>
       )}
     </div>

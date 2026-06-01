@@ -24,7 +24,7 @@ interface WeekViewProps {
 }
 
 const HOUR_ROW_HEIGHT = 60;
-const WEEK_GRID_COLUMNS = '100px repeat(7, minmax(96px, 1fr))';
+const WEEK_GRID_COLUMNS = 'clamp(72px, 9vw, 100px) repeat(7, minmax(84px, 1fr))';
 const DEFAULT_VISIBLE_START_HOUR = 8;
 const MIN_VISIBLE_START_HOUR = 7;
 const MAX_VISIBLE_START_HOUR = 18;
@@ -311,7 +311,7 @@ const WeekView: React.FC<WeekViewProps> = ({ events, onEventClick }) => {
 
       {/* Week Grid */}
       <div ref={weekGridRef} className="max-h-[min(74vh,860px)] overflow-auto rounded-2xl border border-black/10 bg-white/90 shadow-[0_18px_44px_rgba(5,5,5,0.08)] backdrop-blur-xl">
-        <div className="min-w-[800px]">
+        <div className="min-w-[660px] sm:min-w-[800px]">
           {/* Days Header */}
           <div 
             className="sticky top-0 z-30 grid border-b border-black/10 bg-white/95 backdrop-blur-xl"

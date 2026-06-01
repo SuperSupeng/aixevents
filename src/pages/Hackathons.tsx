@@ -37,7 +37,7 @@ const Hackathons: React.FC<HackathonsProps> = ({ onBack, onSubmitClick, onEventC
 
   return (
     <div className="poster-app min-h-screen px-4 py-24 text-black sm:px-6">
-      <div className="relative z-10 mx-auto max-w-7xl">
+      <div className="relative z-10 mx-auto max-w-[72rem]">
         <button
           onClick={onBack}
           className="mb-8 inline-flex items-center gap-2 text-sm font-black text-black/60 transition-colors hover:text-accent"

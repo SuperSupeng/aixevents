@@ -688,7 +688,7 @@ const App: React.FC = () => {
         </section>
 
         {/* Filter & Search */}
-        <div ref={calendarRef} className="relative z-20 content-section scroll-mt-28 sm:scroll-mt-32 max-w-7xl mx-auto px-4 sm:px-6 pt-24 sm:pt-32 pb-32 sm:pb-40">
+        <div ref={calendarRef} className="relative z-20 content-section mx-auto max-w-[72rem] scroll-mt-24 px-3.5 pb-24 pt-20 sm:scroll-mt-32 sm:px-6 sm:pb-36 sm:pt-28 lg:pb-40 lg:pt-32">
           {/* Quick Filters */}
           <QuickFilters 
             onFilterClick={(searchTerm) => {

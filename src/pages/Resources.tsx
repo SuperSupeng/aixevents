@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowLeft, BookOpen, Calendar, ExternalLink, FileText, Globe2, Loader2, MessageCircle, Rss, Users } from 'lucide-react';
+import { ArrowLeft, BookOpen, Calendar, ExternalLink, FileText, Globe2, Loader2, MessageCircle, Users } from 'lucide-react';
 
 interface ResourcesProps {
   onBack: () => void;
@@ -7,23 +7,6 @@ interface ResourcesProps {
 }
 
 const Resources: React.FC<ResourcesProps> = ({ onBack, onGroupClick }) => {
-  const calendars: Array<{
-    region: string;
-    title: string;
-    description: string;
-    subscribeUrl: string;
-    sourceName: string;
-    sourceUrl?: string;
-  }> = [
-    {
-      region: 'Datawhale',
-      title: 'AI+X 活动日历',
-      description: '订阅已经确认收录的 AI+X 生态活动。',
-      subscribeUrl: '/api/calendar',
-      sourceName: 'Datawhale AI+X',
-    },
-  ];
-
   const chinaCalendar = {
     region: '中国',
     title: '中国 AI 里程碑',
@@ -137,10 +120,10 @@ const Resources: React.FC<ResourcesProps> = ({ onBack, onGroupClick }) => {
               AI+X Resources
             </div>
             <h1 className="max-w-3xl text-4xl font-black leading-[1.02] text-black sm:text-6xl">
-              资源与订阅
+              资源与参考
             </h1>
             <p className="mt-5 max-w-3xl text-base font-bold leading-8 text-black/70 sm:text-lg">
-              这里收录活动订阅、AI 里程碑和生态共建入口。资源页保持轻量，重点帮助你找到可订阅、可追踪、可参与的信息源。
+              这里收录 AI 里程碑、外部参考源和生态共建入口。资源页保持轻量，重点帮助你找到可追踪、可参与的信息源。
             </p>
           </div>
 
@@ -162,51 +145,6 @@ const Resources: React.FC<ResourcesProps> = ({ onBack, onGroupClick }) => {
               <p className="mt-2 text-sm font-bold leading-6 text-black/60">{item.body}</p>
             </article>
           ))}
-        </section>
-
-        <section className="mt-10">
-          <div className="mb-4 flex flex-col gap-2 border-b-2 border-dashed border-black/20 pb-4 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.16em] text-accent">Calendar Feeds</p>
-              <h2 className="mt-2 text-3xl font-black text-black">可订阅日历</h2>
-            </div>
-            <p className="max-w-xl text-sm font-bold leading-6 text-black/60">
-              建议优先订阅 Datawhale AI+X 活动日历，外部日历作为补充参考。
-            </p>
-          </div>
-
-          <div className="grid max-w-2xl gap-4">
-            {calendars.map((calendar) => (
-              <article key={calendar.title} className="border-2 border-black bg-white/90 p-5 shadow-[5px_5px_0_rgba(5,5,5,0.9)]">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-xs font-black uppercase tracking-[0.16em] text-accent">{calendar.region}</p>
-                    <h3 className="mt-2 text-2xl font-black leading-tight text-black">{calendar.title}</h3>
-                  </div>
-                  <Rss size={24} className="shrink-0 text-accent" />
-                </div>
-                <p className="mt-3 text-sm font-bold leading-7 text-black/60">{calendar.description}</p>
-                {calendar.sourceName && calendar.sourceUrl && (
-                  <a
-                    href={calendar.sourceUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-3 inline-flex items-center gap-1 text-xs font-black text-black/50 transition-colors hover:text-accent"
-                  >
-                    来源：{calendar.sourceName} <ExternalLink size={12} />
-                  </a>
-                )}
-                <a
-                  href={calendar.subscribeUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-secondary mt-5 inline-flex items-center justify-center gap-2 px-5 py-3 text-sm"
-                >
-                  订阅日历 <ExternalLink size={16} />
-                </a>
-              </article>
-            ))}
-          </div>
         </section>
 
         <section className="mt-10 border-2 border-black/15 bg-white/88 p-5">

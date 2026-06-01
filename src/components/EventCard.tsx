@@ -4,7 +4,7 @@ import { MapPin, Globe, ExternalLink, Tag, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import { identifyTags, getTagColorClasses } from '../utils/tags';
-import { getTimeUrgency } from '../utils/timeUtils';
+import { getTimeUrgency, isEventActiveByEndTime } from '../utils/timeUtils';
 import { getActivityTypeLabel } from '../constants/activityTaxonomy';
 
 interface EventCardProps {
@@ -18,6 +18,7 @@ const EventCard: React.FC<EventCardProps> = ({ event, onClick }) => {
   const category = getActivityTypeLabel(event.activityType);
   const cityLabel = event.format === 'online' ? '线上活动' : event.location?.city || '城市待定';
   const organizerLabel = event.organizers?.length ? event.organizers.join(' / ') : event.organizer.name;
+  const isEnded = event.status === 'ended' || !isEventActiveByEndTime(event.endTime);
   
   return (
     <div 
@@ -60,8 +61,14 @@ const EventCard: React.FC<EventCardProps> = ({ event, onClick }) => {
 
         <div className="flex min-w-0 flex-1 flex-col p-4 sm:p-6">
           <div className="mb-3 flex flex-wrap items-center gap-2">
+            {isEnded && (
+              <span className="flex items-center gap-1.5 rounded-full border border-black/15 bg-black/[0.06] px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-black/55">
+                已结束
+              </span>
+            )}
+
             {/* Time Urgency Badge */}
-            {timeUrgency && (
+            {!isEnded && timeUrgency && (
               <span className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full border ${timeUrgency.color} ${timeUrgency.bgColor} ${timeUrgency.borderColor}`}>
                 <Calendar size={11} />
                 {timeUrgency.label}

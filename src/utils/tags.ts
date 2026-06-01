@@ -55,7 +55,7 @@ export const identifyTags = (event: TechEvent): EventTag[] => {
     tags.push({ label: 'AI 实践', icon: '🤖', color: 'purple', category: 'tech' });
   }
   if (eventTags.some(t => ['黑客松', 'hackathon'].includes(t))) {
-    tags.push({ label: '作品挑战', icon: '🏁', color: 'yellow', category: 'tech' });
+    tags.push({ label: '黑客松', icon: '🏁', color: 'yellow', category: 'tech' });
   }
   if (eventTags.some(t => ['开发者', 'developer'].includes(t))) {
     tags.push({ label: '开发者', icon: '⌘', color: 'cyan', category: 'tech' });

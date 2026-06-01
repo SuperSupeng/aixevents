@@ -2,8 +2,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
-  ClipboardCheck,
-  ShieldCheck,
   Send,
   CheckCircle2,
   ImagePlus,
@@ -19,10 +17,9 @@ import {
   uploadEventPoster,
 } from '../api/submissions';
 import {
-  ACTIVITY_TYPES,
-  CITY_OPTIONS,
   DEFAULT_ACTIVITY_TYPE,
-  OTHER_CITY_OPTION,
+  SUBMISSION_ACTIVITY_TYPES,
+  getActivityTypeLabel,
   type ActivityType,
 } from '../constants/activityTaxonomy';
 import type { EventSubmissionInput } from '../types';
@@ -32,6 +29,7 @@ interface SubmitEventModalProps {
   onClose: () => void;
   onSubmitted?: (message: string) => void;
   editToken?: string;
+  initialActivityType?: ActivityType;
 }
 
 const initialForm = {
@@ -42,8 +40,7 @@ const initialForm = {
   startTime: '',
   endTime: '',
   format: 'offline' as EventSubmissionInput['format'],
-  city: '上海',
-  otherCity: '',
+  city: '',
   address: '',
   organizersText: '',
   registrationUrl: '',
@@ -83,7 +80,13 @@ function parseCustomTags(value: string): string[] {
   );
 }
 
-const SubmitEventModal: React.FC<SubmitEventModalProps> = ({ isOpen, onClose, onSubmitted, editToken }) => {
+const SubmitEventModal: React.FC<SubmitEventModalProps> = ({
+  isOpen,
+  onClose,
+  onSubmitted,
+  editToken,
+  initialActivityType = DEFAULT_ACTIVITY_TYPE,
+}) => {
   const [form, setForm] = useState(initialForm);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingSubmission, setIsLoadingSubmission] = useState(false);
@@ -96,10 +99,26 @@ const SubmitEventModal: React.FC<SubmitEventModalProps> = ({ isOpen, onClose, on
   const [imagePreviewUrl, setImagePreviewUrl] = useState('');
 
   const isEditMode = Boolean(editToken);
-  const resolvedCity = form.city === OTHER_CITY_OPTION ? form.otherCity.trim() : form.city.trim();
+  const resolvedCity = form.city.trim();
   const parsedOrganizers = useMemo(() => parseOrganizers(form.organizersText), [form.organizersText]);
   const parsedCustomTags = useMemo(() => parseCustomTags(form.customTagsText), [form.customTagsText]);
   const posterDisplayUrl = posterPreview || existingPosterUrl;
+  const submittedDestination = form.activityType === 'hackathon'
+    ? '公开日历、Hackathon 页面和订阅源'
+    : '公开日历和订阅源';
+  const activityTypeOptions = useMemo(() => {
+    const hasCurrentType = SUBMISSION_ACTIVITY_TYPES.some((type) => type.value === form.activityType);
+    if (hasCurrentType) return SUBMISSION_ACTIVITY_TYPES;
+
+    return [
+      ...SUBMISSION_ACTIVITY_TYPES,
+      {
+        value: form.activityType,
+        label: getActivityTypeLabel(form.activityType),
+        hint: '这是当前活动已有分类；不确定时可以保留。',
+      },
+    ];
+  }, [form.activityType]);
 
   const requiredMissing = useMemo(() => {
     const missingLocation = form.format !== 'online' && !resolvedCity;
@@ -123,6 +142,11 @@ const SubmitEventModal: React.FC<SubmitEventModalProps> = ({ isOpen, onClose, on
   }, [posterPreview]);
 
   useEffect(() => {
+    if (!isOpen || editToken) return;
+    setForm((current) => ({ ...current, activityType: initialActivityType }));
+  }, [editToken, initialActivityType, isOpen]);
+
+  useEffect(() => {
     if (!isOpen || !editToken) return;
 
     let cancelled = false;
@@ -141,7 +165,6 @@ const SubmitEventModal: React.FC<SubmitEventModalProps> = ({ isOpen, onClose, on
           return;
         }
 
-        const knownCity = submission.city && CITY_OPTIONS.includes(submission.city as (typeof CITY_OPTIONS)[number]);
         setForm({
           title: submission.title,
           summary: submission.summary,
@@ -150,8 +173,7 @@ const SubmitEventModal: React.FC<SubmitEventModalProps> = ({ isOpen, onClose, on
           startTime: toDateTimeLocal(submission.startTime),
           endTime: toDateTimeLocal(submission.endTime),
           format: submission.format,
-          city: knownCity ? submission.city || '上海' : submission.city ? OTHER_CITY_OPTION : '上海',
-          otherCity: knownCity ? '' : submission.city || '',
+          city: submission.city || '',
           address: submission.address || '',
           organizersText: submission.organizers.join(' / '),
           registrationUrl: submission.registrationUrl || '',
@@ -356,7 +378,7 @@ const SubmitEventModal: React.FC<SubmitEventModalProps> = ({ isOpen, onClose, on
               <p className="mb-6 max-w-xl text-sm font-bold leading-7 text-black/70 sm:text-base">
                 {isEditMode
                   ? '如果这条活动已经公开，修改内容会先进入确认，确认通过后再更新到公开日历。'
-                  : '活动信息已进入待确认列表。确认真实、完整、适合公开后，同一条记录会自动出现在 Datawhale AI+X 活动日历中。'}
+                  : `活动信息已进入待确认列表。确认真实、完整、适合公开后，同一条记录会自动出现在 ${submittedDestination} 中。`}
               </p>
 
               {!isEditMode && submittedEditUrl && (
@@ -398,19 +420,6 @@ const SubmitEventModal: React.FC<SubmitEventModalProps> = ({ isOpen, onClose, on
                 </div>
               ) : (
                 <>
-                  <div className="mb-6 grid gap-3 sm:grid-cols-2">
-                    <div className="border border-black/15 bg-black/[0.03] p-4">
-                      <ClipboardCheck className="mb-3 text-accent" size={24} />
-                      <p className="text-sm font-black text-black">提交</p>
-                      <p className="mt-1 text-xs font-bold leading-5 text-black/60">类型、时间、城市、组织方和公开入口。</p>
-                    </div>
-                    <div className="border border-black/15 bg-black/[0.03] p-4">
-                      <ShieldCheck className="mb-3 text-accent" size={24} />
-                      <p className="text-sm font-black text-black">确认</p>
-                      <p className="mt-1 text-xs font-bold leading-5 text-black/60">确认通过后进入公开日历和订阅源。</p>
-                    </div>
-                  </div>
-
                   <div className="grid gap-4 sm:grid-cols-2">
                     <label className="sm:col-span-2">
                       <span className="submit-label">活动名称 *</span>
@@ -423,12 +432,12 @@ const SubmitEventModal: React.FC<SubmitEventModalProps> = ({ isOpen, onClose, on
                     <label>
                       <span className="submit-label">活动类型 *</span>
                       <select className="submit-input" value={form.activityType} onChange={(event) => updateField('activityType', event.target.value as ActivityType)}>
-                        {ACTIVITY_TYPES.map((type) => (
+                        {activityTypeOptions.map((type) => (
                           <option key={type.value} value={type.value}>{type.label}</option>
                         ))}
                       </select>
                       <span className="mt-1 block text-[11px] font-bold leading-5 text-black/45">
-                        {ACTIVITY_TYPES.find((type) => type.value === form.activityType)?.hint || '选择最接近的一类。'}
+                        {activityTypeOptions.find((type) => type.value === form.activityType)?.hint || '拿不准可以选其他/不确定。'}
                       </span>
                     </label>
                     <label>
@@ -464,22 +473,21 @@ const SubmitEventModal: React.FC<SubmitEventModalProps> = ({ isOpen, onClose, on
                       <>
                         <label>
                           <span className="submit-label">城市 *</span>
-                          <select className="submit-input" value={form.city} onChange={(event) => updateField('city', event.target.value)}>
-                            {CITY_OPTIONS.map((city) => (
-                              <option key={city} value={city}>{city}</option>
-                            ))}
-                          </select>
+                          <input
+                            className="submit-input"
+                            value={form.city}
+                            onChange={(event) => updateField('city', event.target.value)}
+                            placeholder="例如：上海、杭州、宁波"
+                            autoComplete="address-level2"
+                          />
+                          <span className="mt-1 block text-[11px] font-bold leading-5 text-black/45">
+                            直接填写活动主要发生的城市；如果是多城市巡回，可填写首站或主要城市。
+                          </span>
                         </label>
                         <label>
                           <span className="submit-label">具体地点（选填）</span>
                           <input className="submit-input" value={form.address} onChange={(event) => updateField('address', event.target.value)} placeholder="例如：区县、园区、楼宇或会议室地址" />
                         </label>
-                        {form.city === OTHER_CITY_OPTION && (
-                          <label className="sm:col-span-2">
-                            <span className="submit-label">补充城市 *</span>
-                            <input className="submit-input" value={form.otherCity} onChange={(event) => updateField('otherCity', event.target.value)} placeholder="请输入城市名称" />
-                          </label>
-                        )}
                       </>
                     ) : (
                       <div className="sm:col-span-2 rounded-md border border-black/10 bg-black/[0.03] px-4 py-3 text-xs font-bold leading-5 text-black/55">

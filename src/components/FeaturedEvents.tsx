@@ -3,7 +3,7 @@ import { TechEvent } from '../types';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import { MapPin, Globe, Calendar, Sparkles } from 'lucide-react';
-import { getTimeUrgency } from '../utils/timeUtils';
+import { getTimeUrgency, isEventActiveByEndTime } from '../utils/timeUtils';
 import { getActivityTypeLabel } from '../constants/activityTaxonomy';
 
 interface FeaturedEventsProps {
@@ -14,8 +14,15 @@ interface FeaturedEventsProps {
 const MAX_FEATURED_EVENTS = 3;
 
 const FeaturedEvents: React.FC<FeaturedEventsProps> = ({ events, onEventClick }) => {
+  const [now, setNow] = React.useState(() => new Date());
+
+  React.useEffect(() => {
+    const intervalId = window.setInterval(() => setNow(new Date()), 60_000);
+    return () => window.clearInterval(intervalId);
+  }, []);
+
   const featuredEvents = events
-    .filter((event) => event.isFeatured)
+    .filter((event) => event.isFeatured && isEventActiveByEndTime(event.endTime, now))
     .sort((a, b) => {
       const rankA = a.featuredRank ?? Number.MAX_SAFE_INTEGER;
       const rankB = b.featuredRank ?? Number.MAX_SAFE_INTEGER;

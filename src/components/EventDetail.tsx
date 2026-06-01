@@ -1,15 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { TechEvent } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Calendar, MapPin, Globe, User, ArrowUpRight, ChevronDown, Download, Info, Share2 } from 'lucide-react';
+import { X, Calendar, MapPin, Globe, User, ArrowUpRight, Info, Share2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
-import {
-  downloadICS,
-  getGoogleCalendarUrl,
-  getOutlookUrl,
-  addToAppleCalendar
-} from '../utils/calendar';
 import { identifyTags, getTagColorClasses } from '../utils/tags';
 import { getActivityTypeLabel } from '../constants/activityTaxonomy';
 
@@ -20,14 +14,23 @@ interface EventDetailProps {
   shareUrl?: string;
 }
 
-const EventDetail: React.FC<EventDetailProps> = ({ event, onClose, onToast, shareUrl }) => {
-  const [showCalendarDropdown, setShowCalendarDropdown] = useState(false);
+function safeExternalUrl(url?: string): string {
+  if (!url || url === '#') return '';
 
+  try {
+    const parsedUrl = new URL(url);
+    return ['http:', 'https:'].includes(parsedUrl.protocol) ? parsedUrl.toString() : '';
+  } catch {
+    return '';
+  }
+}
+
+const EventDetail: React.FC<EventDetailProps> = ({ event, onClose, onToast, shareUrl }) => {
   if (!event) return null;
 
   const smartTags = identifyTags(event);
-  const detailUrl = event.links.registration || event.links.officialSite;
-  const hasDetailUrl = Boolean(detailUrl && detailUrl !== '#');
+  const detailUrl = safeExternalUrl(event.links.registration || event.links.officialSite);
+  const hasDetailUrl = Boolean(detailUrl);
   const internalShareUrl = shareUrl || (
     typeof window !== 'undefined'
       ? `${window.location.origin}/events/${encodeURIComponent(event.id)}`
@@ -39,30 +42,6 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onClose, onToast, shar
     : [event.location?.city, event.location?.address].filter(Boolean).join(' · ') || '地点待定';
   const primaryTag = getActivityTypeLabel(event.activityType);
   const organizerLabel = event.organizers?.length ? event.organizers.join(' / ') : event.organizer.name;
-
-  const handleAddToCalendar = (type: 'google' | 'apple' | 'outlook' | 'ics') => {
-    let message = '';
-    switch (type) {
-      case 'google':
-        window.open(getGoogleCalendarUrl(event), '_blank');
-        message = '正在打开 Google Calendar...';
-        break;
-      case 'apple':
-        addToAppleCalendar(event);
-        message = '日历文件已下载';
-        break;
-      case 'outlook':
-        window.open(getOutlookUrl(event), '_blank');
-        message = '正在打开 Outlook Calendar...';
-        break;
-      case 'ics':
-        downloadICS(event);
-        message = '日历文件已下载';
-        break;
-    }
-    setShowCalendarDropdown(false);
-    onToast?.(message);
-  };
 
   const handleCopyLink = async () => {
     try {
@@ -198,7 +177,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onClose, onToast, shar
                   <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
                     <button
                       onClick={() => {
-                        if (hasDetailUrl && detailUrl) window.open(detailUrl, '_blank');
+                        if (hasDetailUrl) window.open(detailUrl, '_blank', 'noopener,noreferrer');
                       }}
                       disabled={!hasDetailUrl}
                       className="btn-primary flex items-center justify-center gap-3 px-5 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-55"
@@ -214,51 +193,6 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onClose, onToast, shar
                     </button>
                   </div>
 
-                  <div className="relative">
-                    <button
-                      onClick={() => setShowCalendarDropdown(!showCalendarDropdown)}
-                      className="btn-secondary flex w-full items-center justify-center gap-3 px-5 py-3 text-sm"
-                    >
-                      <Calendar size={18} /> 添加到日历 <ChevronDown size={16} />
-                    </button>
-
-                    {showCalendarDropdown && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="absolute left-0 right-0 top-full z-10 mt-2 overflow-hidden rounded-md border-2 border-black bg-white shadow-[5px_5px_0_rgba(5,5,5,0.92)]"
-                      >
-                        <button
-                          onClick={() => handleAddToCalendar('google')}
-                          className="flex w-full items-center gap-3 px-5 py-3 text-left text-sm font-black text-black/72 transition-all hover:bg-primary/25 hover:text-black"
-                        >
-                          <Globe size={16} className="text-accent" />
-                          Google Calendar
-                        </button>
-                        <button
-                          onClick={() => handleAddToCalendar('apple')}
-                          className="flex w-full items-center gap-3 border-t border-black/10 px-5 py-3 text-left text-sm font-black text-black/72 transition-all hover:bg-primary/25 hover:text-black"
-                        >
-                          <Calendar size={16} className="text-accent" />
-                          Apple 日历
-                        </button>
-                        <button
-                          onClick={() => handleAddToCalendar('outlook')}
-                          className="flex w-full items-center gap-3 border-t border-black/10 px-5 py-3 text-left text-sm font-black text-black/72 transition-all hover:bg-primary/25 hover:text-black"
-                        >
-                          <Globe size={16} className="text-accent" />
-                          Outlook
-                        </button>
-                        <button
-                          onClick={() => handleAddToCalendar('ics')}
-                          className="flex w-full items-center gap-3 border-t border-black/10 px-5 py-3 text-left text-sm font-black text-black/72 transition-all hover:bg-primary/25 hover:text-black"
-                        >
-                          <Download size={16} className="text-accent" />
-                          下载 .ics
-                        </button>
-                      </motion.div>
-                    )}
-                  </div>
                 </div>
 
                 <div className="mt-7 flex items-start gap-2 border-t border-black/10 pt-4 text-xs font-bold leading-5 text-black/45">

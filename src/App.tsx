@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import type { Variants } from 'framer-motion';
 import { Zap, ChevronDown, Loader2, MessageCircle, CalendarDays, X } from 'lucide-react';
 import { TechEvent, ViewMode } from './types';
 import { useEvents, useLocations } from './hooks/useEvents';
@@ -25,8 +26,48 @@ import SubscribeModal from './components/SubscribeModal';
 import SubmitEventModal from './components/SubmitEventModal';
 import { useToast } from './hooks/useToast';
 import { generateBaseSchema, generateEventSchema, getEventSEO, getPageSEO, injectStructuredData, removeStructuredData, updatePageSEO } from './utils/seo';
+import type { ActivityType } from './constants/activityTaxonomy';
 
 type Page = 'home' | 'privacy' | 'terms' | 'resources' | 'hackathons' | 'partners' | 'edit' | 'event';
+
+const HERO_REVEAL_EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
+
+const heroCopyVariants: Variants = {
+  hidden: {},
+  show: {
+    transition: {
+      delayChildren: 0.08,
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const heroTitleVariants: Variants = {
+  hidden: {},
+  show: {
+    transition: {
+      staggerChildren: 0.08,
+    },
+  },
+};
+
+const heroTitleLineVariants: Variants = {
+  hidden: { opacity: 0, y: 22 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.78, ease: HERO_REVEAL_EASE },
+  },
+};
+
+const heroItemVariants: Variants = {
+  hidden: { opacity: 0, y: 18 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.74, ease: HERO_REVEAL_EASE },
+  },
+};
 
 function getRouteFromPath(): { page: Page; editToken?: string; eventId?: string } {
   const path = window.location.pathname.replace(/\/+$/, '') || '/';
@@ -50,26 +91,29 @@ const PixelWhale: React.FC = () => {
     [6, 0], [7, 1], [5, 1], [7, 2],
     [5, 3], [6, 3], [7, 3], [8, 3], [9, 3], [10, 3], [11, 3],
     [3, 4], [4, 4], [5, 4], [6, 4], [7, 4], [8, 4], [9, 4], [10, 4], [11, 4], [12, 4],
-    [1, 5], [3, 5], [4, 5], [5, 5], [6, 5], [7, 5], [8, 5], [9, 5], [10, 5], [11, 5], [12, 5], [13, 5],
-    [0, 6], [1, 6], [2, 6], [3, 6], [4, 6], [5, 6], [6, 6], [7, 6], [8, 6], [9, 6], [10, 6], [11, 6], [12, 6], [13, 6],
-    [1, 7], [2, 7], [3, 7], [4, 7], [5, 7], [6, 7], [7, 7], [8, 7], [9, 7], [10, 7], [11, 7], [12, 7], [13, 7],
-    [0, 8], [1, 8], [3, 8], [4, 8], [5, 8], [6, 8], [7, 8], [8, 8], [9, 8], [10, 8], [11, 8], [12, 8],
+    [3, 5], [4, 5], [5, 5], [6, 5], [7, 5], [8, 5], [9, 5], [10, 5], [11, 5], [12, 5], [13, 5],
+    [3, 6], [4, 6], [5, 6], [6, 6], [7, 6], [8, 6], [9, 6], [10, 6], [11, 6], [12, 6], [13, 6],
+    [3, 7], [4, 7], [5, 7], [6, 7], [7, 7], [8, 7], [9, 7], [10, 7], [11, 7], [12, 7], [13, 7],
+    [3, 8], [4, 8], [5, 8], [6, 8], [7, 8], [8, 8], [9, 8], [10, 8], [11, 8], [12, 8],
     [3, 9], [4, 9], [5, 9], [6, 9], [7, 9], [8, 9], [9, 9], [10, 9], [11, 9],
     [5, 10], [6, 10], [7, 10], [8, 10], [9, 10],
   ];
-  const accentPixels = [
-    [14, 5], [15, 4], [15, 6], [16, 3], [16, 7],
-    [2, 3], [3, 2], [4, 2],
-  ];
+  const tailPixels = [[1, 5], [0, 6], [1, 6], [2, 6], [1, 7], [2, 7], [0, 8], [1, 8]];
+  const sprayPixels = [[2, 3], [3, 2], [4, 2]];
 
   return (
     <svg className="poster-whale" viewBox="0 0 144 96" preserveAspectRatio="xMidYMid meet" aria-hidden>
       {pixels.map(([x, y]) => (
         <rect key={`${x}-${y}`} x={x * 8} y={y * 8} width="8" height="8" />
       ))}
-      {accentPixels.map(([x, y]) => (
-        <rect key={`accent-${x}-${y}`} x={x * 8} y={y * 8} width="8" height="8" className="poster-whale-accent" />
+      {sprayPixels.map(([x, y]) => (
+        <rect key={`spray-${x}-${y}`} x={x * 8} y={y * 8} width="8" height="8" className="poster-whale-accent" />
       ))}
+      <g className="poster-whale-tail-group">
+        {tailPixels.map(([x, y]) => (
+          <rect key={`tail-${x}-${y}`} x={x * 8} y={y * 8} width="8" height="8" className="poster-whale-tail" />
+        ))}
+      </g>
       <rect x="88" y="48" width="8" height="8" className="poster-whale-eye" />
       <rect x="72" y="72" width="40" height="8" className="poster-whale-smile" />
       <rect x="64" y="80" width="24" height="8" className="poster-whale-smile" />
@@ -135,6 +179,7 @@ const App: React.FC = () => {
   const [routeEventLoading, setRouteEventLoading] = useState(false);
   const [showSubscribeModal, setShowSubscribeModal] = useState(false);
   const [showSubmitEventModal, setShowSubmitEventModal] = useState(false);
+  const [submitInitialActivityType, setSubmitInitialActivityType] = useState<ActivityType | undefined>();
   const [showGroupQrModal, setShowGroupQrModal] = useState(false);
   
   // Toast notifications
@@ -151,6 +196,16 @@ const App: React.FC = () => {
 
   const openGroupQrModal = () => {
     setShowGroupQrModal(true);
+  };
+
+  const openSubmitEventModal = (initialActivityType?: ActivityType) => {
+    setSubmitInitialActivityType(initialActivityType);
+    setShowSubmitEventModal(true);
+  };
+
+  const closeSubmitEventModal = () => {
+    setShowSubmitEventModal(false);
+    setSubmitInitialActivityType(undefined);
   };
 
   // 🆕 使用 API 获取数据
@@ -319,11 +374,16 @@ const App: React.FC = () => {
   if (currentPage === 'hackathons') {
     return (
       <>
-        <Hackathons onBack={navigateToHome} onSubmitClick={() => setShowSubmitEventModal(true)} />
+        <Hackathons
+          onBack={navigateToHome}
+          onSubmitClick={() => openSubmitEventModal('hackathon')}
+          onEventClick={openEventDetail}
+        />
         <SubmitEventModal
           isOpen={showSubmitEventModal}
-          onClose={() => setShowSubmitEventModal(false)}
+          onClose={closeSubmitEventModal}
           onSubmitted={success}
+          initialActivityType={submitInitialActivityType}
         />
         <Toast toasts={toasts} onRemove={removeToast} />
       </>
@@ -348,7 +408,7 @@ const App: React.FC = () => {
           onHackathonsClick={navigateToHackathons}
           onPartnersClick={navigateToPartners}
           onResourcesClick={navigateToResources}
-          onSubmitClick={() => setShowSubmitEventModal(true)}
+          onSubmitClick={() => openSubmitEventModal()}
         />
         <main className="relative z-10 flex min-h-screen items-center justify-center px-4 py-24">
           <div className="max-w-xl rounded-lg border-2 border-black bg-white p-6 text-black shadow-[8px_8px_0_rgba(5,5,5,0.92)]">
@@ -384,7 +444,7 @@ const App: React.FC = () => {
           onHackathonsClick={navigateToHackathons}
           onPartnersClick={navigateToPartners}
           onResourcesClick={navigateToResources}
-          onSubmitClick={() => setShowSubmitEventModal(true)}
+          onSubmitClick={() => openSubmitEventModal()}
         />
         <main className="relative z-10 flex min-h-screen items-center justify-center px-4 py-28">
           {!displayEvent && (
@@ -417,8 +477,9 @@ const App: React.FC = () => {
         />
         <SubmitEventModal
           isOpen={showSubmitEventModal}
-          onClose={() => setShowSubmitEventModal(false)}
+          onClose={closeSubmitEventModal}
           onSubmitted={success}
+          initialActivityType={submitInitialActivityType}
         />
         {showGroupQrModal && <GroupQrModal onClose={() => setShowGroupQrModal(false)} />}
         <Toast toasts={toasts} onRemove={removeToast} />
@@ -434,7 +495,7 @@ const App: React.FC = () => {
         onHackathonsClick={navigateToHackathons}
         onPartnersClick={navigateToPartners}
         onResourcesClick={navigateToResources}
-        onSubmitClick={() => setShowSubmitEventModal(true)}
+        onSubmitClick={() => openSubmitEventModal()}
       />
 
       <main className="relative z-10">
@@ -442,9 +503,9 @@ const App: React.FC = () => {
         <section className="poster-hero-section relative z-10 w-full">
           <div className="poster-hero-shell">
             <motion.div
-              initial={{ opacity: 0, y: 18 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.55 }}
+              variants={heroItemVariants}
+              initial="hidden"
+              animate="show"
               className="poster-kicker"
             >
               <span className="w-2 h-2 bg-primary block" />
@@ -452,49 +513,44 @@ const App: React.FC = () => {
             </motion.div>
 
             <div className="poster-hero-grid">
-              <div className="poster-hero-copy">
-                <h1 className="poster-hero-title hero-title">
+              <motion.div
+                variants={heroCopyVariants}
+                initial="hidden"
+                animate="show"
+                className="poster-hero-copy"
+              >
+                <motion.h1 variants={heroTitleVariants} className="poster-hero-title hero-title">
                   <motion.div
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.65, delay: 0.12 }}
+                    variants={heroTitleLineVariants}
                     className="poster-title-line"
                   >
                     AI+X
                   </motion.div>
                   <motion.div
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.65, delay: 0.24 }}
+                    variants={heroTitleLineVariants}
                     className="poster-title-line poster-title-line-secondary hero-accent"
                   >
                     活动日历
                   </motion.div>
-                </h1>
+                </motion.h1>
 
                 <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.7, delay: 0.46 }}
+                  variants={heroItemVariants}
                   className="poster-hero-quote"
                 >
                   <span className="block">找到值得去的</span>
                   <span className="block">AI 科技活动。</span>
                 </motion.p>
                 <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.7, delay: 0.5 }}
+                  variants={heroItemVariants}
                   className="poster-learn-line"
                 >
                   <span>学用 AI，就来 </span>
-                  <span className="bg-accent text-white px-2 py-0.5">Datawhale</span>
+                  <span className="poster-brand-chip">Datawhale</span>
                 </motion.div>
 
                 <motion.div
-                  initial={{ opacity: 0, y: 18 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.65, delay: 0.58 }}
+                  variants={heroItemVariants}
                   className="poster-cta-row"
                 >
                   <button
@@ -511,7 +567,17 @@ const App: React.FC = () => {
                     加入 AI+X 活动群
                   </button>
                 </motion.div>
-              </div>
+                <motion.div
+                  variants={heroItemVariants}
+                  className="poster-hero-tide-strip"
+                  aria-hidden="true"
+                >
+                  <span>Meetup</span>
+                  <span>Workshop</span>
+                  <span>Hackathon</span>
+                  <span>AI+X</span>
+                </motion.div>
+              </motion.div>
 
               <motion.aside
                 initial={{ opacity: 0, y: 20 }}
@@ -534,7 +600,7 @@ const App: React.FC = () => {
                     </div>
                     <div className="poster-data-row">
                       <strong>收录：</strong>
-                      <span>Meetup / Workshop / Hackathon</span>
+                      <span>Meetup、Workshop、Hackathon 等活动</span>
                     </div>
                     <div className="poster-data-row">
                       <strong>共建：</strong>
@@ -543,12 +609,22 @@ const App: React.FC = () => {
                   </div>
                   <div className="poster-rule mt-8 mb-5" />
                   <p className="poster-info-card-title">
-                    活动信息持续收录中。
+                    活动信息持续收录中～
                   </p>
                 </div>
                 <div className="poster-whale-wrap" aria-hidden>
-                  <PixelWhale />
-                  <div className="poster-squiggle" />
+                  <span className="poster-sea-fish poster-sea-fish-one" />
+                  <span className="poster-sea-fish poster-sea-fish-two" />
+                  <span className="poster-sea-bubble poster-sea-bubble-one" />
+                  <span className="poster-sea-bubble poster-sea-bubble-two" />
+                  <div className="poster-whale-swim-layer">
+                    <div className="poster-whale-drift">
+                      <div className="poster-whale-bob">
+                        <PixelWhale />
+                      </div>
+                    </div>
+                    <div className="poster-squiggle" />
+                  </div>
                 </div>
               </motion.aside>
             </div>
@@ -601,7 +677,7 @@ const App: React.FC = () => {
                 <span>社区协办</span>
               </div>
               <button
-                onClick={() => setShowSubmitEventModal(true)}
+                onClick={() => openSubmitEventModal()}
                 className="btn-primary poster-panel-button flex items-center justify-center gap-2"
               >
                 提交活动信息 <Zap size={18} />
@@ -610,8 +686,6 @@ const App: React.FC = () => {
             </div>
           </div>
         </section>
-
-        <PartnerLogoWall onViewAll={navigateToPartners} />
 
         {/* Filter & Search */}
         <div ref={calendarRef} className="relative z-20 content-section scroll-mt-28 sm:scroll-mt-32 max-w-7xl mx-auto px-4 sm:px-6 pt-24 sm:pt-32 pb-32 sm:pb-40">
@@ -735,17 +809,14 @@ const App: React.FC = () => {
             )}
           </div>
         </div>
+
+        <PartnerLogoWall onViewAll={navigateToPartners} />
       </main>
 
       {/* Footer */}
       <Footer 
-        onCalendarClick={scrollToCalendar}
-        onHackathonsClick={navigateToHackathons}
-        onPartnersClick={navigateToPartners}
-        onResourcesClick={navigateToResources}
-        onSubscribeClick={() => setShowSubscribeModal(true)}
-        onSubmitClick={() => setShowSubmitEventModal(true)}
-        onSupportClick={() => setShowSubmitEventModal(true)}
+        onSubmitClick={() => openSubmitEventModal()}
+        onSupportClick={() => openSubmitEventModal()}
         onGroupClick={openGroupQrModal}
         onPrivacyClick={navigateToPrivacy}
         onTermsClick={navigateToTerms}
@@ -772,13 +843,16 @@ const App: React.FC = () => {
         onToast={success}
         formatFilter={formatFilter}
         locationFilter={locationFilter}
+        tagFilter={tagFilter}
+        searchQuery={searchQuery}
       />
 
       {/* Submit Event Modal */}
       <SubmitEventModal
         isOpen={showSubmitEventModal}
-        onClose={() => setShowSubmitEventModal(false)}
+        onClose={closeSubmitEventModal}
         onSubmitted={success}
+        initialActivityType={submitInitialActivityType}
       />
 
       {showGroupQrModal && <GroupQrModal onClose={() => setShowGroupQrModal(false)} />}

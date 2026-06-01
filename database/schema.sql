@@ -109,10 +109,13 @@ SELECT
   activity_type,
   organizers,
   custom_tags,
-  (CASE WHEN start_time <= NOW() AND end_time >= NOW() THEN 'live' ELSE 'upcoming' END) AS status
+  (CASE
+    WHEN end_time < NOW() THEN 'ended'
+    WHEN start_time <= NOW() THEN 'live'
+    ELSE 'upcoming'
+  END) AS status
 FROM datawhale_events
-WHERE review_status = 'approved'
-  AND end_time >= NOW();
+WHERE review_status = 'approved';
 
 CREATE OR REPLACE FUNCTION datawhale_edit_token_hash(p_edit_token TEXT)
 RETURNS TEXT

@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Calendar, Copy, Check, ExternalLink, Rss, Download } from 'lucide-react';
+import { X, CalendarPlus, Copy, Check, ExternalLink, Rss, Download, Link2, AlertCircle } from 'lucide-react';
+import { getActivityFilterLabel } from '../constants/activityTaxonomy';
 
 interface SubscribeModalProps {
   isOpen: boolean;
@@ -8,7 +9,32 @@ interface SubscribeModalProps {
   onToast?: (message: string) => void;
   formatFilter?: string;
   locationFilter?: string;
+  tagFilter?: string;
+  searchQuery?: string;
 }
+
+type CopyTarget = 'subscribe' | 'google' | null;
+
+const DEFAULT_PUBLIC_SITE_URL = 'https://aixevents.datawhale.cn';
+
+const getStableSiteUrl = (): string => {
+  const configuredUrl = import.meta.env.VITE_PUBLIC_SITE_URL?.trim();
+  const runtimeOrigin = typeof window !== 'undefined' ? window.location.origin : '';
+  const isLocalRuntime = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/i.test(runtimeOrigin);
+  const siteUrl = configuredUrl || (!isLocalRuntime && runtimeOrigin) || DEFAULT_PUBLIC_SITE_URL;
+
+  return siteUrl.replace(/\/+$/, '');
+};
+
+const toWebcalUrl = (url: string): string => {
+  try {
+    const parsedUrl = new URL(url);
+    parsedUrl.protocol = 'webcal:';
+    return parsedUrl.toString();
+  } catch {
+    return url.replace(/^https?:\/\//, 'webcal://');
+  }
+};
 
 const SubscribeModal: React.FC<SubscribeModalProps> = ({
   isOpen,
@@ -16,87 +42,89 @@ const SubscribeModal: React.FC<SubscribeModalProps> = ({
   onToast,
   formatFilter = 'all',
   locationFilter = 'all',
+  tagFilter = '',
+  searchQuery = '',
 }) => {
-  const [copied, setCopied] = useState(false);
+  const [copiedTarget, setCopiedTarget] = useState<CopyTarget>(null);
 
-  // 构建订阅 URL
-  const buildSubscribeUrl = () => {
-    const baseUrl = `${window.location.origin}/api/calendar`;
+  const subscription = useMemo(() => {
+    const siteUrl = getStableSiteUrl();
+    const baseUrl = `${siteUrl}/api/calendar`;
     const params = new URLSearchParams();
-    
+
     if (formatFilter !== 'all') {
       params.append('format', formatFilter);
     }
     if (locationFilter !== 'all') {
       params.append('location', locationFilter);
     }
-    
+    if (tagFilter) {
+      params.append('tags', tagFilter);
+    }
+    if (searchQuery.trim()) {
+      params.append('search', searchQuery.trim());
+    }
+
     const queryString = params.toString();
-    return queryString ? `${baseUrl}?${queryString}` : baseUrl;
-  };
+    const feedUrl = queryString ? `${baseUrl}?${queryString}` : baseUrl;
+    const downloadUrl = `${feedUrl}${queryString ? '&' : '?'}download=1`;
+    const runtimeOrigin = typeof window !== 'undefined' ? window.location.origin : '';
+    const isLocalPreview = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/i.test(runtimeOrigin);
 
-  const subscribeUrl = buildSubscribeUrl();
+    return {
+      feedUrl,
+      webcalUrl: toWebcalUrl(feedUrl),
+      downloadUrl,
+      isLocalPreview,
+    };
+  }, [formatFilter, locationFilter, tagFilter, searchQuery]);
 
-  const handleCopyUrl = async () => {
+  const activeFilters = useMemo(() => {
+    const filters: string[] = [];
+
+    if (formatFilter !== 'all') filters.push(formatFilter === 'online' ? '线上活动' : '线下活动');
+    if (locationFilter !== 'all') filters.push(locationFilter);
+    if (tagFilter) filters.push(getActivityFilterLabel(tagFilter));
+    if (searchQuery.trim()) filters.push(`搜索：${searchQuery.trim()}`);
+
+    return filters;
+  }, [formatFilter, locationFilter, tagFilter, searchQuery]);
+
+  const copyUrl = async (url: string, target: CopyTarget, message: string) => {
     try {
-      await navigator.clipboard.writeText(subscribeUrl);
-      setCopied(true);
-      if (onToast) {
-        onToast('日历订阅链接已复制');
-      }
-      setTimeout(() => setCopied(false), 2000);
+      await navigator.clipboard.writeText(url);
+      setCopiedTarget(target);
+      onToast?.(message);
+      setTimeout(() => setCopiedTarget(null), 2000);
     } catch (err) {
       console.error('Failed to copy:', err);
+      onToast?.('复制失败，请手动复制订阅链接');
     }
+  };
+
+  const handleCopyUrl = () => {
+    copyUrl(subscription.feedUrl, 'subscribe', '自动更新订阅链接已复制');
   };
 
   const handleDownloadIcs = () => {
-    window.open(subscribeUrl, '_blank');
-    if (onToast) {
-      onToast('日历文件正在下载...');
-    }
+    window.open(subscription.downloadUrl, '_blank', 'noopener,noreferrer');
+    onToast?.('正在下载当前日历快照');
   };
 
-  const handleSubscribeApple = () => {
-    // 直接下载 .ics 文件，macOS/iOS 会自动用 Apple Calendar 打开
-    // 创建一个隐藏的 a 标签来触发下载
-    const link = document.createElement('a');
-    link.href = subscribeUrl;
-    link.download = 'datawhale-aix-calendar.ics';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    if (onToast) {
-      onToast('日历文件已下载，打开即可添加');
-    }
+  const handleOpenSystemCalendar = () => {
+    window.location.href = subscription.webcalUrl;
+    onToast?.('正在打开系统日历订阅');
   };
 
   const handleSubscribeGoogle = async () => {
-    // Google Calendar 需要通过 "Add by URL" 功能添加
-    // 先复制 URL 到剪贴板，然后打开 Google Calendar 的添加页面
-    try {
-      await navigator.clipboard.writeText(subscribeUrl);
-      // 打开 Google Calendar 的 "Other calendars" 添加页面
-      window.open('https://calendar.google.com/calendar/u/0/r/settings/addbyurl', '_blank');
-      if (onToast) {
-        onToast('链接已复制，请粘贴到 Google Calendar。');
-      }
-    } catch (err) {
-      // 如果复制失败，仍然打开页面
-      window.open('https://calendar.google.com/calendar/u/0/r/settings/addbyurl', '_blank');
-      if (onToast) {
-        onToast('正在打开 Google Calendar，请复制上方链接。');
-      }
-    }
+    await copyUrl(subscription.feedUrl, 'google', '链接已复制，请粘贴到 Google Calendar');
+    window.open('https://calendar.google.com/calendar/u/0/r/settings/addbyurl', '_blank', 'noopener,noreferrer');
   };
 
   const handleSubscribeOutlook = () => {
-    // Outlook web subscription - 使用正确的 URL 格式
-    const outlookUrl = `https://outlook.live.com/calendar/0/addfromweb?url=${encodeURIComponent(subscribeUrl)}&name=${encodeURIComponent('Datawhale AI+X 活动日历')}`;
-    window.open(outlookUrl, '_blank');
-    if (onToast) {
-      onToast('正在打开 Outlook...');
-    }
+    const outlookUrl = `https://outlook.live.com/calendar/0/addfromweb?url=${encodeURIComponent(subscription.feedUrl)}&name=${encodeURIComponent('Datawhale AI+X 活动日历')}`;
+    window.open(outlookUrl, '_blank', 'noopener,noreferrer');
+    onToast?.('正在打开 Outlook 订阅');
   };
 
   if (!isOpen) return null;
@@ -123,7 +151,7 @@ const SubscribeModal: React.FC<SubscribeModalProps> = ({
           
           <button 
             onClick={onClose}
-            className="absolute top-6 right-6 p-2.5 rounded-full bg-white/5 hover:bg-white/10 text-white/40 hover:text-white transition-all z-20"
+            className="absolute top-6 right-6 p-2.5 rounded-full bg-white/5 hover:bg-white/10 text-white/40 hover:text-black transition-all z-20"
           >
             <X size={18} />
           </button>
@@ -138,29 +166,36 @@ const SubscribeModal: React.FC<SubscribeModalProps> = ({
               订阅活动日历
             </h2>
             <p className="text-white/60 text-sm mb-8">
-              及时同步全球 AI 与科技活动。新活动加入后，你的日历会自动更新。
-              {(formatFilter !== 'all' || locationFilter !== 'all') && (
+              使用订阅链接添加后，新活动会自动同步；下载 .ics 仅作为一次性导入。
+              {activeFilters.length > 0 && (
                 <span className="block mt-2 text-primary-light text-xs">
-                  当前筛选条件会应用到订阅链接。
+                  当前订阅范围：{activeFilters.join(' / ')}
                 </span>
               )}
             </p>
 
+            {subscription.isLocalPreview && (
+              <div className="mb-6 flex gap-3 rounded-xl border border-primary/25 bg-primary/10 p-4 text-xs leading-5 text-primary-light">
+                <AlertCircle size={16} className="mt-0.5 shrink-0" />
+                <p>当前页面是本地预览，订阅链接已切到线上公开地址，便于 Google、Outlook 和系统日历长期访问。</p>
+              </div>
+            )}
+
             {/* Subscription URL */}
-            <div className="mb-8">
+            <div className="mb-6">
               <label className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-2 block">
-                订阅链接
+                自动更新订阅链接
               </label>
               <div className="flex items-center gap-2">
                 <div className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white/70 font-mono truncate">
-                  {subscribeUrl}
+                  {subscription.feedUrl}
                 </div>
                 <button
                   onClick={handleCopyUrl}
-                  className="p-3 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-xl text-white/60 hover:text-white transition-all"
+                  className="p-3 bg-white/5 hover:bg-primary/20 border border-white/10 hover:border-accent/40 rounded-xl text-white/60 hover:text-black transition-all"
                   title="复制链接"
                 >
-                  {copied ? <Check size={18} className="text-green-400" /> : <Copy size={18} />}
+                  {copiedTarget === 'subscribe' ? <Check size={18} className="text-green-400" /> : <Copy size={18} />}
                 </button>
               </div>
             </div>
@@ -168,64 +203,71 @@ const SubscribeModal: React.FC<SubscribeModalProps> = ({
             {/* Quick Subscribe Buttons */}
             <div className="space-y-3">
               <button
-                onClick={handleSubscribeApple}
-                className="w-full flex items-center justify-between px-5 py-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-xl text-white/80 hover:text-white transition-all group"
+                onClick={handleOpenSystemCalendar}
+                className="w-full flex items-center justify-between px-5 py-4 bg-white/5 hover:bg-primary/20 border border-white/10 hover:border-accent/40 rounded-xl text-white/80 hover:text-black transition-all group"
               >
                 <div className="flex items-center gap-3">
-                  <Calendar size={20} className="text-white/60 group-hover:text-white" />
+                  <CalendarPlus size={20} className="text-white/60 group-hover:text-accent" />
                   <div className="text-left">
-                    <div className="font-medium">Apple 日历 / macOS</div>
-                    <div className="text-xs text-white/40 mt-0.5">下载 .ics 后打开添加</div>
+                    <div className="font-medium">系统日历 / Apple 日历</div>
+                    <div className="text-xs text-white/40 mt-0.5">通过 webcal 添加为可更新订阅</div>
                   </div>
                 </div>
-                <Download size={16} className="text-white/40 group-hover:text-white/60" />
+                <ExternalLink size={16} className="text-white/40 group-hover:text-accent" />
               </button>
 
               <button
                 onClick={handleSubscribeGoogle}
-                className="w-full flex items-center justify-between px-5 py-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-xl text-white/80 hover:text-white transition-all group"
+                className="w-full flex items-center justify-between px-5 py-4 bg-white/5 hover:bg-primary/20 border border-white/10 hover:border-accent/40 rounded-xl text-white/80 hover:text-black transition-all group"
               >
                 <div className="flex items-center gap-3">
-                  <svg className="w-5 h-5 text-white/60 group-hover:text-white" viewBox="0 0 24 24" fill="currentColor">
+                  <svg className="w-5 h-5 text-white/60 group-hover:text-accent" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M19.5 3h-15A1.5 1.5 0 003 4.5v15A1.5 1.5 0 004.5 21h15a1.5 1.5 0 001.5-1.5v-15A1.5 1.5 0 0019.5 3zM12 18.75a6.75 6.75 0 110-13.5 6.75 6.75 0 010 13.5z"/>
                     <path d="M12 6.75v5.25l3.75 2.25"/>
                   </svg>
                   <div className="text-left">
                     <div className="font-medium">Google Calendar</div>
-                    <div className="text-xs text-white/40 mt-0.5">复制链接后粘贴订阅</div>
+                    <div className="text-xs text-white/40 mt-0.5">复制订阅源，再到“通过网址添加”粘贴</div>
                   </div>
                 </div>
-                <ExternalLink size={16} className="text-white/40 group-hover:text-white/60" />
+                {copiedTarget === 'google' ? (
+                  <Check size={16} className="text-green-400" />
+                ) : (
+                  <ExternalLink size={16} className="text-white/40 group-hover:text-accent" />
+                )}
               </button>
 
               <button
                 onClick={handleSubscribeOutlook}
-                className="w-full flex items-center justify-between px-5 py-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-xl text-white/80 hover:text-white transition-all group"
+                className="w-full flex items-center justify-between px-5 py-4 bg-white/5 hover:bg-primary/20 border border-white/10 hover:border-accent/40 rounded-xl text-white/80 hover:text-black transition-all group"
               >
                 <div className="flex items-center gap-3">
-                  <svg className="w-5 h-5 text-white/60 group-hover:text-white" viewBox="0 0 24 24" fill="currentColor">
+                  <svg className="w-5 h-5 text-white/60 group-hover:text-accent" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M21.17 2.06A2.16 2.16 0 0019.5 1.5H8.83a2.17 2.17 0 00-2 1.44l-.18.56v.5l.5 14 .18.56a2.17 2.17 0 002 1.44h10.67a2.16 2.16 0 001.67-.56 2.17 2.17 0 00.83-1.44V3.5a2.17 2.17 0 00-.83-1.44zM14 10.5a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
                   </svg>
                   <span className="font-medium">Outlook</span>
                 </div>
-                <ExternalLink size={16} className="text-white/40 group-hover:text-white/60" />
+                <ExternalLink size={16} className="text-white/40 group-hover:text-accent" />
               </button>
 
               <button
                 onClick={handleDownloadIcs}
-                className="w-full flex items-center justify-between px-5 py-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-xl text-white/80 hover:text-white transition-all group"
+                className="w-full flex items-center justify-between px-5 py-4 bg-white/5 hover:bg-primary/20 border border-white/10 hover:border-accent/40 rounded-xl text-white/80 hover:text-black transition-all group"
               >
                 <div className="flex items-center gap-3">
-                  <Download size={20} className="text-white/60 group-hover:text-white" />
-                  <span className="font-medium">下载 .ics 文件</span>
+                  <Download size={20} className="text-white/60 group-hover:text-accent" />
+                  <div className="text-left">
+                    <div className="font-medium">下载 .ics 快照</div>
+                    <div className="text-xs text-white/40 mt-0.5">一次性导入，不会自动同步后续活动</div>
+                  </div>
                 </div>
-                <span className="text-xs text-white/40">一次性导入</span>
+                <Link2 size={16} className="text-white/40 group-hover:text-accent" />
               </button>
             </div>
 
             {/* Footer Note */}
             <p className="mt-6 text-[11px] text-white/30 text-center">
-              日历每小时自动更新，无需注册账号。
+              订阅源公开可访问，无需注册账号；日历客户端会按自身频率同步更新。
             </p>
           </div>
         </motion.div>

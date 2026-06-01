@@ -106,7 +106,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   // 检查是否有激活的筛选条件
   const hasActiveFilters = searchQuery || formatFilter !== 'all' || locationFilter !== 'all';
   const segmentButtonClass =
-    'flex h-full min-w-0 flex-1 items-center justify-center gap-2 rounded-md px-2.5 text-sm font-black leading-none transition-all active:scale-[0.98] whitespace-nowrap';
+    'flex h-full min-w-[5.75rem] flex-none items-center justify-center gap-2 rounded-md px-3 text-sm font-black leading-none transition-all active:scale-[0.98] whitespace-nowrap sm:min-w-0 sm:flex-1';
   const segmentActiveClass = 'border border-black/20 bg-primary text-black';
   const segmentInactiveClass = 'text-black/60 hover:bg-black/[0.035] hover:text-black';
   const viewActiveClass = 'border border-accent bg-accent !text-white';
@@ -179,8 +179,8 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
         <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
           {/* Search Bar */}
           <div className="relative group flex-1 xl:min-w-[300px]">
-            <div className="pointer-events-none absolute left-4 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md border border-black/10 bg-accent text-white shadow-[2px_2px_0_rgba(0,0,0,0.18)] transition-colors group-focus-within:bg-primary group-focus-within:text-black">
-              <Search size={15} strokeWidth={2.5} />
+            <div className="pointer-events-none absolute left-4 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center text-accent transition-colors group-focus-within:text-black">
+              <Search size={20} strokeWidth={2.7} />
             </div>
             <input 
               type="text"
@@ -210,7 +210,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
           </div>
 
           {/* Format Select */}
-          <div className="relative z-20 flex h-[56px] min-w-0 flex-1 items-center gap-1 overflow-hidden rounded-lg border border-black/15 bg-white/90 p-1 shadow-lg shadow-black/30 backdrop-blur-2xl xl:w-[310px] xl:flex-none">
+          <div className="relative z-20 flex h-[56px] min-w-0 flex-1 items-center gap-1 overflow-x-auto rounded-lg border border-black/15 bg-white/90 p-1 shadow-lg shadow-black/30 backdrop-blur-2xl [scrollbar-width:none] xl:w-[310px] xl:flex-none [&::-webkit-scrollbar]:hidden">
             <button 
               onClick={() => onFormatChange('all')}
               className={`${segmentButtonClass} ${formatFilter === 'all' ? segmentActiveClass : segmentInactiveClass}`}
@@ -236,7 +236,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
           </div>
 
           {/* View Switcher */}
-          <div className="relative z-20 flex h-[56px] min-w-0 flex-1 items-center gap-1 overflow-hidden rounded-lg border border-black/15 bg-white/90 p-1 shadow-lg shadow-black/30 backdrop-blur-2xl xl:w-[230px] xl:flex-none">
+          <div className="relative z-20 flex h-[56px] min-w-0 flex-1 items-center gap-1 overflow-x-auto rounded-lg border border-black/15 bg-white/90 p-1 shadow-lg shadow-black/30 backdrop-blur-2xl [scrollbar-width:none] xl:w-[230px] xl:flex-none [&::-webkit-scrollbar]:hidden">
             <button 
               onClick={() => onViewModeChange('month')}
               className={`${segmentButtonClass} ${viewMode === 'month' ? viewActiveClass : segmentInactiveClass}`}

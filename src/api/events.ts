@@ -1,5 +1,5 @@
 import { isSupabaseConfigured, supabase } from '../config/supabase';
-import { CITY_OPTIONS, OTHER_CITY_OPTION } from '../constants/activityTaxonomy';
+import { CITY_OPTIONS, OTHER_CITY_OPTION, getActivityFilterValues } from '../constants/activityTaxonomy';
 import type { TechEvent } from '../types';
 
 export interface EventFilters {
@@ -57,9 +57,6 @@ export async function fetchEvents(filters: EventFilters = {}): Promise<TechEvent
       .select('*')
       .order('start_time', { ascending: true });
 
-    // 只显示即将到来和正在进行的活动
-    query = query.in('status', ['upcoming', 'live']);
-
     // 格式筛选
     if (filters.format && filters.format !== 'all') {
       query = query.eq('format', filters.format);
@@ -78,7 +75,14 @@ export async function fetchEvents(filters: EventFilters = {}): Promise<TechEvent
 
     // 活动类型筛选。用户自定义标签走搜索，不作为首页固定筛选项。
     if (filters.tag) {
-      query = query.eq('activity_type', filters.tag);
+      const activityTypeValues = getActivityFilterValues(filters.tag);
+      if (activityTypeValues.length > 1) {
+        query = query.in('activity_type', activityTypeValues);
+      } else if (activityTypeValues.length === 1) {
+        query = query.eq('activity_type', activityTypeValues[0]);
+      } else {
+        query = query.eq('activity_type', filters.tag);
+      }
     }
 
     // Search keywords

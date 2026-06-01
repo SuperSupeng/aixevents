@@ -21,6 +21,7 @@ const PartnerLogoWall: React.FC<PartnerLogoWallProps> = ({ onViewAll }) => {
               生态伙伴
             </p>
             <h2>和更多社区、高校与产业伙伴一起发生</h2>
+            <p className="partner-wall-note">排名不分先后</p>
           </div>
           <button
             onClick={onViewAll}

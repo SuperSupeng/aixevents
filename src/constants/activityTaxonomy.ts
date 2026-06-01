@@ -14,10 +14,56 @@ export type ActivityType = (typeof ACTIVITY_TYPES)[number]['value'];
 
 export const DEFAULT_ACTIVITY_TYPE: ActivityType = 'meetup';
 
+export const SUBMISSION_ACTIVITY_TYPES = [
+  { value: 'meetup', label: '交流/分享', hint: '适合 Meetup、主题分享、讲座、圆桌、社区交流' },
+  { value: 'workshop', label: '工作坊/实操', hint: '适合动手练习、工作坊、共学实践' },
+  { value: 'hackathon', label: '黑客松', hint: '适合 Hackathon、挑战赛、作品共创' },
+  { value: 'training', label: '课程/训练营', hint: '适合连续课程、训练营、营期活动' },
+  { value: 'other', label: '其他/不确定', hint: '拿不准就选这一项，我们确认时可以再调整' },
+] as const satisfies ReadonlyArray<{ value: ActivityType; label: string; hint: string }>;
+
+export const ACTIVITY_FILTER_GROUPS = [
+  {
+    id: 'sharing',
+    label: '交流/分享',
+    values: ['meetup', 'talk', 'conference'],
+  },
+  {
+    id: 'workshop',
+    label: '工作坊/实操',
+    values: ['workshop'],
+  },
+  {
+    id: 'challenge',
+    label: '黑客松',
+    values: ['hackathon', 'competition', 'demo_day'],
+  },
+  {
+    id: 'training',
+    label: '课程/训练营',
+    values: ['training'],
+  },
+] as const satisfies ReadonlyArray<{ id: string; label: string; values: ActivityType[] }>;
+
 export const PUBLIC_ACTIVITY_TYPES = ACTIVITY_TYPES.filter((type) => type.value !== 'other');
 
 export function getActivityTypeLabel(value?: string): string {
   return ACTIVITY_TYPES.find((type) => type.value === value)?.label || '活动';
+}
+
+export function getActivityFilterValues(value?: string): ActivityType[] {
+  if (!value) return [];
+
+  const group = ACTIVITY_FILTER_GROUPS.find((filterGroup) => filterGroup.id === value);
+  if (group) return [...group.values];
+
+  const activityType = ACTIVITY_TYPES.find((type) => type.value === value);
+  return activityType ? [activityType.value] : [];
+}
+
+export function getActivityFilterLabel(value?: string): string {
+  if (!value) return '活动';
+  return ACTIVITY_FILTER_GROUPS.find((filterGroup) => filterGroup.id === value)?.label || getActivityTypeLabel(value);
 }
 
 export const CITY_OPTIONS = [

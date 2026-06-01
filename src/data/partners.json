@@ -1,0 +1,514 @@
+{
+  "categories": [
+    {
+      "name": "AI 模型与开发平台",
+      "partners": [
+        {
+          "logoFile": "image12.png",
+          "name": "蚂蚁百灵",
+          "note": "企业智能体与大模型应用"
+        },
+        {
+          "logoFile": "image13.png",
+          "name": "零一万物",
+          "note": "大模型与 AI 应用"
+        },
+        {
+          "logoFile": "image14.png",
+          "name": "Kimi",
+          "note": "AI 助手与模型服务"
+        },
+        {
+          "logoFile": "image15.png",
+          "name": "Qwen Code",
+          "note": "AI 编程智能体"
+        },
+        {
+          "logoFile": "image17.png",
+          "name": "讯飞开放平台",
+          "note": "语音与认知智能平台"
+        },
+        {
+          "logoFile": "image19.png",
+          "name": "百川智能",
+          "note": "大模型研发与应用"
+        },
+        {
+          "logoFile": "image27.png",
+          "name": "Dify",
+          "note": "LLM 应用开发平台"
+        },
+        {
+          "logoFile": "image30.png",
+          "name": "无问芯穹",
+          "note": "AI Infra 与模型服务"
+        },
+        {
+          "logoFile": "image33.png",
+          "name": "商汤科技",
+          "note": "人工智能平台与应用"
+        },
+        {
+          "logoFile": "image38.png",
+          "name": "MiniMax",
+          "note": "多模态大模型"
+        },
+        {
+          "logoFile": "image40.png",
+          "name": "阶跃星辰",
+          "note": "通用大模型"
+        },
+        {
+          "logoFile": "image78.png",
+          "name": "算泥",
+          "note": "AI 算力与模型工具"
+        },
+        {
+          "logoFile": "image91.png",
+          "name": "文心大模型",
+          "note": "大模型与 AI 应用"
+        },
+        {
+          "logoFile": "image101.jpeg",
+          "name": "通义",
+          "note": "大模型与智能体平台"
+        },
+        {
+          "logoFile": "image85.png",
+          "name": "Google",
+          "note": "AI、云与开发者生态"
+        }
+      ]
+    },
+    {
+      "name": "AI 应用与效率工具",
+      "partners": [
+        {
+          "logoFile": "image16.png",
+          "name": "NoCode",
+          "note": "无代码 AI 创作工具"
+        },
+        {
+          "logoFile": "image21.png",
+          "name": "秒哒",
+          "note": "AI 应用搭建工具"
+        },
+        {
+          "logoFile": "image22.png",
+          "name": "Second Me",
+          "note": "个人 AI 与数字分身"
+        },
+        {
+          "logoFile": "image23.png",
+          "name": "金山办公",
+          "note": "办公软件与 AI 办公"
+        },
+        {
+          "logoFile": "image32.png",
+          "name": "沐言智语",
+          "note": "AI 应用与智能服务"
+        },
+        {
+          "logoFile": "image35.png",
+          "name": "小云",
+          "note": "AI 云端应用"
+        },
+        {
+          "logoFile": "image36.png",
+          "name": "POLI Interactive Tech",
+          "note": "交互技术服务"
+        },
+        {
+          "logoFile": "image37.png",
+          "name": "Buda",
+          "note": "AI 产品与工具"
+        },
+        {
+          "logoFile": "image50.png",
+          "name": "MONOLITH",
+          "note": "AI 产品与工程平台"
+        },
+        {
+          "logoFile": "image72.png",
+          "name": "FluxVerse",
+          "note": "AI 创意工具"
+        },
+        {
+          "logoFile": "image94.png",
+          "name": "YouMind",
+          "note": "AI 知识与内容工具"
+        },
+        {
+          "logoFile": "image95.png",
+          "name": "Mo",
+          "note": "AI 产品与工具"
+        },
+        {
+          "logoFile": "image100.jpeg",
+          "name": "WPS Office",
+          "note": "办公软件与 AI 办公"
+        }
+      ]
+    },
+    {
+      "name": "算力与芯片",
+      "partners": [
+        {
+          "logoFile": "image10.png",
+          "name": "AMD",
+          "note": "AI 芯片与算力硬件"
+        },
+        {
+          "logoFile": "image29.png",
+          "name": "亚马逊云科技",
+          "note": "云计算与 AI 基础设施"
+        },
+        {
+          "logoFile": "image81.png",
+          "name": "MINISFORUM 铭凡",
+          "note": "迷你主机与边缘算力"
+        },
+        {
+          "logoFile": "image84.png",
+          "name": "NVIDIA",
+          "note": "GPU 与加速计算"
+        },
+        {
+          "logoFile": "image80.png",
+          "name": "首界科技 First AR PC",
+          "note": "AR PC 与智能终端"
+        }
+      ]
+    },
+    {
+      "name": "智能硬件与具身智能",
+      "partners": [
+        {
+          "logoFile": "image99.png",
+          "name": "智元机器人",
+          "note": "具身智能与机器人"
+        }
+      ]
+    },
+    {
+      "name": "开源与社区",
+      "partners": [
+        {
+          "logoFile": "image9.png",
+          "name": "ModelScope 魔搭社区",
+          "note": "AI 模型开源社区"
+        },
+        {
+          "logoFile": "image20.png",
+          "name": "达摩开发者矩阵",
+          "note": "开发者生态"
+        },
+        {
+          "logoFile": "image25.png",
+          "name": "OpenI 启智社区",
+          "note": "AI 开源协作平台"
+        },
+        {
+          "logoFile": "image31.png",
+          "name": "OpenBMB",
+          "note": "大模型开源社区"
+        },
+        {
+          "logoFile": "image34.png",
+          "name": "字见席开源社区",
+          "note": "开源社区"
+        },
+        {
+          "logoFile": "image83.jpeg",
+          "name": "开放原子开源基金会",
+          "note": "开源基金会"
+        },
+        {
+          "logoFile": "image92.png",
+          "name": "飞桨星河社区",
+          "note": "AI 开源学习社区"
+        },
+        {
+          "logoFile": "image97.png",
+          "name": "AI 大学堂",
+          "note": "AI 学习社区"
+        },
+        {
+          "logoFile": "image104.png",
+          "name": "WaytoAGI",
+          "note": "AI 知识社区"
+        },
+        {
+          "logoFile": "image11.png",
+          "name": "去探索",
+          "note": "探索活动与内容社区"
+        },
+        {
+          "logoFile": "image26.png",
+          "name": "TIC",
+          "note": "科技活动社区"
+        },
+        {
+          "logoFile": "image60.png",
+          "name": "K2 Lab",
+          "note": "AI 创作者社区"
+        },
+        {
+          "logoFile": "image65.png",
+          "name": "TGO 鲲鹏会",
+          "note": "技术管理者社群"
+        },
+        {
+          "logoFile": "image70.png",
+          "name": "XTion",
+          "note": "创作者与活动社区"
+        },
+        {
+          "logoFile": "image71.png",
+          "name": "ADVENTURE X",
+          "note": "创新活动社区"
+        },
+        {
+          "logoFile": "image73.png",
+          "name": "深客松",
+          "note": "Hackathon 社区"
+        },
+        {
+          "logoFile": "image75.png",
+          "name": "Bonjour!",
+          "note": "创作者社区"
+        },
+        {
+          "logoFile": "image77.png",
+          "name": "生姜青年 Ginger Crew",
+          "note": "青年创作者社区"
+        },
+        {
+          "logoFile": "image103.png",
+          "name": "观猹",
+          "note": "科技内容与研究社区"
+        }
+      ]
+    },
+    {
+      "name": "科技媒体与出版",
+      "partners": [
+        {
+          "logoFile": "image61.png",
+          "name": "小红书科技",
+          "note": "内容社区与生活方式平台"
+        },
+        {
+          "logoFile": "image62.png",
+          "name": "知乎",
+          "note": "问答社区与内容平台"
+        },
+        {
+          "logoFile": "image63.png",
+          "name": "InfoQ 极客邦传媒",
+          "note": "技术媒体与开发者内容"
+        },
+        {
+          "logoFile": "image66.png",
+          "name": "十字路口",
+          "note": "在地社区与创作者活动"
+        },
+        {
+          "logoFile": "image69.png",
+          "name": "elsewhere",
+          "note": "科技内容与创作者媒体"
+        },
+        {
+          "logoFile": "image74.png",
+          "name": "Hackathon Weekly",
+          "note": "Hackathon 内容媒体"
+        },
+        {
+          "logoFile": "image76.png",
+          "name": "硅星人",
+          "note": "科技媒体"
+        },
+        {
+          "logoFile": "image88.png",
+          "name": "人民邮电出版社",
+          "note": "科技出版"
+        },
+        {
+          "logoFile": "image102.png",
+          "name": "异步社区",
+          "note": "技术出版与学习社区"
+        },
+        {
+          "logoFile": "image105.png",
+          "name": "SegmentFault 思否",
+          "note": "开发者社区与科技媒体"
+        }
+      ]
+    },
+    {
+      "name": "投资孵化与产业空间",
+      "partners": [
+        {
+          "logoFile": "image28.png",
+          "name": "栖西聚才",
+          "note": "人才与产业服务"
+        },
+        {
+          "logoFile": "image41.png",
+          "name": "真格基金",
+          "note": "早期投资"
+        },
+        {
+          "logoFile": "image42.png",
+          "name": "蓝驰创投",
+          "note": "风险投资"
+        },
+        {
+          "logoFile": "image43.png",
+          "name": "创新工场",
+          "note": "科技投资与孵化"
+        },
+        {
+          "logoFile": "image44.png",
+          "name": "绿洲",
+          "note": "产业投资与孵化"
+        },
+        {
+          "logoFile": "image45.png",
+          "name": "九合创投",
+          "note": "早期风险投资"
+        },
+        {
+          "logoFile": "image46.png",
+          "name": "源码资本",
+          "note": "科技风险投资"
+        },
+        {
+          "logoFile": "image47.png",
+          "name": "Delta X",
+          "note": "科技创新投资"
+        },
+        {
+          "logoFile": "image48.png",
+          "name": "西湖创投",
+          "note": "区域创投"
+        },
+        {
+          "logoFile": "image49.png",
+          "name": "SparkAI 星火启源 AI 众创空间",
+          "note": "AI 众创空间"
+        },
+        {
+          "logoFile": "image51.png",
+          "name": "Alphaist",
+          "note": "科技投资"
+        },
+        {
+          "logoFile": "image52.png",
+          "name": "华旦天使",
+          "note": "天使投资"
+        },
+        {
+          "logoFile": "image53.png",
+          "name": "BOT PARK 机器人基地（宁波）",
+          "note": "机器人产业基地"
+        },
+        {
+          "logoFile": "image54.png",
+          "name": "线性资本",
+          "note": "前沿科技投资"
+        },
+        {
+          "logoFile": "image55.png",
+          "name": "明月湖国际智能产业科创基地",
+          "note": "智能产业科创空间"
+        },
+        {
+          "logoFile": "image56.png",
+          "name": "耀途资本",
+          "note": "硬科技风险投资"
+        },
+        {
+          "logoFile": "image57.png",
+          "name": "东南基金",
+          "note": "产业基金"
+        },
+        {
+          "logoFile": "image58.png",
+          "name": "邦盛资本",
+          "note": "产业投资"
+        },
+        {
+          "logoFile": "image59.png",
+          "name": "图灵创投",
+          "note": "科技风险投资"
+        },
+        {
+          "logoFile": "image64.png",
+          "name": "博力工场",
+          "note": "创新孵化与活动空间"
+        },
+        {
+          "logoFile": "image68.png",
+          "name": "AGI Villa",
+          "note": "AI 创作者社区"
+        },
+        {
+          "logoFile": "image79.png",
+          "name": "模速空间",
+          "note": "大模型产业创新空间"
+        },
+        {
+          "logoFile": "image86.png",
+          "name": "云启资本",
+          "note": "科技风险投资"
+        }
+      ]
+    },
+    {
+      "name": "产业与公共机构",
+      "partners": [
+        {
+          "logoFile": "image18.png",
+          "name": "CBi 桥中",
+          "note": "创新咨询与产业共创"
+        },
+        {
+          "logoFile": "image24.png",
+          "name": "每日互动",
+          "note": "数据智能服务"
+        },
+        {
+          "logoFile": "image39.png",
+          "name": "南京市红山森林动物园",
+          "note": "公共文化与科普机构"
+        },
+        {
+          "logoFile": "image67.png",
+          "name": "传播大脑",
+          "note": "媒体科技与传播服务"
+        },
+        {
+          "logoFile": "image82.png",
+          "name": "武当山",
+          "note": "文旅与公共文化场景"
+        },
+        {
+          "logoFile": "image87.png",
+          "name": "中国中车 CRRC",
+          "note": "轨道交通与智能制造"
+        },
+        {
+          "logoFile": "image96.png",
+          "name": "天元智能科学研究院",
+          "note": "智能科学研究机构"
+        },
+        {
+          "logoFile": "image98.png",
+          "name": "滴滴出行",
+          "note": "出行科技平台"
+        }
+      ]
+    }
+  ]
+}

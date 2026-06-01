@@ -9,7 +9,10 @@ import {
   isSameMonth, 
   isSameDay, 
   addMonths, 
-  subMonths 
+  subMonths,
+  startOfDay,
+  endOfDay,
+  parseISO
 } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, Globe, Rss } from 'lucide-react';
@@ -26,6 +29,44 @@ interface CalendarProps {
   events: TechEvent[];
   onEventClick: (event: TechEvent) => void;
   onSubscribeClick?: () => void;
+}
+
+function getDisplayEndDate(eventStart: Date, eventEnd: Date): Date {
+  const endsAtMidnight =
+    eventEnd.getHours() === 0 &&
+    eventEnd.getMinutes() === 0 &&
+    eventEnd.getSeconds() === 0 &&
+    eventEnd.getMilliseconds() === 0;
+
+  if (eventEnd.getTime() > eventStart.getTime() && endsAtMidnight) {
+    return new Date(eventEnd.getTime() - 1);
+  }
+
+  return eventEnd;
+}
+
+function eventOverlapsRange(event: TechEvent, rangeStart: Date, rangeEnd: Date): boolean {
+  const eventStart = parseISO(event.startTime);
+  const eventEnd = getDisplayEndDate(eventStart, parseISO(event.endTime));
+
+  return eventStart.getTime() <= rangeEnd.getTime() && eventEnd.getTime() >= rangeStart.getTime();
+}
+
+function isMultiDayEvent(event: TechEvent): boolean {
+  const eventStart = parseISO(event.startTime);
+  const eventEnd = getDisplayEndDate(eventStart, parseISO(event.endTime));
+  return !isSameDay(eventStart, eventEnd);
+}
+
+function getMonthEventLabel(event: TechEvent, day: Date): string {
+  if (!isMultiDayEvent(event)) return event.title;
+
+  const eventStart = parseISO(event.startTime);
+  const eventEnd = getDisplayEndDate(eventStart, parseISO(event.endTime));
+
+  if (isSameDay(eventStart, day)) return `开始 | ${event.title}`;
+  if (isSameDay(eventEnd, day)) return `结束 | ${event.title}`;
+  return `持续 | ${event.title}`;
 }
 
 const Calendar: React.FC<CalendarProps> = ({ events, onEventClick, onSubscribeClick }) => {
@@ -84,8 +125,8 @@ const Calendar: React.FC<CalendarProps> = ({ events, onEventClick, onSubscribeCl
   };
 
   // 检查当前月份是否有活动
-  const hasEventsThisMonth = events.some(event => 
-    isSameMonth(new Date(event.startTime), currentDate)
+  const hasEventsThisMonth = events.some(event =>
+    eventOverlapsRange(event, startOfDay(monthStart), endOfDay(monthEnd))
   );
 
   useEffect(() => {
@@ -163,7 +204,13 @@ const Calendar: React.FC<CalendarProps> = ({ events, onEventClick, onSubscribeCl
       ) : (
         <div className="calendar-grid">
           {days.map((day, idx) => {
-          const dayEvents = events.filter(event => isSameDay(new Date(event.startTime), day));
+          const dayEvents = events
+            .filter(event => eventOverlapsRange(event, startOfDay(day), endOfDay(day)))
+            .sort((a, b) => {
+              const multiDayDelta = Number(isMultiDayEvent(b)) - Number(isMultiDayEvent(a));
+              if (multiDayDelta) return multiDayDelta;
+              return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
+            });
           const isCurrentMonth = isSameMonth(day, monthStart);
           const isToday = isSameDay(day, new Date());
           const isLastRow = idx >= days.length - 7; // 检查是否是最后一行
@@ -197,15 +244,24 @@ const Calendar: React.FC<CalendarProps> = ({ events, onEventClick, onSubscribeCl
               </div>
               
               <div className="space-y-1.5">
-                {dayEvents.slice(0, displayLimit).map(event => (
-                  <button
-                    key={event.id}
-                    onClick={() => onEventClick(event)}
-                    className="w-full text-left px-2.5 py-1.5 text-[10px] leading-tight rounded-md bg-black border border-black !text-white hover:bg-accent hover:border-accent transition-all truncate shadow-sm font-bold"
-                  >
-                    <span className="font-medium">{event.title}</span>
-                  </button>
-                ))}
+                {dayEvents.slice(0, displayLimit).map(event => {
+                  const isMultiDay = isMultiDayEvent(event);
+
+                  return (
+                    <button
+                      key={event.id}
+                      onClick={() => onEventClick(event)}
+                      className={cn(
+                        "w-full truncate rounded-md border px-2.5 py-1.5 text-left text-[10px] font-bold leading-tight shadow-sm transition-all",
+                        isMultiDay
+                          ? "border-accent/45 bg-primary/35 text-black hover:border-accent hover:bg-primary/55"
+                          : "border-black bg-black !text-white hover:border-accent hover:bg-accent"
+                      )}
+                    >
+                      <span className="font-medium">{getMonthEventLabel(event, day)}</span>
+                    </button>
+                  );
+                })}
                 {dayEvents.length > 3 && (
                   <button
                     onClick={() => toggleDayExpanded(dayKey)}

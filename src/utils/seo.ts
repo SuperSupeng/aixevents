@@ -28,21 +28,21 @@ export const PAGE_SEO: Record<SeoPage, SEOMetadata> = {
     canonicalPath: '/',
   },
   hackathons: {
-    title: 'AI+X Hackathon 与作品挑战｜Datawhale AI+X 活动日历',
-    description: '收录 AI 黑客松、创造营、作品挑战和 Agent 实战活动，帮助开发者、高校学生和个人创造者发现可参与、可产出的 AI+X 实践机会。',
-    keywords: 'AI黑客松, Hackathon, AI作品挑战, Agent实战, 创造营, Datawhale, AI+X活动',
+    title: 'AI+X Hackathon｜Datawhale AI+X 活动日历',
+    description: '收录 AI 黑客松、创造营、挑战赛、Demo Day 和 Agent 实战活动，帮助开发者、高校学生和个人创造者发现可参与、可产出的 AI+X 实践机会。',
+    keywords: 'AI黑客松, Hackathon, AI挑战赛, Agent实战, 创造营, Demo Day, Datawhale, AI+X活动',
     canonicalPath: '/hackathons',
   },
   resources: {
-    title: 'AI+X 资源与日历订阅｜Datawhale AI+X 活动日历',
-    description: '订阅 Datawhale AI+X 活动日历，查看 AI 里程碑和生态资源入口，持续追踪 AI+X 活动、日历源与共建信息。',
-    keywords: 'AI资源, 日历订阅, ICS订阅, AI里程碑, AI生态资源, Datawhale AI+X',
+    title: 'AI+X 资源与外部参考｜Datawhale AI+X 活动日历',
+    description: '查看 AI 里程碑、外部参考源和生态共建入口，持续追踪 AI+X 活动相关的信息源与共建资源。',
+    keywords: 'AI资源, AI里程碑, AI生态资源, 外部日历源, Datawhale AI+X',
     canonicalPath: '/resources',
   },
   partners: {
     title: '生态伙伴｜Datawhale AI+X 活动日历',
-    description: 'Datawhale AI+X 活动日历生态伙伴页，收录共同推动 AI+X 活动发生的社区、高校、科技企业、媒体、政府园区、投资机构和在地社区伙伴。',
-    keywords: 'Datawhale AI+X 生态伙伴, AI社区, 高校伙伴, 科技企业, 媒体伙伴, 在地社区, 活动共建',
+    description: 'Datawhale AI+X 活动日历生态伙伴页，收录共同推动 AI+X 活动发生的模型平台、AI 工具、开源与社区、科技媒体、投资孵化、算力芯片、智能硬件与具身智能和产业公共机构伙伴。',
+    keywords: 'Datawhale AI+X 生态伙伴, AI模型平台, AI工具, 开源与社区, 开发者社区, 科技媒体, 投资孵化, 算力芯片, 智能硬件, 具身智能, 活动共建',
     canonicalPath: '/partners',
   },
   privacy: {
@@ -150,7 +150,7 @@ export function injectStructuredData(id: string, payload: unknown) {
     document.head.appendChild(script);
   }
 
-  script.text = JSON.stringify(payload);
+  script.text = JSON.stringify(payload).replace(/</g, '\\u003c');
 }
 
 export function removeStructuredData(id: string) {

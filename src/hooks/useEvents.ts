@@ -1,16 +1,23 @@
 import { useQuery } from '@tanstack/react-query';
 import { fetchEvents, fetchLocations, type EventFilters } from '../api/events';
 
+interface UseEventsOptions {
+  staleTime?: number;
+  refetchOnMount?: boolean | 'always';
+  refetchOnWindowFocus?: boolean | 'always';
+}
+
 /**
  * 获取活动列表的 Hook
  */
-export function useEvents(filters: EventFilters = {}) {
+export function useEvents(filters: EventFilters = {}, options: UseEventsOptions = {}) {
   return useQuery({
     queryKey: ['events', filters],
     queryFn: () => fetchEvents(filters),
-    staleTime: 5 * 60 * 1000, // 5分钟内数据被认为是新鲜的
+    staleTime: options.staleTime ?? 5 * 60 * 1000, // 5分钟内数据被认为是新鲜的
     gcTime: 10 * 60 * 1000, // 10分钟后清除缓存
-    refetchOnWindowFocus: false, // 窗口聚焦时不自动重新获取
+    refetchOnMount: options.refetchOnMount,
+    refetchOnWindowFocus: options.refetchOnWindowFocus ?? false, // 窗口聚焦时不自动重新获取
     placeholderData: (previousData) => previousData, // 保留之前的数据，避免闪烁
     retry: 2, // 失败后重试2次
   });

@@ -7,6 +7,8 @@ interface PartnersProps {
   onGroupClick: () => void;
 }
 
+const categoryId = (index: number) => `partner-category-${index}`;
+
 const Partners: React.FC<PartnersProps> = ({ onBack, onGroupClick }) => {
   return (
     <div className="poster-app min-h-screen px-4 py-24 text-black sm:px-6">
@@ -27,20 +29,21 @@ const Partners: React.FC<PartnersProps> = ({ onBack, onGroupClick }) => {
             </div>
             <h1>生态伙伴</h1>
             <p>
-              这里收录与 Datawhale AI+X 活动日历共同推动活动发生的社区、高校、科技企业、媒体、政府园区、投资机构和在地社区伙伴。
+              这里收录与 Datawhale AI+X 活动日历共同推动活动发生的模型平台、AI 工具、开源与社区、科技媒体、投资孵化、算力芯片、智能硬件与具身智能和产业公共机构伙伴。
             </p>
+            <p className="partner-page-note">排名不分先后</p>
           </div>
 
           <div className="partner-page-stat">
             <p>首批收录</p>
             <strong>{ecosystemPartners.length}</strong>
-            <span>个伙伴 logo</span>
+            <span>个生态伙伴</span>
           </div>
         </header>
 
         <div className="partner-category-nav" aria-label="生态伙伴分类">
-          {PARTNER_CATEGORIES.map((category) => (
-            <a key={category} href={`#${category}`} className="partner-category-chip">
+          {PARTNER_CATEGORIES.map((category, index) => (
+            <a key={category} href={`#${categoryId(index)}`} className="partner-category-chip">
               {category}
               <span>{getPartnersByCategory(category).length}</span>
             </a>
@@ -48,10 +51,10 @@ const Partners: React.FC<PartnersProps> = ({ onBack, onGroupClick }) => {
         </div>
 
         <div className="partner-directory">
-          {PARTNER_CATEGORIES.map((category) => {
+          {PARTNER_CATEGORIES.map((category, index) => {
             const partners = getPartnersByCategory(category);
             return (
-              <section key={category} id={category} className="partner-directory-section">
+              <section key={category} id={categoryId(index)} className="partner-directory-section">
                 <div className="partner-directory-heading">
                   <h2>{category}</h2>
                   <span>{partners.length} 个</span>
@@ -59,7 +62,12 @@ const Partners: React.FC<PartnersProps> = ({ onBack, onGroupClick }) => {
                 <div className="partner-directory-grid">
                   {partners.map((partner) => (
                     <article key={partner.id} className="partner-directory-card">
-                      <img src={partner.logo} alt={partner.name} loading="lazy" decoding="async" />
+                      <div className="partner-directory-logo">
+                        <img src={partner.logo} alt={partner.name} loading="lazy" decoding="async" />
+                      </div>
+                      <div className="partner-directory-meta">
+                        <h3>{partner.name}</h3>
+                      </div>
                     </article>
                   ))}
                 </div>

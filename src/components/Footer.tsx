@@ -2,11 +2,6 @@ import React from 'react';
 import Logo from './Logo';
 
 interface FooterProps {
-  onCalendarClick: () => void;
-  onHackathonsClick: () => void;
-  onPartnersClick: () => void;
-  onResourcesClick: () => void;
-  onSubscribeClick: () => void;
   onSubmitClick: () => void;
   onSupportClick: () => void;
   onGroupClick: () => void;
@@ -15,11 +10,6 @@ interface FooterProps {
 }
 
 const Footer: React.FC<FooterProps> = ({
-  onCalendarClick,
-  onHackathonsClick,
-  onPartnersClick,
-  onResourcesClick,
-  onSubscribeClick,
   onSubmitClick,
   onSupportClick,
   onGroupClick,
@@ -31,7 +21,7 @@ const Footer: React.FC<FooterProps> = ({
       {/* Footer Transition Overlay - 从上方逐渐淡出黑色遮罩，让shader显现 */}
       <div className="footer-transition-overlay" />
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 sm:gap-10 mb-12 sm:mb-20">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-10 mb-12 sm:mb-20">
             <div className="md:col-span-2">
               <div className="flex items-center gap-3 mb-6">
                 <Logo size={32} className="max-w-[220px]" />
@@ -39,16 +29,6 @@ const Footer: React.FC<FooterProps> = ({
               <p className="text-white/80 max-w-sm leading-relaxed font-sans text-sm sm:text-[15px]">
                 收录 AI+X 生态活动，帮助学习者、开发者、高校学生、产业从业者和个人创造者找到真实场景中的连接、实践与共创机会。
               </p>
-            </div>
-            <div>
-              <h4 className="text-white font-semibold mb-6 text-sm">产品</h4>
-              <ul className="space-y-4 text-white/75 text-sm">
-                <li><button onClick={onCalendarClick} className="hover:text-white transition-colors">活动日历</button></li>
-                <li><button onClick={onHackathonsClick} className="hover:text-white transition-colors">Hackathon 收录</button></li>
-                <li><button onClick={onPartnersClick} className="hover:text-white transition-colors">生态伙伴</button></li>
-                <li><button onClick={onResourcesClick} className="hover:text-white transition-colors">资源索引</button></li>
-                <li><button onClick={onSubscribeClick} className="hover:text-white transition-colors">订阅日历</button></li>
-              </ul>
             </div>
             <div>
               <h4 className="text-white font-semibold mb-6 text-sm">社区</h4>

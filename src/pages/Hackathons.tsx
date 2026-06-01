@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { ArrowLeft, ExternalLink, Globe2, Loader2, MapPin, Trophy } from 'lucide-react';
+import { ArrowLeft, ArrowUpRight, ExternalLink, Globe2, Loader2, MapPin, Trophy } from 'lucide-react';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import { useEvents } from '../hooks/useEvents';
@@ -8,6 +8,7 @@ import type { TechEvent } from '../types';
 interface HackathonsProps {
   onBack: () => void;
   onSubmitClick: () => void;
+  onEventClick: (event: TechEvent) => void;
 }
 
 function formatEventDate(date: string): string {
@@ -20,8 +21,11 @@ function getLocationLabel(event: TechEvent): string {
   return event.location?.city || '城市待定';
 }
 
-const Hackathons: React.FC<HackathonsProps> = ({ onBack, onSubmitClick }) => {
-  const { data: events = [], isLoading } = useEvents({ tag: 'hackathon', limit: 100 });
+const Hackathons: React.FC<HackathonsProps> = ({ onBack, onSubmitClick, onEventClick }) => {
+  const { data: events = [], isLoading } = useEvents(
+    { tag: 'challenge', limit: 300 },
+    { refetchOnMount: 'always', staleTime: 30 * 1000 }
+  );
 
   const hackathons = useMemo(() => {
     return [...events].sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
@@ -49,10 +53,10 @@ const Hackathons: React.FC<HackathonsProps> = ({ onBack, onSubmitClick }) => {
               AI+X Hackathon
             </div>
             <h1 className="max-w-3xl text-4xl font-black leading-[1.02] text-black sm:text-6xl">
-              Hackathon 与作品挑战
+              AI+X Hackathon
             </h1>
             <p className="mt-5 max-w-3xl text-base font-bold leading-8 text-black/70 sm:text-lg">
-              单独收录黑客松、创造营、作品挑战和 Agent 实战活动。默认按活动开始时间排序，报名截止以主办方页面或海报二维码为准。
+              单独收录黑客松相关活动，包括 Hackathon、挑战赛、Demo Day 和以作品产出为核心的实践活动。默认按活动开始时间排序，报名截止以主办方页面或海报二维码为准。
             </p>
           </div>
 
@@ -72,7 +76,7 @@ const Hackathons: React.FC<HackathonsProps> = ({ onBack, onSubmitClick }) => {
 
         <div className="mt-7 flex flex-col gap-3 border-b-2 border-dashed border-black/20 pb-7 sm:flex-row sm:items-center sm:justify-between">
           <p className="max-w-2xl text-sm font-bold leading-7 text-black/60">
-            适合有明确主题、任务制产出和作品展示的活动。生态伙伴可以提交信息，确认后同步进入主活动日历。
+            适合有明确主题、任务制产出和作品展示的黑客松相关活动。生态伙伴可以提交信息，确认后同步进入主活动日历。
           </p>
           <button onClick={onSubmitClick} className="btn-primary inline-flex items-center justify-center gap-2 px-5 py-3 text-sm">
             提交 Hackathon <ExternalLink size={16} />
@@ -89,12 +93,11 @@ const Hackathons: React.FC<HackathonsProps> = ({ onBack, onSubmitClick }) => {
             <div className="border-2 border-dashed border-black/25 bg-white/75 p-7 sm:p-8">
               <p className="text-2xl font-black text-black">暂时没有确认收录的 Hackathon。</p>
               <p className="mt-3 max-w-2xl text-sm font-bold leading-7 text-black/60">
-                如果你正在组织 AI 黑客松、创造营或作品挑战，可以提交活动信息；确认通过后会出现在这里和主活动日历中。
+                如果你正在组织 AI 黑客松或相关挑战活动，可以提交活动信息；确认通过后会出现在这里和主活动日历中。
               </p>
             </div>
           ) : (
             hackathons.map((event) => {
-              const detailUrl = event.links.registration || event.links.officialSite || event.links.poster;
               return (
                 <article
                   key={event.id}
@@ -133,20 +136,13 @@ const Hackathons: React.FC<HackathonsProps> = ({ onBack, onSubmitClick }) => {
                     <p className="mt-2 line-clamp-2 text-sm font-bold leading-6 text-black/60">{event.summary}</p>
                   </div>
 
-                  {detailUrl ? (
-                    <a
-                      href={detailUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn-secondary inline-flex items-center justify-center gap-2 px-5 py-3 text-sm"
-                    >
-                      查看详情 <ExternalLink size={16} />
-                    </a>
-                  ) : (
-                    <span className="border-2 border-black/10 bg-black/[0.035] px-5 py-3 text-center text-sm font-black text-black/50">
-                      待补充链接
-                    </span>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => onEventClick(event)}
+                    className="btn-secondary inline-flex items-center justify-center gap-2 px-5 py-3 text-sm"
+                  >
+                    查看详情 <ArrowUpRight size={16} />
+                  </button>
                 </article>
               );
             })

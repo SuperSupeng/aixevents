@@ -8,6 +8,13 @@ export interface TimeUrgency {
   borderColor: string;
 }
 
+export function isEventActiveByEndTime(eventEndTime: string, referenceDate = new Date()): boolean {
+  const endTime = typeof eventEndTime === 'string' ? parseISO(eventEndTime) : eventEndTime;
+  const endTimestamp = endTime.getTime();
+
+  return Number.isFinite(endTimestamp) && endTimestamp >= referenceDate.getTime();
+}
+
 /**
  * 计算活动的时间紧迫度
  */

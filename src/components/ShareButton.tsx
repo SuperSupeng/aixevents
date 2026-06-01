@@ -19,7 +19,7 @@ const ShareButton: React.FC<ShareButtonProps> = ({
   const [copied, setCopied] = useState(false);
 
   // 构建分享内容
-  const shareUrl = customUrl || (event ? `${window.location.origin}/event/${event.id}` : window.location.href);
+  const shareUrl = customUrl || (event ? `${window.location.origin}/events/${encodeURIComponent(event.id)}` : window.location.href);
   const shareTitle = customTitle || (event ? event.title : 'Datawhale AI+X 活动日历');
   const shareDescription = customDescription || (event ? event.summary : '发现全球 AI 与科技活动');
 
@@ -27,14 +27,14 @@ const ShareButton: React.FC<ShareButtonProps> = ({
   const shareToTwitter = () => {
     const text = `${shareTitle}\n\n${shareDescription.substring(0, 200)}...`;
     const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}&hashtags=TechEvents,${event?.tags[0] || 'Technology'}`;
-    window.open(twitterUrl, '_blank', 'width=550,height=420');
+    window.open(twitterUrl, '_blank', 'noopener,noreferrer,width=550,height=420');
     setShowMenu(false);
   };
 
   // LinkedIn 分享
   const shareToLinkedIn = () => {
     const linkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
-    window.open(linkedInUrl, '_blank', 'width=550,height=500');
+    window.open(linkedInUrl, '_blank', 'noopener,noreferrer,width=550,height=500');
     setShowMenu(false);
   };
 

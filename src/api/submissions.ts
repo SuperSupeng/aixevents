@@ -27,6 +27,18 @@ function normalizeActivityType(value?: string): ActivityType {
   return (value || DEFAULT_ACTIVITY_TYPE) as ActivityType;
 }
 
+function normalizeHttpUrl(value?: string): string | undefined {
+  const trimmed = value?.trim();
+  if (!trimmed) return undefined;
+
+  try {
+    const url = new URL(trimmed);
+    return ['http:', 'https:'].includes(url.protocol) ? url.toString() : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 function getSubmissionErrorMessage(error: any): string {
   const code = String(error?.code || '');
   const message = String(error?.message || '');
@@ -69,8 +81,8 @@ function getEditUrl(editToken: string): string {
 }
 
 function buildEventPayload(input: EventSubmissionInput) {
-  const registrationUrl = input.links.registration?.trim();
-  const posterUrl = input.links.poster?.trim();
+  const registrationUrl = normalizeHttpUrl(input.links.registration);
+  const posterUrl = normalizeHttpUrl(input.links.poster);
   const primaryLink = registrationUrl || posterUrl;
   const organizers = normalizeArray(input.organizers.length ? input.organizers : [input.organizer.name]);
   const organizerName = organizers.join(' / ') || input.organizer.name.trim();

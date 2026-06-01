@@ -30,6 +30,7 @@ interface SubmitEventModalProps {
   onSubmitted?: (message: string) => void;
   editToken?: string;
   initialActivityType?: ActivityType;
+  initialCity?: string;
 }
 
 const initialForm = {
@@ -86,6 +87,7 @@ const SubmitEventModal: React.FC<SubmitEventModalProps> = ({
   onSubmitted,
   editToken,
   initialActivityType = DEFAULT_ACTIVITY_TYPE,
+  initialCity = '',
 }) => {
   const [form, setForm] = useState(initialForm);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -143,8 +145,8 @@ const SubmitEventModal: React.FC<SubmitEventModalProps> = ({
 
   useEffect(() => {
     if (!isOpen || editToken) return;
-    setForm((current) => ({ ...current, activityType: initialActivityType }));
-  }, [editToken, initialActivityType, isOpen]);
+    setForm((current) => ({ ...current, activityType: initialActivityType, city: initialCity || current.city }));
+  }, [editToken, initialActivityType, initialCity, isOpen]);
 
   useEffect(() => {
     if (!isOpen || !editToken) return;
@@ -407,10 +409,10 @@ const SubmitEventModal: React.FC<SubmitEventModalProps> = ({
               </div>
 
               <h2 className="mb-4 max-w-xl text-3xl font-black leading-tight text-black sm:text-4xl">
-                {isEditMode ? '修改活动信息。' : '提交活动共建生态。'}
+                {isEditMode ? '修改活动信息。' : '把你的活动放到日历里。'}
               </h2>
               <p className="mb-6 max-w-xl text-sm font-bold leading-7 text-black/70 sm:text-base">
-                仅保留必要信息。联系人信息只用于确认沟通，不会公开展示；海报和报名链接都可以选填。
+                正在办 AI 活动，想让更多人看到？提交基本信息后，我们确认无误就会放到活动日历。联系人只用于沟通确认，不会公开；海报和报名链接可以后续补充。
               </p>
 
               {isLoadingSubmission ? (

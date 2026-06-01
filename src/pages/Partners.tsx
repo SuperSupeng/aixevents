@@ -15,7 +15,7 @@ const Partners: React.FC<PartnersProps> = ({ onBack, onGroupClick }) => {
       <div className="relative z-10 mx-auto max-w-[72rem]">
         <button
           onClick={onBack}
-          className="mb-8 inline-flex items-center gap-2 text-sm font-black text-black/60 transition-colors hover:text-accent"
+          className="page-back-button"
         >
           <ArrowLeft size={18} />
           <span>返回首页</span>

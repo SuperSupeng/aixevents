@@ -3,7 +3,6 @@ import Logo from './Logo';
 
 interface FooterProps {
   onSubmitClick: () => void;
-  onSupportClick: () => void;
   onGroupClick: () => void;
   onPrivacyClick: () => void;
   onTermsClick: () => void;
@@ -11,7 +10,6 @@ interface FooterProps {
 
 const Footer: React.FC<FooterProps> = ({
   onSubmitClick,
-  onSupportClick,
   onGroupClick,
   onPrivacyClick,
   onTermsClick
@@ -34,7 +32,6 @@ const Footer: React.FC<FooterProps> = ({
               <h4 className="text-white font-semibold mb-6 text-sm">社区</h4>
               <ul className="space-y-4 text-white/75 text-sm">
                 <li><button onClick={onSubmitClick} className="hover:text-white transition-colors">提交活动</button></li>
-                <li><button onClick={onSupportClick} className="hover:text-white transition-colors">生态支持</button></li>
                 <li><button onClick={onGroupClick} className="hover:text-white transition-colors">活动群</button></li>
               </ul>
             </div>

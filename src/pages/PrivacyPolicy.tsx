@@ -11,7 +11,7 @@ const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ onBack }) => {
       <div className="max-w-4xl mx-auto">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-white/60 hover:text-white transition-colors mb-8"
+          className="page-back-button"
         >
           <ArrowLeft size={20} />
           <span>返回首页</span>

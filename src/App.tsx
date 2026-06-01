@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Variants } from 'framer-motion';
-import { Zap, ChevronDown, Loader2, MessageCircle, CalendarDays, X } from 'lucide-react';
+import { Zap, ChevronDown, Loader2, MessageCircle, CalendarDays } from 'lucide-react';
 import { TechEvent, ViewMode } from './types';
 import { useEvents, useLocations } from './hooks/useEvents';
 import { fetchEventById } from './api/events';
@@ -19,6 +19,7 @@ import TermsOfService from './pages/TermsOfService';
 import Resources from './pages/Resources';
 import Hackathons from './pages/Hackathons';
 import Partners from './pages/Partners';
+import JoinGroups from './pages/JoinGroups';
 import QuickFilters from './components/QuickFilters';
 import FeaturedEvents from './components/FeaturedEvents';
 import PartnerLogoWall from './components/PartnerLogoWall';
@@ -28,7 +29,15 @@ import { useToast } from './hooks/useToast';
 import { generateBaseSchema, generateEventSchema, getEventSEO, getPageSEO, injectStructuredData, removeStructuredData, updatePageSEO } from './utils/seo';
 import type { ActivityType } from './constants/activityTaxonomy';
 
-type Page = 'home' | 'privacy' | 'terms' | 'resources' | 'hackathons' | 'partners' | 'edit' | 'event';
+type Page = 'home' | 'privacy' | 'terms' | 'resources' | 'hackathons' | 'partners' | 'join' | 'edit' | 'event';
+
+const PARTNERS_COMING_SOON_FEATURE = '生态伙伴页面';
+
+type EventReturnState = {
+  path: string;
+  page: Page;
+  scrollY: number;
+};
 
 const HERO_REVEAL_EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
@@ -69,13 +78,14 @@ const heroItemVariants: Variants = {
   },
 };
 
-function getRouteFromPath(): { page: Page; editToken?: string; eventId?: string } {
+function getRouteFromPath(): { page: Page; editToken?: string; eventId?: string; blockedFeature?: string } {
   const path = window.location.pathname.replace(/\/+$/, '') || '/';
   if (path === '/privacy') return { page: 'privacy' };
   if (path === '/terms') return { page: 'terms' };
   if (path === '/resources') return { page: 'resources' };
   if (path === '/hackathons') return { page: 'hackathons' };
-  if (path === '/partners') return { page: 'partners' };
+  if (path === '/join') return { page: 'join' };
+  if (path === '/partners') return { page: 'home', blockedFeature: PARTNERS_COMING_SOON_FEATURE };
   if (path.startsWith('/events/')) {
     const eventId = decodeURIComponent(path.replace('/events/', '').trim());
     if (eventId) return { page: 'event', eventId };
@@ -121,47 +131,6 @@ const PixelWhale: React.FC = () => {
   );
 };
 
-const GroupQrModal: React.FC<{ onClose: () => void }> = ({ onClose }) => (
-  <AnimatePresence>
-    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        onClick={onClose}
-        className="absolute inset-0 bg-black/60 backdrop-blur-md"
-      />
-      <motion.div
-        initial={{ opacity: 0, scale: 0.96, y: 24 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.96, y: 24 }}
-        className="relative w-full max-w-sm rounded-lg border-2 border-black bg-white p-6 text-black shadow-[8px_8px_0_rgba(5,5,5,0.92)]"
-      >
-        <button
-          onClick={onClose}
-          className="absolute right-4 top-4 border-2 border-black bg-white p-2 transition-colors hover:bg-primary"
-          aria-label="关闭活动群二维码"
-        >
-          <X size={18} />
-        </button>
-        <div className="mb-5 pr-10">
-          <p className="text-xs font-black uppercase tracking-[0.18em] text-accent">AI+X 活动群</p>
-          <h2 className="mt-2 text-3xl font-black leading-tight">扫码加入活动群</h2>
-          <p className="mt-2 text-sm font-bold leading-6 text-black/60">微信扫码获取活动同步、生态伙伴活动与共创信息。</p>
-        </div>
-        <div className="rounded-md border-2 border-black bg-white p-3">
-          <img
-            src="/brand/activity-group-qr.png"
-            alt="AI+X 活动群二维码"
-            className="aspect-square w-full"
-            loading="lazy"
-          />
-        </div>
-      </motion.div>
-    </div>
-  </AnimatePresence>
-);
-
 const App: React.FC = () => {
   const initialRoute = useMemo(getRouteFromPath, []);
 
@@ -171,7 +140,7 @@ const App: React.FC = () => {
   const [formatFilter, setFormatFilter] = useState('all');
   const [locationFilter, setLocationFilter] = useState<string>('all');
   const [selectedEvent, setSelectedEvent] = useState<TechEvent | null>(null);
-  const [comingSoonFeature, setComingSoonFeature] = useState<string | null>(null);
+  const [comingSoonFeature, setComingSoonFeature] = useState<string | null>(initialRoute.blockedFeature || null);
   const [currentPage, setCurrentPage] = useState<Page>(initialRoute.page);
   const [editToken, setEditToken] = useState(initialRoute.editToken || '');
   const [eventId, setEventId] = useState(initialRoute.eventId || '');
@@ -180,13 +149,14 @@ const App: React.FC = () => {
   const [showSubscribeModal, setShowSubscribeModal] = useState(false);
   const [showSubmitEventModal, setShowSubmitEventModal] = useState(false);
   const [submitInitialActivityType, setSubmitInitialActivityType] = useState<ActivityType | undefined>();
-  const [showGroupQrModal, setShowGroupQrModal] = useState(false);
+  const [submitInitialCity, setSubmitInitialCity] = useState('');
   
   // Toast notifications
   const { toasts, removeToast, success } = useToast();
   
   // Refs for smooth scrolling
   const calendarRef = useRef<HTMLDivElement>(null);
+  const eventReturnStateRef = useRef<EventReturnState | null>(null);
   
   // Smooth scroll to calendar
   const scrollToCalendar = () => {
@@ -194,18 +164,20 @@ const App: React.FC = () => {
     setViewMode('month'); // 确保显示日历视图
   };
 
-  const openGroupQrModal = () => {
-    setShowGroupQrModal(true);
-  };
-
-  const openSubmitEventModal = (initialActivityType?: ActivityType) => {
+  const openSubmitEventModal = (initialActivityType?: ActivityType, initialCity?: string) => {
     setSubmitInitialActivityType(initialActivityType);
+    setSubmitInitialCity(initialCity || '');
     setShowSubmitEventModal(true);
   };
 
   const closeSubmitEventModal = () => {
     setShowSubmitEventModal(false);
     setSubmitInitialActivityType(undefined);
+    setSubmitInitialCity('');
+  };
+
+  const showPartnersComingSoon = () => {
+    setComingSoonFeature(PARTNERS_COMING_SOON_FEATURE);
   };
 
   // 🆕 使用 API 获取数据
@@ -321,14 +293,43 @@ const App: React.FC = () => {
   };
 
   const navigateToPartners = () => {
-    setCurrentPage('partners');
+    showPartnersComingSoon();
+  };
+
+  const navigateToJoin = (city?: string) => {
+    setCurrentPage('join');
     resetRouteState();
-    window.history.pushState({}, '', '/partners');
+
+    const params = new URLSearchParams();
+    if (city) params.set('city', city);
+
+    const queryString = params.toString();
+    window.history.pushState({}, '', `/join${queryString ? `?${queryString}` : ''}`);
     window.scrollTo(0, 0);
+  };
+
+  const navigateToCalendar = (city?: string) => {
+    setCurrentPage('home');
+    resetRouteState();
+    if (city) {
+      setSearchQuery('');
+      setTagFilter('');
+      setFormatFilter('all');
+      setLocationFilter(city);
+    }
+    window.history.pushState({}, '', '/');
+    window.setTimeout(() => {
+      calendarRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 0);
   };
 
   const openEventDetail = (event: TechEvent) => {
     const encodedId = encodeURIComponent(event.id);
+    eventReturnStateRef.current = {
+      page: currentPage,
+      path: `${window.location.pathname}${window.location.search}`,
+      scrollY: window.scrollY,
+    };
     setSelectedEvent(event);
     setRouteEvent(event);
     setEventId(event.id);
@@ -337,8 +338,29 @@ const App: React.FC = () => {
     window.history.pushState({}, '', `/events/${encodedId}`);
   };
 
+  const closeEventDetail = () => {
+    const returnState = eventReturnStateRef.current;
+
+    if (!returnState || returnState.page === 'event') {
+      navigateToHome();
+      return;
+    }
+
+    eventReturnStateRef.current = null;
+    setCurrentPage(returnState.page);
+    resetRouteState();
+    window.history.replaceState({}, '', returnState.path);
+    window.requestAnimationFrame(() => {
+      window.scrollTo({ top: returnState.scrollY, left: 0, behavior: 'auto' });
+    });
+  };
+
   // 处理浏览器前进/后退按钮
   React.useEffect(() => {
+    if (initialRoute.blockedFeature) {
+      window.history.replaceState({}, '', '/');
+    }
+
     const handlePopState = () => {
       const route = getRouteFromPath();
       setCurrentPage(route.page);
@@ -346,11 +368,16 @@ const App: React.FC = () => {
       setEventId(route.eventId || '');
       setSelectedEvent(null);
       setRouteEvent(null);
+      eventReturnStateRef.current = null;
+      if (route.blockedFeature) {
+        setComingSoonFeature(route.blockedFeature);
+        window.history.replaceState({}, '', '/');
+      }
     };
 
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
+  }, [initialRoute.blockedFeature]);
 
   // 如果在法律页面，只显示该页面
   if (currentPage === 'privacy') {
@@ -364,8 +391,7 @@ const App: React.FC = () => {
   if (currentPage === 'resources') {
     return (
       <>
-        <Resources onBack={navigateToHome} onGroupClick={openGroupQrModal} />
-        {showGroupQrModal && <GroupQrModal onClose={() => setShowGroupQrModal(false)} />}
+        <Resources onBack={navigateToHome} onGroupClick={() => navigateToJoin()} />
         <Toast toasts={toasts} onRemove={removeToast} />
       </>
     );
@@ -384,6 +410,7 @@ const App: React.FC = () => {
           onClose={closeSubmitEventModal}
           onSubmitted={success}
           initialActivityType={submitInitialActivityType}
+          initialCity={submitInitialCity}
         />
         <Toast toasts={toasts} onRemove={removeToast} />
       </>
@@ -393,8 +420,28 @@ const App: React.FC = () => {
   if (currentPage === 'partners') {
     return (
       <>
-        <Partners onBack={navigateToHome} onGroupClick={openGroupQrModal} />
-        {showGroupQrModal && <GroupQrModal onClose={() => setShowGroupQrModal(false)} />}
+        <Partners onBack={navigateToHome} onGroupClick={() => navigateToJoin()} />
+        <Toast toasts={toasts} onRemove={removeToast} />
+      </>
+    );
+  }
+
+  if (currentPage === 'join') {
+    return (
+      <>
+        <JoinGroups
+          onBack={navigateToHome}
+          onCalendarClick={navigateToCalendar}
+          onSubmitClick={(city) => openSubmitEventModal(undefined, city)}
+          onEventClick={openEventDetail}
+        />
+        <SubmitEventModal
+          isOpen={showSubmitEventModal}
+          onClose={closeSubmitEventModal}
+          onSubmitted={success}
+          initialActivityType={submitInitialActivityType}
+          initialCity={submitInitialCity}
+        />
         <Toast toasts={toasts} onRemove={removeToast} />
       </>
     );
@@ -424,6 +471,11 @@ const App: React.FC = () => {
           editToken={editToken}
           onClose={navigateToHome}
           onSubmitted={success}
+        />
+        <ComingSoon
+          isOpen={comingSoonFeature !== null}
+          onClose={() => setComingSoonFeature(null)}
+          feature={comingSoonFeature || undefined}
         />
         <Toast toasts={toasts} onRemove={removeToast} />
       </div>
@@ -471,7 +523,7 @@ const App: React.FC = () => {
         </main>
         <EventDetail
           event={displayEvent}
-          onClose={navigateToHome}
+          onClose={closeEventDetail}
           onToast={success}
           shareUrl={shareUrl}
         />
@@ -480,8 +532,13 @@ const App: React.FC = () => {
           onClose={closeSubmitEventModal}
           onSubmitted={success}
           initialActivityType={submitInitialActivityType}
+          initialCity={submitInitialCity}
         />
-        {showGroupQrModal && <GroupQrModal onClose={() => setShowGroupQrModal(false)} />}
+        <ComingSoon
+          isOpen={comingSoonFeature !== null}
+          onClose={() => setComingSoonFeature(null)}
+          feature={comingSoonFeature || undefined}
+        />
         <Toast toasts={toasts} onRemove={removeToast} />
       </div>
     );
@@ -560,7 +617,7 @@ const App: React.FC = () => {
                     查看活动日历 <Zap size={18} />
                   </button>
                   <button
-                    onClick={openGroupQrModal}
+                    onClick={() => navigateToJoin()}
                     className="btn-secondary poster-cta-button flex items-center justify-center gap-2 group"
                   >
                     <MessageCircle size={18} className="group-hover:rotate-12 transition-transform" />
@@ -661,10 +718,10 @@ const App: React.FC = () => {
             </div>
 
             <div className="poster-ecosystem-panel">
-              <p className="poster-panel-label">生态伙伴支持</p>
-              <h3>提交活动共建生态</h3>
+              <p className="poster-panel-label">活动日历收录</p>
+              <h3>有活动想被更多人看到？</h3>
               <p>
-                对于生态伙伴正在组织或计划组织的 AI 相关活动，Datawhale 将提供活动日历收录、公众号宣传、社群宣发、报名扩散等基础支持。
+                正在组织 AI 相关活动，想放到日历里让更多人看到？把活动信息提交过来就行。确认后，我们会展示在活动日历上；适合扩散的，也会视情况同步到公众号和社群。
               </p>
               <div className="poster-support-list">
                 <span>日历收录</span>
@@ -816,8 +873,7 @@ const App: React.FC = () => {
       {/* Footer */}
       <Footer 
         onSubmitClick={() => openSubmitEventModal()}
-        onSupportClick={() => openSubmitEventModal()}
-        onGroupClick={openGroupQrModal}
+        onGroupClick={() => navigateToJoin()}
         onPrivacyClick={navigateToPrivacy}
         onTermsClick={navigateToTerms}
       />
@@ -853,9 +909,8 @@ const App: React.FC = () => {
         onClose={closeSubmitEventModal}
         onSubmitted={success}
         initialActivityType={submitInitialActivityType}
+        initialCity={submitInitialCity}
       />
-
-      {showGroupQrModal && <GroupQrModal onClose={() => setShowGroupQrModal(false)} />}
 
       {/* Toast Notifications */}
       <Toast toasts={toasts} onRemove={removeToast} />

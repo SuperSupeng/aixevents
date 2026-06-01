@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowLeft, BookOpen, Calendar, ExternalLink, FileText, Globe2, Loader2, MessageCircle, Users } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Globe2, Loader2, MessageCircle } from 'lucide-react';
 
 interface ResourcesProps {
   onBack: () => void;
@@ -19,29 +19,6 @@ const Resources: React.FC<ResourcesProps> = ({ onBack, onGroupClick }) => {
   const [zhihuEvents, setZhihuEvents] = useState<Array<{ date: string; title: string; url?: string }>>([]);
   const [zhihuLoading, setZhihuLoading] = useState(false);
   const [zhihuError, setZhihuError] = useState<string | null>(null);
-
-  const resourceGroups = [
-    {
-      icon: <Calendar size={22} />,
-      title: '活动日历',
-      body: '按城市、线上线下和活动类型发现 AI+X 生态活动。',
-    },
-    {
-      icon: <Users size={22} />,
-      title: '生态共建',
-      body: '面向高校、城市、产业伙伴和社区组织者开放活动提交。',
-    },
-    {
-      icon: <BookOpen size={22} />,
-      title: '学习实践',
-      body: '优先关注真实场景、动手任务和作品展示。',
-    },
-    {
-      icon: <FileText size={22} />,
-      title: '可信资源',
-      body: '持续整理日历源、活动信息和高信号 AI 资源。',
-    },
-  ];
 
   const parseIcsEvents = (icsText: string) => {
     const unfoldedText = icsText.replace(/\r?\n[ \t]/g, '');
@@ -107,7 +84,7 @@ const Resources: React.FC<ResourcesProps> = ({ onBack, onGroupClick }) => {
       <div className="relative z-10 mx-auto max-w-[72rem]">
         <button
           onClick={onBack}
-          className="mb-8 inline-flex items-center gap-2 text-sm font-black text-black/60 transition-colors hover:text-accent"
+          className="page-back-button"
         >
           <ArrowLeft size={18} />
           <span>返回首页</span>
@@ -123,7 +100,7 @@ const Resources: React.FC<ResourcesProps> = ({ onBack, onGroupClick }) => {
               资源与参考
             </h1>
             <p className="mt-5 max-w-3xl text-base font-bold leading-8 text-black/70 sm:text-lg">
-              这里收录 AI 里程碑、外部参考源和生态共建入口。资源页保持轻量，重点帮助你找到可追踪、可参与的信息源。
+              这里收录 AI 里程碑、外部参考源和活动提交入口。资源页保持轻量，重点帮你找到可追踪、可参与的信息。
             </p>
           </div>
 
@@ -134,18 +111,6 @@ const Resources: React.FC<ResourcesProps> = ({ onBack, onGroupClick }) => {
             </p>
           </div>
         </header>
-
-        <section className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {resourceGroups.map((item) => (
-            <article key={item.title} className="border-2 border-black/15 bg-white/90 p-5 shadow-[4px_4px_0_rgba(23,100,255,0.12)]">
-              <div className="mb-4 inline-flex text-accent drop-shadow-[3px_3px_0_rgba(167,240,0,0.75)]">
-                {item.icon}
-              </div>
-              <h2 className="text-xl font-black leading-tight text-black">{item.title}</h2>
-              <p className="mt-2 text-sm font-bold leading-6 text-black/60">{item.body}</p>
-            </article>
-          ))}
-        </section>
 
         <section className="mt-10 border-2 border-black/15 bg-white/88 p-5">
           <div className="grid gap-5 lg:grid-cols-[1fr_auto] lg:items-start">
@@ -224,9 +189,9 @@ const Resources: React.FC<ResourcesProps> = ({ onBack, onGroupClick }) => {
           <div className="grid gap-5 lg:grid-cols-[1fr_auto] lg:items-center">
             <div>
               <p className="text-xs font-black uppercase tracking-[0.16em]">Contribute</p>
-              <h2 className="mt-2 text-2xl font-black leading-tight">想共建资源，先加入活动群</h2>
+              <h2 className="mt-2 text-2xl font-black leading-tight">有靠谱信息源，可以一起补充</h2>
               <p className="mt-3 max-w-3xl text-sm font-bold leading-7 text-black/70">
-                如果你有可信的区域日历、活动资源或 AI 生态信息源，可以先扫码加入活动群，再和社区一起补充、校对和持续维护。
+                如果你手里有区域日历、活动清单或高质量 AI 参考资料，欢迎加入活动群告诉我们。我们会和社区一起校对、补充和持续维护。
               </p>
             </div>
             <button

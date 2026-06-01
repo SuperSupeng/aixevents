@@ -299,21 +299,42 @@
 }
 
 .poster-app::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background:
-    linear-gradient(45deg, transparent 42%, var(--poster-blue) 42% 58%, transparent 58%) 72px 43vh / 34px 34px no-repeat,
-    linear-gradient(-45deg, transparent 42%, var(--poster-blue) 42% 58%, transparent 58%) 72px 43vh / 34px 34px no-repeat;
-  opacity: 0.72;
+  content: none;
+  display: none;
 }
 
 .poster-app > main,
 .poster-app > footer {
   position: relative;
   z-index: 1;
+}
+
+.page-back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-bottom: 2rem;
+  border: 2px solid var(--poster-ink);
+  background: rgba(255, 255, 255, 0.9);
+  padding: 0.68rem 0.95rem;
+  color: rgba(5, 5, 5, 0.72);
+  font-size: 0.95rem;
+  font-weight: 900;
+  line-height: 1;
+  box-shadow: 4px 4px 0 rgba(5, 5, 5, 0.85);
+  transition: transform 180ms ease, color 180ms ease, background-color 180ms ease;
+}
+
+.page-back-button:hover {
+  transform: translate(-1px, -1px);
+  background: var(--poster-lime);
+  color: var(--poster-ink);
+}
+
+.page-back-button svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  stroke-width: 2.8;
 }
 
 .poster-app .font-serif,

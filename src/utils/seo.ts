@@ -18,7 +18,7 @@ export interface SEOMetadata {
   type?: 'website' | 'article';
 }
 
-export type SeoPage = 'home' | 'privacy' | 'terms' | 'resources' | 'hackathons' | 'partners' | 'edit';
+export type SeoPage = 'home' | 'privacy' | 'terms' | 'resources' | 'hackathons' | 'partners' | 'join' | 'edit';
 
 export const PAGE_SEO: Record<SeoPage, SEOMetadata> = {
   home: {
@@ -35,7 +35,7 @@ export const PAGE_SEO: Record<SeoPage, SEOMetadata> = {
   },
   resources: {
     title: 'AI+X 资源与外部参考｜Datawhale AI+X 活动日历',
-    description: '查看 AI 里程碑、外部参考源和生态共建入口，持续追踪 AI+X 活动相关的信息源与共建资源。',
+    description: '查看 AI 里程碑、外部参考源和活动提交入口，持续追踪 AI+X 活动相关的信息源。',
     keywords: 'AI资源, AI里程碑, AI生态资源, 外部日历源, Datawhale AI+X',
     canonicalPath: '/resources',
   },
@@ -44,6 +44,12 @@ export const PAGE_SEO: Record<SeoPage, SEOMetadata> = {
     description: 'Datawhale AI+X 活动日历生态伙伴页，收录共同推动 AI+X 活动发生的模型平台、AI 工具、开源与社区、科技媒体、投资孵化、算力芯片、智能硬件与具身智能和产业公共机构伙伴。',
     keywords: 'Datawhale AI+X 生态伙伴, AI模型平台, AI工具, 开源与社区, 开发者社区, 科技媒体, 投资孵化, 算力芯片, 智能硬件, 具身智能, 活动共建',
     canonicalPath: '/partners',
+  },
+  join: {
+    title: '加入 Datawhale 城市/区域群｜Datawhale AI+X 活动日历',
+    description: '选择城市或区域并扫码加入 Datawhale AI+X 本地交流群，获取近期活动、共创机会和线下交流信息。',
+    keywords: 'Datawhale 城市/区域群, AI+X 城市群, AI活动群, AI交流群, Datawhale AI+X',
+    canonicalPath: '/join',
   },
   privacy: {
     title: '隐私政策｜Datawhale AI+X 活动日历',

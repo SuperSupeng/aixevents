@@ -526,7 +526,7 @@
   position: relative;
   z-index: 1;
   color: var(--poster-ink);
-  font-size: clamp(4rem, 7.2vw, 6.8rem);
+  font-size: clamp(4.1rem, 7.45vw, 7rem);
   font-weight: 900;
   line-height: 0.99;
   letter-spacing: 0;
@@ -680,7 +680,7 @@
 }
 
 .poster-info-card {
-  width: min(100%, 26.5rem);
+  width: min(100%, 30rem);
   min-width: 0;
   overflow: hidden;
   border: 2px solid var(--poster-ink);
@@ -1542,7 +1542,7 @@
 
 @media (min-width: 900px) {
   .poster-hero-grid {
-    grid-template-columns: minmax(0, clamp(31rem, 42vw, 35.5rem)) minmax(20rem, 26.5rem);
+    grid-template-columns: minmax(0, clamp(32rem, 43vw, 36.75rem)) minmax(21rem, 30rem);
     justify-content: center;
   }
 
@@ -1565,7 +1565,7 @@
 
 @media (min-width: 1280px) {
   .poster-hero-grid {
-    grid-template-columns: minmax(0, 35.5rem) minmax(20rem, 26.5rem);
+    grid-template-columns: minmax(0, 36.75rem) minmax(21rem, 30rem);
   }
 }
 
@@ -1576,8 +1576,8 @@
   }
 
   .poster-hero-grid {
-    grid-template-columns: minmax(0, clamp(29rem, 48vw, 31rem)) minmax(20rem, 23.5rem);
-    gap: clamp(2.4rem, 4vw, 3.5rem);
+    grid-template-columns: minmax(0, clamp(27rem, 46vw, 30rem)) minmax(18rem, 25rem);
+    gap: clamp(1.75rem, 3.5vw, 2.75rem);
     justify-content: center;
   }
 
@@ -1586,7 +1586,7 @@
   }
 
   .poster-info-card {
-    width: min(100%, 23.5rem);
+    width: min(100%, 25rem);
   }
 }
 

@@ -4,6 +4,9 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
 
+/index.html
+  Cache-Control: no-cache
+
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
 
@@ -12,6 +15,13 @@
 
 /partners/*
   Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+  X-Robots-Tag: noindex, nofollow
+
+/partners
+  X-Robots-Tag: noindex, nofollow
+
+/edit/*
+  X-Robots-Tag: noindex, nofollow
 
 /favicon.svg
   Cache-Control: public, max-age=604800

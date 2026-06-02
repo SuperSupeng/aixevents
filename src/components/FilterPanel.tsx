@@ -176,9 +176,9 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   return (
     <>
       <div className="relative z-[80] mb-5 sm:mb-6">
-        <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
+        <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_190px_310px_230px_96px] xl:items-center">
           {/* Search Bar */}
-          <div className="relative group flex-1 xl:min-w-[300px]">
+          <div className="relative group min-w-0">
             <div className="pointer-events-none absolute left-4 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center text-accent transition-colors group-focus-within:text-black">
               <Search size={20} strokeWidth={2.7} />
             </div>
@@ -192,7 +192,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
           </div>
 
           {/* Location Filter - Desktop: 旁边, Mobile: 下方 */}
-          <div ref={locationContainerRef} className={`relative w-full xl:w-[190px] xl:flex-none ${showLocationDropdown ? 'z-[120]' : 'z-30'}`}>
+          <div ref={locationContainerRef} className={`relative min-w-0 w-full ${showLocationDropdown ? 'z-[120]' : 'z-30'}`}>
             <button
               ref={locationButtonRef}
               onClick={() => setShowLocationDropdown(!showLocationDropdown)}
@@ -210,7 +210,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
           </div>
 
           {/* Format Select */}
-          <div className="relative z-20 flex h-[56px] min-w-0 flex-1 items-center gap-1 overflow-x-auto rounded-lg border border-black/15 bg-white/90 p-1 shadow-lg shadow-black/30 backdrop-blur-2xl [scrollbar-width:none] xl:w-[310px] xl:flex-none [&::-webkit-scrollbar]:hidden">
+          <div className="relative z-20 flex h-[56px] min-w-0 w-full items-center gap-1 overflow-x-auto rounded-lg border border-black/15 bg-white/90 p-1 shadow-lg shadow-black/30 backdrop-blur-2xl [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <button 
               onClick={() => onFormatChange('all')}
               className={`${segmentButtonClass} ${formatFilter === 'all' ? segmentActiveClass : segmentInactiveClass}`}
@@ -236,7 +236,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
           </div>
 
           {/* View Switcher */}
-          <div className="relative z-20 flex h-[56px] min-w-0 flex-1 items-center gap-1 overflow-x-auto rounded-lg border border-black/15 bg-white/90 p-1 shadow-lg shadow-black/30 backdrop-blur-2xl [scrollbar-width:none] xl:w-[230px] xl:flex-none [&::-webkit-scrollbar]:hidden">
+          <div className="relative z-20 flex h-[56px] min-w-0 w-full items-center gap-1 overflow-x-auto rounded-lg border border-black/15 bg-white/90 p-1 shadow-lg shadow-black/30 backdrop-blur-2xl [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <button 
               onClick={() => onViewModeChange('month')}
               className={`${segmentButtonClass} ${viewMode === 'month' ? viewActiveClass : segmentInactiveClass}`}
@@ -262,13 +262,13 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
           {hasActiveFilters ? (
             <button
               onClick={onClearFilters}
-              className="flex h-[56px] items-center justify-center gap-2 rounded-lg border border-black/15 bg-white px-4 text-sm font-bold text-black/60 shadow-lg shadow-black/10 transition-all hover:border-black/30 hover:bg-primary hover:text-black active:scale-95 xl:w-[82px] xl:flex-none"
+              className="flex h-[56px] w-full items-center justify-center gap-2 rounded-lg border border-black/15 bg-white px-3 text-sm font-bold text-black/60 shadow-lg shadow-black/10 transition-all hover:border-black/30 hover:bg-primary hover:text-black active:scale-95"
             >
               <X size={16} />
               <span className="whitespace-nowrap">清除</span>
             </button>
           ) : (
-            <div className="hidden h-[56px] xl:block xl:w-[82px] xl:flex-none" aria-hidden />
+            <div className="hidden h-[56px] xl:block" aria-hidden />
           )}
         </div>
       </div>

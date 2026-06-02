@@ -1,9 +1,8 @@
-import { TechEvent } from '../types';
+import type { TechEvent } from '../types';
+import { getPublicSiteUrl } from './site';
 
-const runtimeOrigin = typeof window !== 'undefined' ? window.location.origin : 'https://aixevents.datawhale.cn';
-
-export const SITE_URL = (import.meta.env.VITE_PUBLIC_SITE_URL || runtimeOrigin).replace(/\/$/, '');
-export const SITE_NAME = 'Datawhale AI+X 活动日历';
+export const SITE_URL = getPublicSiteUrl();
+export const SITE_NAME = 'Datawhale AI+X 社区活动日历';
 export const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.svg`;
 
 export interface SEOMetadata {
@@ -22,49 +21,50 @@ export type SeoPage = 'home' | 'privacy' | 'terms' | 'resources' | 'hackathons' 
 
 export const PAGE_SEO: Record<SeoPage, SEOMetadata> = {
   home: {
-    title: 'Datawhale AI+X 活动日历｜发现、提交和订阅 AI+X 生态活动',
-    description: 'Datawhale AI+X 活动日历收录 AI 实践、开发者、高校、产业、创业和 OPC 等生态活动，帮助学习者、开发者和生态伙伴找到真实场景中的连接、实践与共创机会。',
-    keywords: 'Datawhale, AI+X, AI活动日历, AI实践, 开发者活动, 高校活动, 产业活动, 创业活动, OPC, 黑客松, Workshop, Meetup, 活动提交',
+    title: 'Datawhale AI+X 社区活动日历｜发现、提交和订阅 AI 实践活动',
+    description: 'Datawhale AI+X 社区活动日历收录 Meetup、Workshop、Hackathon、高校、城市和产业共创活动，帮助学习者、开发者和生态伙伴发现可参与、可实践、可共建的 AI+X 机会。',
+    keywords: 'Datawhale, AI+X, 社区活动日历, AI活动日历, AI实践, 开发者活动, 高校活动, 城市活动, 产业活动, 黑客松, Workshop, Meetup, 活动提交',
     canonicalPath: '/',
   },
   hackathons: {
-    title: 'AI+X Hackathon｜Datawhale AI+X 活动日历',
-    description: '收录 AI 黑客松、创造营、挑战赛、Demo Day 和 Agent 实战活动，帮助开发者、高校学生和个人创造者发现可参与、可产出的 AI+X 实践机会。',
-    keywords: 'AI黑客松, Hackathon, AI挑战赛, Agent实战, 创造营, Demo Day, Datawhale, AI+X活动',
+    title: 'AI+X Hackathon｜Datawhale AI+X 社区活动日历',
+    description: '收录 AI 黑客松、创造营、挑战赛、Demo Day 和 Agent 实战活动，帮助开发者、高校学生和个人创造者发现可参与、可产出的社区实践机会。',
+    keywords: 'AI黑客松, Hackathon, AI挑战赛, Agent实战, 创造营, Demo Day, Datawhale, AI+X社区活动',
     canonicalPath: '/hackathons',
   },
   resources: {
-    title: 'AI+X 资源与外部参考｜Datawhale AI+X 活动日历',
-    description: '查看 AI 里程碑、外部参考源和活动提交入口，持续追踪 AI+X 活动相关的信息源。',
-    keywords: 'AI资源, AI里程碑, AI生态资源, 外部日历源, Datawhale AI+X',
+    title: 'AI+X 资源与外部参考｜Datawhale AI+X 社区活动日历',
+    description: '查看 AI 里程碑、外部参考源和活动提交入口，持续追踪 Datawhale AI+X 社区活动相关的信息源。',
+    keywords: 'AI资源, AI里程碑, AI生态资源, 社区活动资源, Datawhale AI+X',
     canonicalPath: '/resources',
   },
   partners: {
-    title: '生态伙伴｜Datawhale AI+X 活动日历',
-    description: 'Datawhale AI+X 活动日历生态伙伴页，收录共同推动 AI+X 活动发生的模型平台、AI 工具、开源与社区、科技媒体、投资孵化、算力芯片、智能硬件与具身智能和产业公共机构伙伴。',
+    title: '生态伙伴｜Datawhale AI+X 社区活动日历',
+    description: 'Datawhale AI+X 社区活动日历生态伙伴页暂未公开。',
     keywords: 'Datawhale AI+X 生态伙伴, AI模型平台, AI工具, 开源与社区, 开发者社区, 科技媒体, 投资孵化, 算力芯片, 智能硬件, 具身智能, 活动共建',
     canonicalPath: '/partners',
+    robots: 'noindex,nofollow',
   },
   join: {
-    title: '加入 Datawhale 城市/区域群｜Datawhale AI+X 活动日历',
+    title: '加入 Datawhale 城市/区域群｜Datawhale AI+X 社区活动日历',
     description: '选择城市或区域并扫码加入 Datawhale AI+X 本地交流群，获取近期活动、共创机会和线下交流信息。',
     keywords: 'Datawhale 城市/区域群, AI+X 城市群, AI活动群, AI交流群, Datawhale AI+X',
     canonicalPath: '/join',
   },
   privacy: {
-    title: '隐私政策｜Datawhale AI+X 活动日历',
-    description: '了解 Datawhale AI+X 活动日历如何处理活动提交、联系信息、海报上传、订阅统计和基础访问数据。',
+    title: '隐私政策｜Datawhale AI+X 社区活动日历',
+    description: '了解 Datawhale AI+X 社区活动日历如何处理活动提交、联系信息、海报上传、订阅统计和基础访问数据。',
     keywords: 'Datawhale AI+X 隐私政策, 活动日历隐私, 数据处理',
     canonicalPath: '/privacy',
   },
   terms: {
-    title: '服务条款｜Datawhale AI+X 活动日历',
-    description: 'Datawhale AI+X 活动日历的服务条款，包含活动提交、审核收录、活动信息展示、订阅和资源共建相关规则。',
+    title: '服务条款｜Datawhale AI+X 社区活动日历',
+    description: 'Datawhale AI+X 社区活动日历的服务条款，包含活动提交、审核收录、活动信息展示、订阅和资源共建相关规则。',
     keywords: 'Datawhale AI+X 服务条款, 活动提交规则, 活动日历条款',
     canonicalPath: '/terms',
   },
   edit: {
-    title: '活动信息修改｜Datawhale AI+X 活动日历',
+    title: '活动信息修改｜Datawhale AI+X 社区活动日历',
     description: '通过私有编辑链接修改已提交的 AI+X 活动信息。修改内容会进入确认流程，确认通过后再公开展示。',
     keywords: 'Datawhale AI+X 活动修改, 活动信息编辑',
     canonicalPath: '/edit',
@@ -81,7 +81,7 @@ export function getEventSEO(event: TechEvent): SEOMetadata {
     ? event.organizers.join(' / ')
     : event.organizer?.name || '活动主办方';
   const description = event.summary?.trim()
-    ? event.summary.trim().replace(/\s+/g, ' ').slice(0, 155)
+    ? normalizeSeoText(event.summary).slice(0, 155)
     : `${organizerName} 发起的 AI+X 生态活动，查看活动时间、地点、主办方、海报和报名信息。`;
   const tags = [
     event.title,
@@ -105,8 +105,9 @@ export function getEventSEO(event: TechEvent): SEOMetadata {
 }
 
 export function canonicalUrl(path: string): string {
-  if (!path || path === '/') return `${SITE_URL}/`;
-  return `${SITE_URL}${path.startsWith('/') ? path : `/${path}`}`;
+  const cleanPath = (path || '/').split('#')[0].split('?')[0] || '/';
+  if (cleanPath === '/') return `${SITE_URL}/`;
+  return `${SITE_URL}${cleanPath.startsWith('/') ? cleanPath : `/${cleanPath}`}`;
 }
 
 export function absoluteUrl(url?: string): string {
@@ -174,6 +175,7 @@ export function generateBaseSchema(page: SeoPage) {
         '@type': 'Organization',
         '@id': `${SITE_URL}/#organization`,
         name: 'Datawhale',
+        description: 'Datawhale AI+X 社区活动日历的活动共建与展示站点。',
         url: SITE_URL,
         logo: absoluteUrl('/brand/datawhale-logo-color.png'),
       },
@@ -181,6 +183,7 @@ export function generateBaseSchema(page: SeoPage) {
         '@type': 'WebSite',
         '@id': `${SITE_URL}/#website`,
         name: SITE_NAME,
+        description: PAGE_SEO.home.description,
         url: SITE_URL,
         publisher: { '@id': `${SITE_URL}/#organization` },
         inLanguage: 'zh-CN',
@@ -206,7 +209,10 @@ export function generateBaseSchema(page: SeoPage) {
 
 export function generateEventSchema(event: TechEvent) {
   const eventUrl = canonicalUrl(`/events/${encodeURIComponent(event.id)}`);
-  const externalUrl = event.links.registration || event.links.officialSite || eventUrl;
+  const externalUrl = safeHttpUrl(event.links.registration) || safeHttpUrl(event.links.officialSite) || eventUrl;
+  const organizerName = event.organizers?.length
+    ? event.organizers.join(' / ')
+    : event.organizer?.name || 'Datawhale AI+X';
   const schema = {
     '@context': 'https://schema.org',
     '@type': 'Event',
@@ -214,7 +220,9 @@ export function generateEventSchema(event: TechEvent) {
     description: event.summary,
     startDate: event.startTime,
     endDate: event.endTime,
-    eventStatus: 'https://schema.org/EventScheduled',
+    eventStatus: event.status === 'canceled'
+      ? 'https://schema.org/EventCancelled'
+      : 'https://schema.org/EventScheduled',
     eventAttendanceMode: event.format === 'online'
       ? 'https://schema.org/OnlineEventAttendanceMode'
       : event.format === 'hybrid'
@@ -222,12 +230,13 @@ export function generateEventSchema(event: TechEvent) {
         : 'https://schema.org/OfflineEventAttendanceMode',
     location: event.format === 'online' ? {
       '@type': 'VirtualLocation',
-      url: event.links.officialSite,
+      url: externalUrl,
     } : {
       '@type': 'Place',
-      name: event.location?.city,
+      name: [event.location?.city, event.location?.address].filter(Boolean).join(' · ') || '线下活动地点',
       address: {
         '@type': 'PostalAddress',
+        streetAddress: event.location?.address,
         addressLocality: event.location?.city,
         addressCountry: event.location?.country,
       },
@@ -235,8 +244,8 @@ export function generateEventSchema(event: TechEvent) {
     image: event.coverImage ? [absoluteUrl(event.coverImage)] : [DEFAULT_OG_IMAGE],
     organizer: {
       '@type': 'Organization',
-      name: event.organizer?.name || event.organizers?.join(' / ') || 'Datawhale AI+X',
-      url: event.links.officialSite,
+      name: organizerName,
+      url: externalUrl,
     },
     offers: event.price?.type === 'free' ? {
       '@type': 'Offer',
@@ -247,9 +256,50 @@ export function generateEventSchema(event: TechEvent) {
     } : undefined,
     url: eventUrl,
     isAccessibleForFree: event.price?.type === 'free',
+    inLanguage: event.language?.[0] || 'zh-CN',
   };
 
   return schema;
+}
+
+export function generateEventItemListSchema(events: TechEvent[]) {
+  const upcomingEvents = events
+    .filter((event) => event.status !== 'canceled')
+    .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
+    .slice(0, 12);
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Datawhale AI+X 社区活动列表',
+    itemListOrder: 'https://schema.org/ItemListOrderAscending',
+    numberOfItems: upcomingEvents.length,
+    itemListElement: upcomingEvents.map((event, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      url: canonicalUrl(`/events/${encodeURIComponent(event.id)}`),
+      name: event.title,
+      startDate: event.startTime,
+    })),
+  };
+}
+
+function safeHttpUrl(url?: string): string {
+  if (!url || url === '#') return '';
+
+  try {
+    const parsedUrl = new URL(url);
+    return ['http:', 'https:'].includes(parsedUrl.protocol) ? parsedUrl.toString() : '';
+  } catch {
+    return '';
+  }
+}
+
+function normalizeSeoText(value: string): string {
+  return value
+    .trim()
+    .replace(/\s+/g, ' ')
+    .replace(/([。！？；：，、])\s+/g, '$1');
 }
 
 function updateOrCreateMetaTag(attribute: 'name' | 'property', name: string, content: string) {

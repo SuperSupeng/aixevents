@@ -2,41 +2,51 @@ import React, { useState, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Variants } from 'framer-motion';
 import { Zap, ChevronDown, Loader2, MessageCircle, CalendarDays } from 'lucide-react';
-import { TechEvent, ViewMode } from './types';
+import type { TechEvent, ViewMode } from './types';
 import { useEvents, useLocations } from './hooks/useEvents';
+import { useDebouncedValue } from './hooks/useDebouncedValue';
 import { fetchEventById } from './api/events';
 import Calendar from './components/Calendar';
-import WeekView from './components/WeekView';
-import ListView from './components/ListView';
-import EventDetail from './components/EventDetail';
 import FilterPanel from './components/FilterPanel';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
-import ComingSoon from './components/ComingSoon';
 import Toast from './components/Toast';
-import PrivacyPolicy from './pages/PrivacyPolicy';
-import TermsOfService from './pages/TermsOfService';
-import Resources from './pages/Resources';
-import Hackathons from './pages/Hackathons';
-import Partners from './pages/Partners';
-import JoinGroups from './pages/JoinGroups';
 import QuickFilters from './components/QuickFilters';
 import FeaturedEvents from './components/FeaturedEvents';
 import PartnerLogoWall from './components/PartnerLogoWall';
-import SubscribeModal from './components/SubscribeModal';
-import SubmitEventModal from './components/SubmitEventModal';
 import { useToast } from './hooks/useToast';
-import { generateBaseSchema, generateEventSchema, getEventSEO, getPageSEO, injectStructuredData, removeStructuredData, updatePageSEO } from './utils/seo';
+import { generateBaseSchema, generateEventItemListSchema, generateEventSchema, getEventSEO, getPageSEO, injectStructuredData, removeStructuredData, updatePageSEO } from './utils/seo';
 import type { ActivityType } from './constants/activityTaxonomy';
 
 type Page = 'home' | 'privacy' | 'terms' | 'resources' | 'hackathons' | 'partners' | 'join' | 'edit' | 'event';
 
 const PARTNERS_COMING_SOON_FEATURE = '生态伙伴页面';
 
+const WeekView = React.lazy(() => import('./components/WeekView'));
+const ListView = React.lazy(() => import('./components/ListView'));
+const EventDetail = React.lazy(() => import('./components/EventDetail'));
+const ComingSoon = React.lazy(() => import('./components/ComingSoon'));
+const SubscribeModal = React.lazy(() => import('./components/SubscribeModal'));
+const SubmitEventModal = React.lazy(() => import('./components/SubmitEventModal'));
+const PrivacyPolicy = React.lazy(() => import('./pages/PrivacyPolicy'));
+const TermsOfService = React.lazy(() => import('./pages/TermsOfService'));
+const Resources = React.lazy(() => import('./pages/Resources'));
+const Hackathons = React.lazy(() => import('./pages/Hackathons'));
+const Partners = React.lazy(() => import('./pages/Partners'));
+const JoinGroups = React.lazy(() => import('./pages/JoinGroups'));
+
 type EventReturnState = {
   path: string;
   page: Page;
   scrollY: number;
+};
+
+type RouteState = {
+  page: Page;
+  editToken?: string;
+  eventId?: string;
+  blockedFeature?: string;
+  searchQuery?: string;
 };
 
 const HERO_REVEAL_EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
@@ -78,7 +88,7 @@ const heroItemVariants: Variants = {
   },
 };
 
-function getRouteFromPath(): { page: Page; editToken?: string; eventId?: string; blockedFeature?: string } {
+function getRouteFromPath(): RouteState {
   const path = window.location.pathname.replace(/\/+$/, '') || '/';
   if (path === '/privacy') return { page: 'privacy' };
   if (path === '/terms') return { page: 'terms' };
@@ -93,8 +103,21 @@ function getRouteFromPath(): { page: Page; editToken?: string; eventId?: string;
   if (path.startsWith('/edit/')) {
     return { page: 'edit', editToken: decodeURIComponent(path.replace('/edit/', '').trim()) };
   }
-  return { page: 'home' };
+  return { page: 'home', searchQuery: new URLSearchParams(window.location.search).get('q') || '' };
 }
+
+const LazyFallback: React.FC<{ label?: string }> = ({ label = '页面加载中...' }) => (
+  <div className="flex min-h-[16rem] items-center justify-center px-4 text-sm font-bold text-black/60">
+    <Loader2 size={18} className="mr-2 animate-spin text-accent" />
+    {label}
+  </div>
+);
+
+const LazySection: React.FC<{ children: React.ReactNode; label?: string }> = ({ children, label }) => (
+  <React.Suspense fallback={label ? <LazyFallback label={label} /> : null}>
+    {children}
+  </React.Suspense>
+);
 
 const PixelWhale: React.FC = () => {
   const pixels = [
@@ -135,7 +158,7 @@ const App: React.FC = () => {
   const initialRoute = useMemo(getRouteFromPath, []);
 
   const [viewMode, setViewMode] = useState<ViewMode>('month');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(initialRoute.searchQuery || '');
   const [tagFilter, setTagFilter] = useState<string>('');
   const [formatFilter, setFormatFilter] = useState('all');
   const [locationFilter, setLocationFilter] = useState<string>('all');
@@ -153,6 +176,7 @@ const App: React.FC = () => {
   
   // Toast notifications
   const { toasts, removeToast, success } = useToast();
+  const debouncedSearchQuery = useDebouncedValue(searchQuery, 280);
   
   // Refs for smooth scrolling
   const calendarRef = useRef<HTMLDivElement>(null);
@@ -187,7 +211,7 @@ const App: React.FC = () => {
     isFetching: eventsFetching,
     error: eventsError 
   } = useEvents({
-    search: searchQuery,
+    search: debouncedSearchQuery,
     tag: tagFilter || undefined,
     format: formatFilter as any,
     location: locationFilter,
@@ -218,6 +242,18 @@ const App: React.FC = () => {
       removeStructuredData('event');
     };
   }, [currentPage, routeEvent]);
+
+  React.useEffect(() => {
+    if (currentPage === 'home' && events.length > 0) {
+      injectStructuredData('event-list', generateEventItemListSchema(events));
+    } else {
+      removeStructuredData('event-list');
+    }
+
+    return () => {
+      removeStructuredData('event-list');
+    };
+  }, [currentPage, events]);
 
   React.useEffect(() => {
     if (currentPage !== 'event' || !eventId) {
@@ -366,6 +402,7 @@ const App: React.FC = () => {
       setCurrentPage(route.page);
       setEditToken(route.editToken || '');
       setEventId(route.eventId || '');
+      setSearchQuery(route.searchQuery || '');
       setSelectedEvent(null);
       setRouteEvent(null);
       eventReturnStateRef.current = null;
@@ -381,17 +418,27 @@ const App: React.FC = () => {
 
   // 如果在法律页面，只显示该页面
   if (currentPage === 'privacy') {
-    return <PrivacyPolicy onBack={navigateToHome} />;
+    return (
+      <LazySection label="隐私政策加载中...">
+        <PrivacyPolicy onBack={navigateToHome} />
+      </LazySection>
+    );
   }
 
   if (currentPage === 'terms') {
-    return <TermsOfService onBack={navigateToHome} />;
+    return (
+      <LazySection label="服务条款加载中...">
+        <TermsOfService onBack={navigateToHome} />
+      </LazySection>
+    );
   }
 
   if (currentPage === 'resources') {
     return (
       <>
-        <Resources onBack={navigateToHome} onGroupClick={() => navigateToJoin()} />
+        <LazySection label="资源页加载中...">
+          <Resources onBack={navigateToHome} onGroupClick={() => navigateToJoin()} />
+        </LazySection>
         <Toast toasts={toasts} onRemove={removeToast} />
       </>
     );
@@ -400,18 +447,24 @@ const App: React.FC = () => {
   if (currentPage === 'hackathons') {
     return (
       <>
-        <Hackathons
-          onBack={navigateToHome}
-          onSubmitClick={() => openSubmitEventModal('hackathon')}
-          onEventClick={openEventDetail}
-        />
-        <SubmitEventModal
-          isOpen={showSubmitEventModal}
-          onClose={closeSubmitEventModal}
-          onSubmitted={success}
-          initialActivityType={submitInitialActivityType}
-          initialCity={submitInitialCity}
-        />
+        <LazySection label="Hackathon 页面加载中...">
+          <Hackathons
+            onBack={navigateToHome}
+            onSubmitClick={() => openSubmitEventModal('hackathon')}
+            onEventClick={openEventDetail}
+          />
+        </LazySection>
+        {showSubmitEventModal && (
+          <LazySection>
+            <SubmitEventModal
+              isOpen
+              onClose={closeSubmitEventModal}
+              onSubmitted={success}
+              initialActivityType={submitInitialActivityType}
+              initialCity={submitInitialCity}
+            />
+          </LazySection>
+        )}
         <Toast toasts={toasts} onRemove={removeToast} />
       </>
     );
@@ -420,7 +473,9 @@ const App: React.FC = () => {
   if (currentPage === 'partners') {
     return (
       <>
-        <Partners onBack={navigateToHome} onGroupClick={() => navigateToJoin()} />
+        <LazySection label="生态伙伴页面加载中...">
+          <Partners onBack={navigateToHome} onGroupClick={() => navigateToJoin()} />
+        </LazySection>
         <Toast toasts={toasts} onRemove={removeToast} />
       </>
     );
@@ -429,19 +484,25 @@ const App: React.FC = () => {
   if (currentPage === 'join') {
     return (
       <>
-        <JoinGroups
-          onBack={navigateToHome}
-          onCalendarClick={navigateToCalendar}
-          onSubmitClick={(city) => openSubmitEventModal(undefined, city)}
-          onEventClick={openEventDetail}
-        />
-        <SubmitEventModal
-          isOpen={showSubmitEventModal}
-          onClose={closeSubmitEventModal}
-          onSubmitted={success}
-          initialActivityType={submitInitialActivityType}
-          initialCity={submitInitialCity}
-        />
+        <LazySection label="加群页面加载中...">
+          <JoinGroups
+            onBack={navigateToHome}
+            onCalendarClick={navigateToCalendar}
+            onSubmitClick={(city) => openSubmitEventModal(undefined, city)}
+            onEventClick={openEventDetail}
+          />
+        </LazySection>
+        {showSubmitEventModal && (
+          <LazySection>
+            <SubmitEventModal
+              isOpen
+              onClose={closeSubmitEventModal}
+              onSubmitted={success}
+              initialActivityType={submitInitialActivityType}
+              initialCity={submitInitialCity}
+            />
+          </LazySection>
+        )}
         <Toast toasts={toasts} onRemove={removeToast} />
       </>
     );
@@ -466,17 +527,23 @@ const App: React.FC = () => {
             </p>
           </div>
         </main>
-        <SubmitEventModal
-          isOpen
-          editToken={editToken}
-          onClose={navigateToHome}
-          onSubmitted={success}
-        />
-        <ComingSoon
-          isOpen={comingSoonFeature !== null}
-          onClose={() => setComingSoonFeature(null)}
-          feature={comingSoonFeature || undefined}
-        />
+        <LazySection>
+          <SubmitEventModal
+            isOpen
+            editToken={editToken}
+            onClose={navigateToHome}
+            onSubmitted={success}
+          />
+        </LazySection>
+        {comingSoonFeature !== null && (
+          <LazySection>
+            <ComingSoon
+              isOpen
+              onClose={() => setComingSoonFeature(null)}
+              feature={comingSoonFeature || undefined}
+            />
+          </LazySection>
+        )}
         <Toast toasts={toasts} onRemove={removeToast} />
       </div>
     );
@@ -521,24 +588,34 @@ const App: React.FC = () => {
             </div>
           )}
         </main>
-        <EventDetail
-          event={displayEvent}
-          onClose={closeEventDetail}
-          onToast={success}
-          shareUrl={shareUrl}
-        />
-        <SubmitEventModal
-          isOpen={showSubmitEventModal}
-          onClose={closeSubmitEventModal}
-          onSubmitted={success}
-          initialActivityType={submitInitialActivityType}
-          initialCity={submitInitialCity}
-        />
-        <ComingSoon
-          isOpen={comingSoonFeature !== null}
-          onClose={() => setComingSoonFeature(null)}
-          feature={comingSoonFeature || undefined}
-        />
+        <LazySection>
+          <EventDetail
+            event={displayEvent}
+            onClose={closeEventDetail}
+            onToast={success}
+            shareUrl={shareUrl}
+          />
+        </LazySection>
+        {showSubmitEventModal && (
+          <LazySection>
+            <SubmitEventModal
+              isOpen
+              onClose={closeSubmitEventModal}
+              onSubmitted={success}
+              initialActivityType={submitInitialActivityType}
+              initialCity={submitInitialCity}
+            />
+          </LazySection>
+        )}
+        {comingSoonFeature !== null && (
+          <LazySection>
+            <ComingSoon
+              isOpen
+              onClose={() => setComingSoonFeature(null)}
+              feature={comingSoonFeature || undefined}
+            />
+          </LazySection>
+        )}
         <Toast toasts={toasts} onRemove={removeToast} />
       </div>
     );
@@ -566,7 +643,7 @@ const App: React.FC = () => {
               className="poster-kicker"
             >
               <span className="w-2 h-2 bg-primary block" />
-              Datawhale AI+X 活动日历
+              Datawhale AI+X 社区活动日历
             </motion.div>
 
             <div className="poster-hero-grid">
@@ -647,7 +724,7 @@ const App: React.FC = () => {
                     <CalendarDays size={34} className="text-accent" strokeWidth={2.5} />
                     <div>
                       <p className="text-[10px] font-black uppercase tracking-[0.22em] text-black/50">DATAWHALE</p>
-                      <p className="text-2xl font-black text-black leading-none">AI+X 活动日历</p>
+                      <p className="text-2xl font-black text-black leading-none">AI+X 社区活动日历</p>
                     </div>
                   </div>
                   <div className="space-y-4">
@@ -813,55 +890,59 @@ const App: React.FC = () => {
                 )}
                 
                 <AnimatePresence mode="wait">
-              {viewMode === 'month' ? (
-                <motion.div
-                  key="month-view"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <Calendar 
-                    events={filteredEvents} 
-                    onEventClick={openEventDetail} 
-                    onSubscribeClick={() => setShowSubscribeModal(true)}
-                  />
-                </motion.div>
-              ) : viewMode === 'week' ? (
-                <motion.div
-                  key="week-view"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <WeekView 
-                    events={filteredEvents} 
-                    onEventClick={openEventDetail}
-                  />
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="list-view"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <ListView
-                    events={filteredEvents}
-                    onEventClick={openEventDetail}
-                    searchQuery={searchQuery}
-                    onReset={() => {
-                      setSearchQuery('');
-                      setTagFilter('');
-                      setFormatFilter('all');
-                      setLocationFilter('all');
-                    }}
-                  />
-                </motion.div>
-              )}
-              </AnimatePresence>
+                  {viewMode === 'month' ? (
+                    <motion.div
+                      key="month-view"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <Calendar
+                        events={filteredEvents}
+                        onEventClick={openEventDetail}
+                        onSubscribeClick={() => setShowSubscribeModal(true)}
+                      />
+                    </motion.div>
+                  ) : viewMode === 'week' ? (
+                    <motion.div
+                      key="week-view"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <LazySection label="周视图加载中...">
+                        <WeekView
+                          events={filteredEvents}
+                          onEventClick={openEventDetail}
+                        />
+                      </LazySection>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="list-view"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <LazySection label="列表视图加载中...">
+                        <ListView
+                          events={filteredEvents}
+                          onEventClick={openEventDetail}
+                          searchQuery={searchQuery}
+                          onReset={() => {
+                            setSearchQuery('');
+                            setTagFilter('');
+                            setFormatFilter('all');
+                            setLocationFilter('all');
+                          }}
+                        />
+                      </LazySection>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </>
             )}
           </div>
@@ -879,38 +960,54 @@ const App: React.FC = () => {
       />
       
       {/* Coming Soon Modal */}
-      <ComingSoon 
-        isOpen={comingSoonFeature !== null}
-        onClose={() => setComingSoonFeature(null)}
-        feature={comingSoonFeature || undefined}
-      />
+      {comingSoonFeature !== null && (
+        <LazySection>
+          <ComingSoon
+            isOpen
+            onClose={() => setComingSoonFeature(null)}
+            feature={comingSoonFeature || undefined}
+          />
+        </LazySection>
+      )}
 
       {/* Event Details Modal */}
-      <EventDetail 
-        event={selectedEvent} 
-        onClose={() => setSelectedEvent(null)}
-        onToast={success}
-      />
+      {selectedEvent && (
+        <LazySection>
+          <EventDetail
+            event={selectedEvent}
+            onClose={() => setSelectedEvent(null)}
+            onToast={success}
+          />
+        </LazySection>
+      )}
 
       {/* Subscribe Modal */}
-      <SubscribeModal
-        isOpen={showSubscribeModal}
-        onClose={() => setShowSubscribeModal(false)}
-        onToast={success}
-        formatFilter={formatFilter}
-        locationFilter={locationFilter}
-        tagFilter={tagFilter}
-        searchQuery={searchQuery}
-      />
+      {showSubscribeModal && (
+        <LazySection>
+          <SubscribeModal
+            isOpen
+            onClose={() => setShowSubscribeModal(false)}
+            onToast={success}
+            formatFilter={formatFilter}
+            locationFilter={locationFilter}
+            tagFilter={tagFilter}
+            searchQuery={searchQuery}
+          />
+        </LazySection>
+      )}
 
       {/* Submit Event Modal */}
-      <SubmitEventModal
-        isOpen={showSubmitEventModal}
-        onClose={closeSubmitEventModal}
-        onSubmitted={success}
-        initialActivityType={submitInitialActivityType}
-        initialCity={submitInitialCity}
-      />
+      {showSubmitEventModal && (
+        <LazySection>
+          <SubmitEventModal
+            isOpen
+            onClose={closeSubmitEventModal}
+            onSubmitted={success}
+            initialActivityType={submitInitialActivityType}
+            initialCity={submitInitialCity}
+          />
+        </LazySection>
+      )}
 
       {/* Toast Notifications */}
       <Toast toasts={toasts} onRemove={removeToast} />

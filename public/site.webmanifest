@@ -1,7 +1,7 @@
 {
-  "name": "Datawhale AI+X 活动日历",
+  "name": "Datawhale AI+X 社区活动日历",
   "short_name": "AI+X 日历",
-  "description": "发现、提交和订阅 Datawhale AI+X 生态活动。",
+  "description": "发现、提交和订阅 Datawhale AI+X 社区活动。",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f7f8f1",

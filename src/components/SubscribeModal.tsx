@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, CalendarPlus, Copy, Check, ExternalLink, Rss, Download, Link2, AlertCircle } from 'lucide-react';
 import { getActivityFilterLabel } from '../constants/activityTaxonomy';
+import { getPublicSiteUrl } from '../utils/site';
 
 interface SubscribeModalProps {
   isOpen: boolean;
@@ -14,17 +15,6 @@ interface SubscribeModalProps {
 }
 
 type CopyTarget = 'subscribe' | 'google' | null;
-
-const DEFAULT_PUBLIC_SITE_URL = 'https://aixevents.datawhale.cn';
-
-const getStableSiteUrl = (): string => {
-  const configuredUrl = import.meta.env.VITE_PUBLIC_SITE_URL?.trim();
-  const runtimeOrigin = typeof window !== 'undefined' ? window.location.origin : '';
-  const isLocalRuntime = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/i.test(runtimeOrigin);
-  const siteUrl = configuredUrl || (!isLocalRuntime && runtimeOrigin) || DEFAULT_PUBLIC_SITE_URL;
-
-  return siteUrl.replace(/\/+$/, '');
-};
 
 const toWebcalUrl = (url: string): string => {
   try {
@@ -48,7 +38,7 @@ const SubscribeModal: React.FC<SubscribeModalProps> = ({
   const [copiedTarget, setCopiedTarget] = useState<CopyTarget>(null);
 
   const subscription = useMemo(() => {
-    const siteUrl = getStableSiteUrl();
+    const siteUrl = getPublicSiteUrl();
     const baseUrl = `${siteUrl}/api/calendar`;
     const params = new URLSearchParams();
 

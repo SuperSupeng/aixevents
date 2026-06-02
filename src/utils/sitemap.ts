@@ -1,13 +1,21 @@
-import { TechEvent } from '../types';
+import type { TechEvent } from '../types';
+import { getPublicSiteUrl } from './site';
+
+type SitemapUrl = {
+  loc: string;
+  lastmod: string;
+  changefreq: 'daily' | 'weekly' | 'monthly';
+  priority: string;
+};
 
 /**
  * 生成 XML Sitemap
  */
-export function generateSitemap(_events: TechEvent[]): string {
-  const baseUrl = (import.meta.env.VITE_PUBLIC_SITE_URL || 'https://aixevents.datawhale.cn').replace(/\/$/, '');
+export function generateSitemap(events: TechEvent[]): string {
+  const baseUrl = getPublicSiteUrl();
   const today = new Date().toISOString().split('T')[0];
 
-  const urls = [
+  const urls: SitemapUrl[] = [
     {
       loc: `${baseUrl}/`,
       lastmod: today,
@@ -27,10 +35,10 @@ export function generateSitemap(_events: TechEvent[]): string {
       priority: '0.7',
     },
     {
-      loc: `${baseUrl}/partners`,
+      loc: `${baseUrl}/join`,
       lastmod: today,
-      changefreq: 'weekly',
-      priority: '0.7',
+      changefreq: 'monthly',
+      priority: '0.6',
     },
     {
       loc: `${baseUrl}/privacy`,
@@ -46,9 +54,20 @@ export function generateSitemap(_events: TechEvent[]): string {
     },
   ];
 
+  for (const event of events) {
+    if (!event.id || event.status === 'canceled') continue;
+
+    urls.push({
+      loc: `${baseUrl}/events/${encodeURIComponent(event.id)}`,
+      lastmod: event.startTime ? event.startTime.slice(0, 10) : today,
+      changefreq: 'weekly',
+      priority: '0.6',
+    });
+  }
+
   const urlsXml = urls.map(url => `
   <url>
-    <loc>${url.loc}</loc>
+    <loc>${escapeXml(url.loc)}</loc>
     <lastmod>${url.lastmod}</lastmod>
     <changefreq>${url.changefreq}</changefreq>
     <priority>${url.priority}</priority>
@@ -64,12 +83,13 @@ ${urlsXml}
  * 生成 robots.txt 内容
  */
 export function generateRobotsTxt(): string {
-  const baseUrl = (import.meta.env.VITE_PUBLIC_SITE_URL || 'https://aixevents.datawhale.cn').replace(/\/$/, '');
+  const baseUrl = getPublicSiteUrl();
 
-  return `# Datawhale AI+X 活动日历 Robots.txt
+  return `# Datawhale AI+X 社区活动日历 Robots.txt
 User-agent: *
 Allow: /
 Disallow: /edit/
+Disallow: /partners
 Disallow: /api/review-submission
 Disallow: /api/stats
 Disallow: /*?edit=
@@ -103,4 +123,13 @@ Allow: /
 # Sitemap
 Sitemap: ${baseUrl}/sitemap.xml
 `;
+}
+
+function escapeXml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
 }

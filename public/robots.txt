@@ -1,7 +1,8 @@
-# Datawhale AI+X 活动日历 Robots.txt
+# Datawhale AI+X 社区活动日历 Robots.txt
 User-agent: *
 Allow: /
 Disallow: /edit/
+Disallow: /partners
 Disallow: /api/review-submission
 Disallow: /api/stats
 Disallow: /*?edit=

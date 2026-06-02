@@ -18,9 +18,9 @@ export default {
         'surface-light': 'rgba(255, 255, 255, 0.96)',
       },
       fontFamily: {
-        sans: ['Inter', 'DM Sans', 'Arial', 'Helvetica', 'sans-serif'],
-        serif: ['Inter', 'DM Sans', 'Arial', 'Helvetica', 'sans-serif'],
-        heading: ['Inter', 'DM Sans', 'Arial', 'Helvetica', 'sans-serif'],
+        sans: ['system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Arial', 'Helvetica', 'sans-serif'],
+        serif: ['system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Arial', 'Helvetica', 'sans-serif'],
+        heading: ['system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Arial', 'Helvetica', 'sans-serif'],
       },
       animation: {
         'pulse-slow': 'pulse 6s cubic-bezier(0.4, 0, 0.6, 1) infinite',

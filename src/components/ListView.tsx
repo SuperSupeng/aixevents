@@ -1,9 +1,11 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowDown, ChevronUp } from 'lucide-react';
 import { TechEvent } from '../types';
 import EventCard from './EventCard';
 import EmptyState from './EmptyState';
-import { isEventActiveByEndTime } from '../utils/timeUtils';
+import { usePastEventsReveal } from '../hooks/usePastEventsReveal';
+import { splitEventsByTimeSection } from '../utils/eventSections';
 
 interface ListViewProps {
   events: TechEvent[];
@@ -12,70 +14,24 @@ interface ListViewProps {
   onReset: () => void;
 }
 
-function isEventEnded(event: TechEvent, referenceDate: Date): boolean {
-  return event.status === 'ended' || !isEventActiveByEndTime(event.endTime, referenceDate);
-}
-
 const ListView: React.FC<ListViewProps> = ({ events, onEventClick, searchQuery, onReset }) => {
-  const upcomingAnchorRef = useRef<HTMLDivElement>(null);
-  const touchStartYRef = useRef<number | null>(null);
-  const [showPastEvents, setShowPastEvents] = useState(false);
   const { pastEvents, upcomingEvents } = useMemo(() => {
-    const now = new Date();
-    const past: TechEvent[] = [];
-    const upcoming: TechEvent[] = [];
-
-    events.forEach((event) => {
-      if (isEventEnded(event, now)) {
-        past.push(event);
-      } else {
-        upcoming.push(event);
-      }
-    });
-
-    const sortByStartAsc = (a: TechEvent, b: TechEvent) => {
-      const aStart = new Date(a.startTime).getTime();
-      const bStart = new Date(b.startTime).getTime();
-
-      if (!Number.isFinite(aStart) || !Number.isFinite(bStart)) return 0;
-      return aStart - bStart;
-    };
-
-    return {
-      pastEvents: past.sort(sortByStartAsc),
-      upcomingEvents: upcoming.sort(sortByStartAsc),
-    };
+    return splitEventsByTimeSection(events);
   }, [events]);
-
-  useEffect(() => {
-    setShowPastEvents(false);
-  }, [pastEvents.length, upcomingEvents.length]);
-
-  const revealPastEvents = () => {
-    if (pastEvents.length === 0 || showPastEvents) return;
-    setShowPastEvents(true);
-  };
-
-  const handleWheelCapture = (event: React.WheelEvent<HTMLDivElement>) => {
-    if (event.deltaY < -16) {
-      revealPastEvents();
-    }
-  };
-
-  const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
-    touchStartYRef.current = event.touches[0]?.clientY ?? null;
-  };
-
-  const handleTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
-    const startY = touchStartYRef.current;
-    const currentY = event.touches[0]?.clientY;
-    if (startY === null || currentY === undefined) return;
-
-    if (currentY - startY > 28) {
-      revealPastEvents();
-      touchStartYRef.current = currentY;
-    }
-  };
+  const {
+    showPastEvents,
+    revealPastEvents,
+    collapsePastEvents,
+    scrollToUpcomingEvents,
+    historyControlsRef,
+    upcomingSectionRef,
+    handleWheelCapture,
+    handleTouchStart,
+    handleTouchMove,
+  } = usePastEventsReveal({
+    pastCount: pastEvents.length,
+    upcomingCount: upcomingEvents.length,
+  });
 
   if (events.length === 0) {
     return (
@@ -95,10 +51,10 @@ const ListView: React.FC<ListViewProps> = ({ events, onEventClick, searchQuery, 
       onTouchMove={handleTouchMove}
     >
       {/* Results Header */}
-      <div className="flex items-center justify-between text-sm text-black/60 font-bold">
+      <div ref={historyControlsRef} className="flex items-center justify-between text-sm text-black/60 font-bold">
         <span>
           {upcomingEvents.length > 0
-            ? `接下来 ${upcomingEvents.length} 场活动`
+            ? `即将开始 ${upcomingEvents.length} 场活动`
             : `暂无即将开始活动`}
         </span>
         {pastEvents.length > 0 && (
@@ -120,10 +76,28 @@ const ListView: React.FC<ListViewProps> = ({ events, onEventClick, searchQuery, 
 
       {pastEvents.length > 0 && showPastEvents && (
         <div className="space-y-6" aria-label="过往活动">
-          <div className="flex items-center gap-3 text-xs font-black uppercase tracking-[0.18em] text-black/35">
-            <span className="h-px flex-1 bg-black/10" />
-            <span>已结束活动</span>
-            <span className="h-px flex-1 bg-black/10" />
+          <div className="flex flex-col gap-2 text-xs font-black uppercase tracking-[0.18em] text-black/35 sm:flex-row sm:items-center">
+            <div className="flex flex-1 items-center gap-3">
+              <span className="h-px flex-1 bg-black/10" />
+              <span>已结束活动</span>
+              <span className="h-px flex-1 bg-black/10" />
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={collapsePastEvents}
+                className="inline-flex w-fit items-center gap-1.5 border border-black/10 bg-white/80 px-3 py-1.5 text-[11px] font-black tracking-[0.06em] text-black/55 transition-all hover:border-black/25 hover:bg-primary/25 hover:text-black"
+              >
+                收起过往活动 <ChevronUp size={13} />
+              </button>
+              <button
+                type="button"
+                onClick={scrollToUpcomingEvents}
+                className="inline-flex w-fit items-center gap-1.5 border border-black/10 bg-white/80 px-3 py-1.5 text-[11px] font-black tracking-[0.06em] text-black/55 transition-all hover:border-black/25 hover:bg-primary/25 hover:text-black"
+              >
+                跳到即将开始 <ArrowDown size={13} />
+              </button>
+            </div>
           </div>
           <AnimatePresence mode="popLayout">
             {pastEvents.map((event, index) => (
@@ -145,10 +119,10 @@ const ListView: React.FC<ListViewProps> = ({ events, onEventClick, searchQuery, 
       )}
 
       <div
-        ref={upcomingAnchorRef}
+        ref={upcomingSectionRef}
         className="scroll-mt-28 rounded-lg border border-black/10 bg-white/80 px-4 py-3 text-sm font-black text-black shadow-[4px_4px_0_rgba(23,100,255,0.12)] sm:scroll-mt-32"
       >
-        {upcomingEvents.length > 0 ? '接下来' : '暂无即将开始的活动'}
+        {upcomingEvents.length > 0 ? '即将开始' : '暂无即将开始的活动'}
       </div>
 
       {upcomingEvents.length > 0 ? (

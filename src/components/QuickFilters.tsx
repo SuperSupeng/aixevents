@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpenCheck, Hammer, Trophy, UsersRound, X } from 'lucide-react';
+import { BookOpenCheck, Hammer, Sparkles, Trophy, UsersRound, X } from 'lucide-react';
 import { ACTIVITY_FILTER_GROUPS, getActivityFilterLabel } from '../constants/activityTaxonomy';
 
 interface QuickFilter {
@@ -18,6 +18,7 @@ interface QuickFiltersProps {
 const iconMap: Record<string, React.ReactNode> = {
   sharing: <UsersRound size={14} />,
   workshop: <Hammer size={14} />,
+  creator_day: <Sparkles size={14} />,
   challenge: <Trophy size={14} />,
   training: <BookOpenCheck size={14} />,
 };

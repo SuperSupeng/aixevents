@@ -1,6 +1,7 @@
 export const ACTIVITY_TYPES = [
   { value: 'meetup', label: 'Meetup', hint: '适合交流、聚会、社区活动' },
   { value: 'workshop', label: 'Workshop', hint: '适合实操、练习、工作坊' },
+  { value: 'creator_day', label: 'AI+X 创造节', hint: '适合 Datawhale AI+X 创造节专题活动' },
   { value: 'hackathon', label: 'Hackathon', hint: '适合黑客松、挑战赛、作品共创' },
   { value: 'talk', label: '分享会/讲座', hint: '适合主题分享、讲座、圆桌' },
   { value: 'training', label: '训练营', hint: '适合连续课程、训练营、营期活动' },
@@ -17,6 +18,7 @@ export const DEFAULT_ACTIVITY_TYPE: ActivityType = 'meetup';
 export const SUBMISSION_ACTIVITY_TYPES = [
   { value: 'meetup', label: '交流/分享', hint: '适合 Meetup、主题分享、讲座、圆桌、社区交流' },
   { value: 'workshop', label: '工作坊/实操', hint: '适合动手练习、工作坊、共学实践' },
+  { value: 'creator_day', label: 'AI+X 创造节', hint: '适合 Datawhale AI+X 创造节品牌活动' },
   { value: 'hackathon', label: '黑客松', hint: '适合 Hackathon、挑战赛、作品共创' },
   { value: 'training', label: '课程/训练营', hint: '适合连续课程、训练营、营期活动' },
   { value: 'other', label: '其他/不确定', hint: '拿不准就选这一项，我们确认时可以再调整' },
@@ -32,6 +34,11 @@ export const ACTIVITY_FILTER_GROUPS = [
     id: 'workshop',
     label: '工作坊/实操',
     values: ['workshop'],
+  },
+  {
+    id: 'creator_day',
+    label: '创造节',
+    values: ['creator_day'],
   },
   {
     id: 'challenge',

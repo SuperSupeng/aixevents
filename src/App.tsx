@@ -18,7 +18,7 @@ import { useToast } from './hooks/useToast';
 import { generateBaseSchema, generateEventItemListSchema, generateEventSchema, getEventSEO, getPageSEO, injectStructuredData, removeStructuredData, updatePageSEO } from './utils/seo';
 import type { ActivityType } from './constants/activityTaxonomy';
 
-type Page = 'home' | 'privacy' | 'terms' | 'resources' | 'hackathons' | 'partners' | 'join' | 'edit' | 'event';
+type Page = 'home' | 'privacy' | 'terms' | 'resources' | 'hackathons' | 'creatorsDay' | 'partners' | 'join' | 'edit' | 'event';
 
 const PARTNERS_COMING_SOON_FEATURE = '生态伙伴页面';
 
@@ -32,6 +32,7 @@ const PrivacyPolicy = React.lazy(() => import('./pages/PrivacyPolicy'));
 const TermsOfService = React.lazy(() => import('./pages/TermsOfService'));
 const Resources = React.lazy(() => import('./pages/Resources'));
 const Hackathons = React.lazy(() => import('./pages/Hackathons'));
+const CreatorsDay = React.lazy(() => import('./pages/CreatorsDay'));
 const Partners = React.lazy(() => import('./pages/Partners'));
 const JoinGroups = React.lazy(() => import('./pages/JoinGroups'));
 
@@ -94,6 +95,7 @@ function getRouteFromPath(): RouteState {
   if (path === '/terms') return { page: 'terms' };
   if (path === '/resources') return { page: 'resources' };
   if (path === '/hackathons') return { page: 'hackathons' };
+  if (path === '/creators-day') return { page: 'creatorsDay' };
   if (path === '/join') return { page: 'join' };
   if (path === '/partners') return { page: 'home', blockedFeature: PARTNERS_COMING_SOON_FEATURE };
   if (path.startsWith('/events/')) {
@@ -328,6 +330,13 @@ const App: React.FC = () => {
     window.scrollTo(0, 0);
   };
 
+  const navigateToCreatorsDay = () => {
+    setCurrentPage('creatorsDay');
+    resetRouteState();
+    window.history.pushState({}, '', '/creators-day');
+    window.scrollTo(0, 0);
+  };
+
   const navigateToPartners = () => {
     showPartnersComingSoon();
   };
@@ -470,6 +479,32 @@ const App: React.FC = () => {
     );
   }
 
+  if (currentPage === 'creatorsDay') {
+    return (
+      <>
+        <LazySection label="创造节页面加载中...">
+          <CreatorsDay
+            onBack={navigateToHome}
+            onSubmitClick={() => openSubmitEventModal('creator_day')}
+            onEventClick={openEventDetail}
+          />
+        </LazySection>
+        {showSubmitEventModal && (
+          <LazySection>
+            <SubmitEventModal
+              isOpen
+              onClose={closeSubmitEventModal}
+              onSubmitted={success}
+              initialActivityType={submitInitialActivityType}
+              initialCity={submitInitialCity}
+            />
+          </LazySection>
+        )}
+        <Toast toasts={toasts} onRemove={removeToast} />
+      </>
+    );
+  }
+
   if (currentPage === 'partners') {
     return (
       <>
@@ -514,6 +549,7 @@ const App: React.FC = () => {
         <Navbar
           onExploreClick={navigateToHome}
           onHackathonsClick={navigateToHackathons}
+          onCreatorsDayClick={navigateToCreatorsDay}
           onPartnersClick={navigateToPartners}
           onResourcesClick={navigateToResources}
           onSubmitClick={() => openSubmitEventModal()}
@@ -561,6 +597,7 @@ const App: React.FC = () => {
         <Navbar
           onExploreClick={navigateToHome}
           onHackathonsClick={navigateToHackathons}
+          onCreatorsDayClick={navigateToCreatorsDay}
           onPartnersClick={navigateToPartners}
           onResourcesClick={navigateToResources}
           onSubmitClick={() => openSubmitEventModal()}
@@ -627,6 +664,7 @@ const App: React.FC = () => {
       <Navbar 
         onExploreClick={scrollToCalendar}
         onHackathonsClick={navigateToHackathons}
+        onCreatorsDayClick={navigateToCreatorsDay}
         onPartnersClick={navigateToPartners}
         onResourcesClick={navigateToResources}
         onSubmitClick={() => openSubmitEventModal()}

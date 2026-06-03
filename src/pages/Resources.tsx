@@ -100,14 +100,14 @@ const Resources: React.FC<ResourcesProps> = ({ onBack, onGroupClick }) => {
               资源与参考
             </h1>
             <p className="mt-5 max-w-3xl text-base font-bold leading-8 text-black/70 sm:text-lg">
-              这里收录 AI 里程碑、外部参考源和活动提交入口。资源页保持轻量，重点帮你找到可追踪、可参与的信息。
+              这里整理可追踪的 AI 里程碑和外部参考源，方便你快速查看近期变化，也可以按需订阅公开日历。
             </p>
           </div>
 
           <div className="border-2 border-black bg-[#f7f8f1] p-5">
-            <p className="text-xs font-black uppercase tracking-[0.16em] text-accent">Current Focus</p>
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-accent">Current Source</p>
             <p className="mt-3 text-2xl font-black leading-tight text-black">
-              让活动信息从分散传播变成稳定入口。
+              从可订阅、可追踪的信息源开始整理。
             </p>
           </div>
         </header>
@@ -126,9 +126,9 @@ const Resources: React.FC<ResourcesProps> = ({ onBack, onGroupClick }) => {
                 href={chinaCalendar.sourceUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn-secondary inline-flex items-center justify-center gap-2 px-5 py-3 text-sm"
+                className="btn-secondary inline-flex items-center justify-center gap-2 whitespace-nowrap px-5 py-3 text-sm"
               >
-                来源：知乎 AI 日历 <ExternalLink size={16} />
+                来源：{chinaCalendar.sourceName} <ExternalLink size={16} className="shrink-0" />
               </a>
               <a
                 href={chinaCalendar.subscribeUrl}
@@ -191,7 +191,7 @@ const Resources: React.FC<ResourcesProps> = ({ onBack, onGroupClick }) => {
               <p className="text-xs font-black uppercase tracking-[0.16em]">Contribute</p>
               <h2 className="mt-2 text-2xl font-black leading-tight">有靠谱信息源，可以一起补充</h2>
               <p className="mt-3 max-w-3xl text-sm font-bold leading-7 text-black/70">
-                如果你手里有区域日历、活动清单或高质量 AI 参考资料，欢迎加入活动群告诉我们。我们会和社区一起校对、补充和持续维护。
+                如果你手里有区域日历、活动清单或高质量 AI 参考资料，欢迎加入活动群告诉我们。我们会和社区一起校对、补充和<span className="whitespace-nowrap">持续维护</span>。
               </p>
             </div>
             <button

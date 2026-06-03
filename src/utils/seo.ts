@@ -17,7 +17,7 @@ export interface SEOMetadata {
   type?: 'website' | 'article';
 }
 
-export type SeoPage = 'home' | 'privacy' | 'terms' | 'resources' | 'hackathons' | 'partners' | 'join' | 'edit';
+export type SeoPage = 'home' | 'privacy' | 'terms' | 'resources' | 'hackathons' | 'creatorsDay' | 'partners' | 'join' | 'edit';
 
 export const PAGE_SEO: Record<SeoPage, SEOMetadata> = {
   home: {
@@ -31,6 +31,12 @@ export const PAGE_SEO: Record<SeoPage, SEOMetadata> = {
     description: '收录 AI 黑客松、创造营、挑战赛、Demo Day 和 Agent 实战活动，帮助开发者、高校学生和个人创造者发现可参与、可产出的社区实践机会。',
     keywords: 'AI黑客松, Hackathon, AI挑战赛, Agent实战, 创造营, Demo Day, Datawhale, AI+X社区活动',
     canonicalPath: '/hackathons',
+  },
+  creatorsDay: {
+    title: 'AI+X 创造节｜Datawhale AI+X Creators Day',
+    description: 'Datawhale AI+X 创造节是面向 AI 学习者、开发者、高校学生、个人创造者与产业从业者的 AI 动手实践品牌活动，鼓励大家在真实场景中用 AI 做出可展示的作品。',
+    keywords: 'AI+X创造节, Datawhale AI+X Creators Day, AI实践活动, AI作品共创, 高校AI活动, 城市AI活动, Agent, 工作流, 应用原型',
+    canonicalPath: '/creators-day',
   },
   resources: {
     title: 'AI+X 资源与外部参考｜Datawhale AI+X 社区活动日历',

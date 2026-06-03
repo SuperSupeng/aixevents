@@ -21,6 +21,7 @@ export const identifyTags = (event: TechEvent): EventTag[] => {
     const typeColorMap: Record<string, string> = {
       meetup: 'green',
       workshop: 'purple',
+      creator_day: 'orange',
       hackathon: 'yellow',
       talk: 'blue',
       training: 'cyan',
@@ -30,7 +31,7 @@ export const identifyTags = (event: TechEvent): EventTag[] => {
     };
     tags.push({
       label: getActivityTypeLabel(event.activityType),
-      icon: event.activityType === 'hackathon' ? '🏆' : event.activityType === 'workshop' ? '🛠️' : '📌',
+      icon: event.activityType === 'creator_day' ? '✨' : event.activityType === 'hackathon' ? '🏆' : event.activityType === 'workshop' ? '🛠️' : '📌',
       color: typeColorMap[event.activityType] || 'blue',
       category: 'type',
     });

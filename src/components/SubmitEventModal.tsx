@@ -81,6 +81,12 @@ function parseCustomTags(value: string): string[] {
   );
 }
 
+function getSubmittedDestination(activityType: ActivityType): string {
+  if (activityType === 'creator_day') return '公开日历、创造节页面和订阅源';
+  if (activityType === 'hackathon') return '公开日历、Hackathon 页面和订阅源';
+  return '公开日历和订阅源';
+}
+
 const SubmitEventModal: React.FC<SubmitEventModalProps> = ({
   isOpen,
   onClose,
@@ -105,9 +111,7 @@ const SubmitEventModal: React.FC<SubmitEventModalProps> = ({
   const parsedOrganizers = useMemo(() => parseOrganizers(form.organizersText), [form.organizersText]);
   const parsedCustomTags = useMemo(() => parseCustomTags(form.customTagsText), [form.customTagsText]);
   const posterDisplayUrl = posterPreview || existingPosterUrl;
-  const submittedDestination = form.activityType === 'hackathon'
-    ? '公开日历、Hackathon 页面和订阅源'
-    : '公开日历和订阅源';
+  const submittedDestination = getSubmittedDestination(form.activityType);
   const activityTypeOptions = useMemo(() => {
     const hasCurrentType = SUBMISSION_ACTIVITY_TYPES.some((type) => type.value === form.activityType);
     if (hasCurrentType) return SUBMISSION_ACTIVITY_TYPES;

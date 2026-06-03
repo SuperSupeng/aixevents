@@ -55,6 +55,7 @@ function getActivityFilterValues(value: string): string[] {
   const filterGroups: Record<string, string[]> = {
     sharing: ['meetup', 'talk', 'conference'],
     workshop: ['workshop'],
+    creator_day: ['creator_day'],
     challenge: ['hackathon', 'competition', 'demo_day'],
     training: ['training'],
     other: ['other'],

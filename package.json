@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "test:seo": "tsx --test src/utils/seo.test.ts src/utils/sitemap.test.ts",
+    "test:seo": "tsx --test src/constants/activityTaxonomy.test.ts src/utils/seo.test.ts src/utils/sitemap.test.ts",
     "preview": "vite preview"
   },
   "dependencies": {

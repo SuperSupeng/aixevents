@@ -5,6 +5,7 @@ import Logo from './Logo';
 interface NavbarProps {
   onExploreClick: () => void;
   onHackathonsClick: () => void;
+  onCreatorsDayClick: () => void;
   onPartnersClick: () => void;
   onResourcesClick: () => void;
   onSubmitClick: () => void;
@@ -13,6 +14,7 @@ interface NavbarProps {
 const Navbar: React.FC<NavbarProps> = ({
   onExploreClick,
   onHackathonsClick,
+  onCreatorsDayClick,
   onPartnersClick,
   onResourcesClick,
   onSubmitClick
@@ -33,9 +35,10 @@ const Navbar: React.FC<NavbarProps> = ({
           <Logo size={34} className="max-w-[168px] sm:max-w-[224px] group-hover:scale-[1.03] transition-transform duration-300" />
         </button>
         
-        <div className="hidden lg:flex items-center gap-4 text-base font-black tracking-wide uppercase text-black xl:gap-5">
+        <div className="hidden lg:flex items-center gap-3 text-base font-black tracking-wide uppercase text-black xl:gap-4">
           <button onClick={onExploreClick} className="hover:text-accent transition-colors">活动日历</button>
           <button onClick={onHackathonsClick} className="hover:text-accent transition-colors">Hackathon</button>
+          <button onClick={onCreatorsDayClick} className="hover:text-accent transition-colors">创造节</button>
           <button onClick={onPartnersClick} className="hover:text-accent transition-colors">生态伙伴</button>
           <button onClick={onResourcesClick} className="hover:text-accent transition-colors">资源</button>
           <button onClick={onSubmitClick} className="bg-primary px-4 py-2 border-2 border-black hover:bg-primary-light transition-colors">提交活动</button>
@@ -66,6 +69,12 @@ const Navbar: React.FC<NavbarProps> = ({
               className="text-black/70 hover:text-accent transition-colors py-2 text-left font-black text-base"
             >
               Hackathon
+            </button>
+            <button
+              onClick={() => { onCreatorsDayClick(); setMobileMenuOpen(false); }}
+              className="text-black/70 hover:text-accent transition-colors py-2 text-left font-black text-base"
+            >
+              创造节
             </button>
             <button
               onClick={() => { onPartnersClick(); setMobileMenuOpen(false); }}

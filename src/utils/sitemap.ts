@@ -29,6 +29,12 @@ export function generateSitemap(events: TechEvent[]): string {
       priority: '0.8',
     },
     {
+      loc: `${baseUrl}/creators-day`,
+      lastmod: today,
+      changefreq: 'weekly',
+      priority: '0.8',
+    },
+    {
       loc: `${baseUrl}/resources`,
       lastmod: today,
       changefreq: 'weekly',

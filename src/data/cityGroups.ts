@@ -41,6 +41,10 @@ export const CITY_GROUPS: CityGroup[] = [
   { slug: 'changzhou', city: '常州', qrImage: '/brand/city-groups/changzhou.jpg' },
   { slug: 'nanning', city: '南宁', qrImage: '/brand/city-groups/nanning.jpg' },
   { slug: 'jiujiang', city: '九江', qrImage: '/brand/city-groups/jiujiang.jpg' },
+  { slug: 'singapore', city: '新加坡', qrImage: '/brand/city-groups/singapore.jpg', aliases: ['Singapore', 'SG'] },
+  { slug: 'netherlands', city: '荷兰', qrImage: '/brand/city-groups/netherlands.jpg', aliases: ['Netherlands', 'Holland', 'NL'] },
+  { slug: 'paris', city: '巴黎', qrImage: '/brand/city-groups/paris.jpg', aliases: ['Paris', '法国', 'France'] },
+  { slug: 'korea', city: '韩国', qrImage: '/brand/city-groups/korea.jpg', aliases: ['Korea', 'South Korea', 'KR', '首尔', 'Seoul'] },
 ];
 
 export const ALL_JOIN_GROUPS = [...CITY_GROUPS, FALLBACK_CITY_GROUP];

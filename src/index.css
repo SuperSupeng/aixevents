@@ -264,6 +264,15 @@
   @apply bg-white/20;
 }
 
+.poster-scroll-area {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.poster-scroll-area::-webkit-scrollbar {
+  display: none;
+}
+
 :root {
   --poster-paper: #f7f8f1;
   --poster-ink: #050505;

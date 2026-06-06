@@ -39,7 +39,6 @@ const JoinGroups = React.lazy(() => import('./pages/JoinGroups'));
 type EventReturnState = {
   path: string;
   page: Page;
-  scrollY: number;
 };
 
 type RouteState = {
@@ -373,13 +372,11 @@ const App: React.FC = () => {
     eventReturnStateRef.current = {
       page: currentPage,
       path: `${window.location.pathname}${window.location.search}`,
-      scrollY: window.scrollY,
     };
     setSelectedEvent(event);
     setRouteEvent(event);
     setEventId(event.id);
     setEditToken('');
-    setCurrentPage('event');
     window.history.pushState({}, '', `/events/${encodedId}`);
   };
 
@@ -395,9 +392,6 @@ const App: React.FC = () => {
     setCurrentPage(returnState.page);
     resetRouteState();
     window.history.replaceState({}, '', returnState.path);
-    window.requestAnimationFrame(() => {
-      window.scrollTo({ top: returnState.scrollY, left: 0, behavior: 'auto' });
-    });
   };
 
   // 处理浏览器前进/后退按钮
@@ -424,6 +418,21 @@ const App: React.FC = () => {
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, [initialRoute.blockedFeature]);
+
+  const renderSelectedEventDetail = () => {
+    if (!selectedEvent) return null;
+
+    return (
+      <LazySection>
+        <EventDetail
+          event={selectedEvent}
+          onClose={closeEventDetail}
+          onToast={success}
+          shareUrl={`${window.location.origin}/events/${encodeURIComponent(selectedEvent.id)}`}
+        />
+      </LazySection>
+    );
+  };
 
   // 如果在法律页面，只显示该页面
   if (currentPage === 'privacy') {
@@ -474,6 +483,7 @@ const App: React.FC = () => {
             />
           </LazySection>
         )}
+        {renderSelectedEventDetail()}
         <Toast toasts={toasts} onRemove={removeToast} />
       </>
     );
@@ -500,6 +510,7 @@ const App: React.FC = () => {
             />
           </LazySection>
         )}
+        {renderSelectedEventDetail()}
         <Toast toasts={toasts} onRemove={removeToast} />
       </>
     );
@@ -538,6 +549,7 @@ const App: React.FC = () => {
             />
           </LazySection>
         )}
+        {renderSelectedEventDetail()}
         <Toast toasts={toasts} onRemove={removeToast} />
       </>
     );
@@ -1009,15 +1021,7 @@ const App: React.FC = () => {
       )}
 
       {/* Event Details Modal */}
-      {selectedEvent && (
-        <LazySection>
-          <EventDetail
-            event={selectedEvent}
-            onClose={() => setSelectedEvent(null)}
-            onToast={success}
-          />
-        </LazySection>
-      )}
+      {renderSelectedEventDetail()}
 
       {/* Subscribe Modal */}
       {showSubscribeModal && (

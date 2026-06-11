@@ -20,6 +20,7 @@ export const CITY_GROUPS: CityGroup[] = [
   { slug: 'shanghai', city: '上海', qrImage: '/brand/city-groups/shanghai.jpg', featured: true },
   { slug: 'shenzhen', city: '深圳', qrImage: '/brand/city-groups/shenzhen.jpg', featured: true },
   { slug: 'hangzhou', city: '杭州', qrImage: '/brand/city-groups/hangzhou.jpg', featured: true },
+  { slug: 'ningbo', city: '宁波', qrImage: '/brand/city-groups/ningbo.jpg', aliases: ['宁波市'] },
   { slug: 'guangzhou', city: '广州', qrImage: '/brand/city-groups/guangzhou.jpg' },
   { slug: 'nanjing', city: '南京', qrImage: '/brand/city-groups/nanjing.jpg' },
   { slug: 'chengdu', city: '成都', qrImage: '/brand/city-groups/chengdu.jpg' },

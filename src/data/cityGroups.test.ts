@@ -27,3 +27,11 @@ test('overseas city groups can be found by aliases', async () => {
   assert.equal(findCityGroup('France')?.city, '巴黎');
   assert.equal(findCityGroup('Seoul')?.city, '韩国');
 });
+
+test('ningbo city group is available and can be found by city name', async () => {
+  const { findCityGroup } = await import('./cityGroups');
+
+  assert.equal(findCityGroup('ningbo')?.qrImage, '/brand/city-groups/ningbo.jpg');
+  assert.equal(findCityGroup('宁波')?.slug, 'ningbo');
+  assert.equal(findCityGroup('宁波市')?.slug, 'ningbo');
+});

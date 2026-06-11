@@ -52,49 +52,38 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS '
-DECLARE
-  selected_event datawhale_events%ROWTYPE;
-  token_hash_value TEXT;
-  payload_organizers TEXT[];
-  payload_tags TEXT[];
-  payload_custom_tags TEXT[];
 BEGIN
   IF p_edit_token IS NULL OR length(p_edit_token) < 16 THEN
     RETURN jsonb_build_object(''ok'', false, ''error'', ''invalid_token'');
   END IF;
 
-  token_hash_value := datawhale_edit_token_hash(p_edit_token);
-
-  SELECT *
-  INTO selected_event
-  FROM datawhale_events
-  WHERE edit_token_hash = token_hash_value
-  LIMIT 1;
-
-  IF NOT FOUND THEN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM datawhale_events e
+    WHERE e.edit_token_hash = datawhale_edit_token_hash(p_edit_token)
+  ) THEN
     RETURN jsonb_build_object(''ok'', false, ''error'', ''not_found'');
   END IF;
 
-  SELECT COALESCE(array_agg(item_value), ARRAY[]::TEXT[])
-  INTO payload_organizers
-  FROM jsonb_array_elements_text(COALESCE(p_event->''organizers'', ''[]''::JSONB)) AS item_value;
-
-  SELECT COALESCE(array_agg(item_value), ARRAY[]::TEXT[])
-  INTO payload_tags
-  FROM jsonb_array_elements_text(COALESCE(p_event->''tags'', ''[]''::JSONB)) AS item_value;
-
-  SELECT COALESCE(array_agg(item_value), ARRAY[]::TEXT[])
-  INTO payload_custom_tags
-  FROM jsonb_array_elements_text(COALESCE(p_event->''custom_tags'', ''[]''::JSONB)) AS item_value;
-
-  IF selected_event.review_status = ''approved'' THEN
+  IF EXISTS (
+    SELECT 1
+    FROM datawhale_events e
+    WHERE e.edit_token_hash = datawhale_edit_token_hash(p_edit_token)
+      AND e.review_status = ''approved''
+  ) THEN
     UPDATE datawhale_events
     SET
       pending_update = p_event,
       update_status = ''pending'',
       update_note = NULL,
       updated_at = NOW()
-    WHERE id = selected_event.id;
+    WHERE id = (
+      SELECT e.id
+      FROM datawhale_events e
+      WHERE e.edit_token_hash = datawhale_edit_token_hash(p_edit_token)
+        AND e.review_status = ''approved''
+      LIMIT 1
+    );
 
     RETURN jsonb_build_object(''ok'', true, ''mode'', ''pending_update'');
   END IF;
@@ -110,10 +99,19 @@ BEGIN
     activity_type = COALESCE(p_event->>''activity_type'', ''meetup''),
     location = p_event->''location'',
     organizer = p_event->''organizer'',
-    organizers = payload_organizers,
+    organizers = ARRAY(
+      SELECT item_value
+      FROM jsonb_array_elements_text(COALESCE(p_event->''organizers'', ''[]''::JSONB)) AS items(item_value)
+    ),
     links = p_event->''links'',
-    tags = payload_tags,
-    custom_tags = payload_custom_tags,
+    tags = ARRAY(
+      SELECT item_value
+      FROM jsonb_array_elements_text(COALESCE(p_event->''tags'', ''[]''::JSONB)) AS items(item_value)
+    ),
+    custom_tags = ARRAY(
+      SELECT item_value
+      FROM jsonb_array_elements_text(COALESCE(p_event->''custom_tags'', ''[]''::JSONB)) AS items(item_value)
+    ),
     submitter = p_event->''submitter'',
     notes = NULLIF(p_event->>''notes'', ''''),
     review_status = ''pending'',
@@ -124,7 +122,12 @@ BEGIN
     update_status = ''none'',
     update_note = NULL,
     updated_at = NOW()
-  WHERE id = selected_event.id;
+  WHERE id = (
+    SELECT e.id
+    FROM datawhale_events e
+    WHERE e.edit_token_hash = datawhale_edit_token_hash(p_edit_token)
+    LIMIT 1
+  );
 
   RETURN jsonb_build_object(''ok'', true, ''mode'', ''direct_update'');
 END;

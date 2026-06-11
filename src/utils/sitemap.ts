@@ -95,7 +95,9 @@ export function generateRobotsTxt(): string {
 User-agent: *
 Allow: /
 Disallow: /edit/
+Disallow: /admin
 Disallow: /partners
+Disallow: /api/admin/
 Disallow: /api/review-submission
 Disallow: /api/stats
 Disallow: /*?edit=

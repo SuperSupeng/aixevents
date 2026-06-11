@@ -17,7 +17,7 @@ export interface SEOMetadata {
   type?: 'website' | 'article';
 }
 
-export type SeoPage = 'home' | 'privacy' | 'terms' | 'resources' | 'hackathons' | 'creatorsDay' | 'partners' | 'join' | 'edit';
+export type SeoPage = 'home' | 'privacy' | 'terms' | 'resources' | 'hackathons' | 'creatorsDay' | 'partners' | 'join' | 'edit' | 'admin';
 
 export const PAGE_SEO: Record<SeoPage, SEOMetadata> = {
   home: {
@@ -74,6 +74,13 @@ export const PAGE_SEO: Record<SeoPage, SEOMetadata> = {
     description: '通过私有编辑链接修改已提交的 AI+X 活动信息。修改内容会进入确认流程，确认通过后再公开展示。',
     keywords: 'Datawhale AI+X 活动修改, 活动信息编辑',
     canonicalPath: '/edit',
+    robots: 'noindex,nofollow',
+  },
+  admin: {
+    title: '后台管理｜Datawhale AI+X 社区活动日历',
+    description: 'Datawhale AI+X 社区活动日历后台管理页面。',
+    keywords: 'Datawhale AI+X 后台管理',
+    canonicalPath: '/admin',
     robots: 'noindex,nofollow',
   },
 };

@@ -18,7 +18,7 @@ import { useToast } from './hooks/useToast';
 import { generateBaseSchema, generateEventItemListSchema, generateEventSchema, getEventSEO, getPageSEO, injectStructuredData, removeStructuredData, updatePageSEO } from './utils/seo';
 import type { ActivityType } from './constants/activityTaxonomy';
 
-type Page = 'home' | 'privacy' | 'terms' | 'resources' | 'hackathons' | 'creatorsDay' | 'partners' | 'join' | 'edit' | 'event';
+type Page = 'home' | 'privacy' | 'terms' | 'resources' | 'hackathons' | 'creatorsDay' | 'partners' | 'join' | 'edit' | 'event' | 'admin';
 
 const PARTNERS_COMING_SOON_FEATURE = '生态伙伴页面';
 
@@ -35,6 +35,7 @@ const Hackathons = React.lazy(() => import('./pages/Hackathons'));
 const CreatorsDay = React.lazy(() => import('./pages/CreatorsDay'));
 const Partners = React.lazy(() => import('./pages/Partners'));
 const JoinGroups = React.lazy(() => import('./pages/JoinGroups'));
+const AdminDashboard = React.lazy(() => import('./pages/AdminDashboard'));
 
 type EventReturnState = {
   path: string;
@@ -96,6 +97,7 @@ function getRouteFromPath(): RouteState {
   if (path === '/hackathons') return { page: 'hackathons' };
   if (path === '/creators-day') return { page: 'creatorsDay' };
   if (path === '/join') return { page: 'join' };
+  if (path === '/admin') return { page: 'admin' };
   if (path === '/partners') return { page: 'home', blockedFeature: PARTNERS_COMING_SOON_FEATURE };
   if (path.startsWith('/events/')) {
     const eventId = decodeURIComponent(path.replace('/events/', '').trim());
@@ -594,6 +596,14 @@ const App: React.FC = () => {
         )}
         <Toast toasts={toasts} onRemove={removeToast} />
       </div>
+    );
+  }
+
+  if (currentPage === 'admin') {
+    return (
+      <LazySection label="后台加载中...">
+        <AdminDashboard />
+      </LazySection>
     );
   }
 

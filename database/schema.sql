@@ -54,7 +54,7 @@ ALTER TABLE datawhale_events ALTER COLUMN review_status SET DEFAULT 'pending';
 ALTER TABLE datawhale_events ALTER COLUMN update_status SET DEFAULT 'none';
 ALTER TABLE datawhale_events ALTER COLUMN is_featured SET DEFAULT false;
 
-COMMENT ON COLUMN datawhale_events.is_featured IS '是否展示在首页本周推荐；首页最多取 3 个';
+COMMENT ON COLUMN datawhale_events.is_featured IS '是否进入首页本周推荐候选；首页最多取 3 个尚未结束的当前有效推荐';
 COMMENT ON COLUMN datawhale_events.featured_rank IS '推荐排序，数字越小越靠前；相同排序按活动开始时间';
 COMMENT ON COLUMN datawhale_events.edit_token_hash IS '提交成功后用于无账号编辑的 token 哈希；不要存明文 token';
 COMMENT ON COLUMN datawhale_events.pending_update IS '已公开活动的待确认修改内容；确认通过前不影响公开展示';
@@ -66,6 +66,30 @@ CREATE INDEX IF NOT EXISTS idx_datawhale_events_activity_type ON datawhale_event
 CREATE INDEX IF NOT EXISTS idx_datawhale_events_location_city ON datawhale_events((location->>'city'));
 CREATE INDEX IF NOT EXISTS idx_datawhale_events_featured ON datawhale_events(is_featured, featured_rank);
 CREATE INDEX IF NOT EXISTS idx_datawhale_events_edit_token_hash ON datawhale_events(edit_token_hash);
+
+CREATE TABLE IF NOT EXISTS datawhale_admin_audit_logs (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  actor TEXT NOT NULL,
+  action TEXT NOT NULL CHECK (action IN ('approve', 'reject', 'set_feature', 'reorder_featured')),
+  event_id UUID REFERENCES datawhale_events(id) ON DELETE SET NULL,
+  request_ip_hash TEXT,
+  user_agent TEXT,
+  metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE datawhale_admin_audit_logs
+  DROP CONSTRAINT IF EXISTS datawhale_admin_audit_logs_action_check;
+
+ALTER TABLE datawhale_admin_audit_logs
+  ADD CONSTRAINT datawhale_admin_audit_logs_action_check
+  CHECK (action IN ('approve', 'reject', 'set_feature', 'reorder_featured'));
+
+CREATE INDEX IF NOT EXISTS idx_datawhale_admin_audit_logs_event_id ON datawhale_admin_audit_logs(event_id);
+CREATE INDEX IF NOT EXISTS idx_datawhale_admin_audit_logs_created_at ON datawhale_admin_audit_logs(created_at);
+
+ALTER TABLE datawhale_admin_audit_logs ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON datawhale_admin_audit_logs FROM anon, authenticated;
 
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER
@@ -165,49 +189,38 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS '
-DECLARE
-  selected_event datawhale_events%ROWTYPE;
-  token_hash_value TEXT;
-  payload_organizers TEXT[];
-  payload_tags TEXT[];
-  payload_custom_tags TEXT[];
 BEGIN
   IF p_edit_token IS NULL OR length(p_edit_token) < 16 THEN
     RETURN jsonb_build_object(''ok'', false, ''error'', ''invalid_token'');
   END IF;
 
-  token_hash_value := datawhale_edit_token_hash(p_edit_token);
-
-  SELECT *
-  INTO selected_event
-  FROM datawhale_events
-  WHERE edit_token_hash = token_hash_value
-  LIMIT 1;
-
-  IF NOT FOUND THEN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM datawhale_events e
+    WHERE e.edit_token_hash = datawhale_edit_token_hash(p_edit_token)
+  ) THEN
     RETURN jsonb_build_object(''ok'', false, ''error'', ''not_found'');
   END IF;
 
-  SELECT COALESCE(array_agg(item_value), ARRAY[]::TEXT[])
-  INTO payload_organizers
-  FROM jsonb_array_elements_text(COALESCE(p_event->''organizers'', ''[]''::JSONB)) AS item_value;
-
-  SELECT COALESCE(array_agg(item_value), ARRAY[]::TEXT[])
-  INTO payload_tags
-  FROM jsonb_array_elements_text(COALESCE(p_event->''tags'', ''[]''::JSONB)) AS item_value;
-
-  SELECT COALESCE(array_agg(item_value), ARRAY[]::TEXT[])
-  INTO payload_custom_tags
-  FROM jsonb_array_elements_text(COALESCE(p_event->''custom_tags'', ''[]''::JSONB)) AS item_value;
-
-  IF selected_event.review_status = ''approved'' THEN
+  IF EXISTS (
+    SELECT 1
+    FROM datawhale_events e
+    WHERE e.edit_token_hash = datawhale_edit_token_hash(p_edit_token)
+      AND e.review_status = ''approved''
+  ) THEN
     UPDATE datawhale_events
     SET
       pending_update = p_event,
       update_status = ''pending'',
       update_note = NULL,
       updated_at = NOW()
-    WHERE id = selected_event.id;
+    WHERE id = (
+      SELECT e.id
+      FROM datawhale_events e
+      WHERE e.edit_token_hash = datawhale_edit_token_hash(p_edit_token)
+        AND e.review_status = ''approved''
+      LIMIT 1
+    );
 
     RETURN jsonb_build_object(''ok'', true, ''mode'', ''pending_update'');
   END IF;
@@ -223,10 +236,19 @@ BEGIN
     activity_type = COALESCE(p_event->>''activity_type'', ''meetup''),
     location = p_event->''location'',
     organizer = p_event->''organizer'',
-    organizers = payload_organizers,
+    organizers = ARRAY(
+      SELECT item_value
+      FROM jsonb_array_elements_text(COALESCE(p_event->''organizers'', ''[]''::JSONB)) AS items(item_value)
+    ),
     links = p_event->''links'',
-    tags = payload_tags,
-    custom_tags = payload_custom_tags,
+    tags = ARRAY(
+      SELECT item_value
+      FROM jsonb_array_elements_text(COALESCE(p_event->''tags'', ''[]''::JSONB)) AS items(item_value)
+    ),
+    custom_tags = ARRAY(
+      SELECT item_value
+      FROM jsonb_array_elements_text(COALESCE(p_event->''custom_tags'', ''[]''::JSONB)) AS items(item_value)
+    ),
     submitter = p_event->''submitter'',
     notes = NULLIF(p_event->>''notes'', ''''),
     review_status = ''pending'',
@@ -237,7 +259,12 @@ BEGIN
     update_status = ''none'',
     update_note = NULL,
     updated_at = NOW()
-  WHERE id = selected_event.id;
+  WHERE id = (
+    SELECT e.id
+    FROM datawhale_events e
+    WHERE e.edit_token_hash = datawhale_edit_token_hash(p_edit_token)
+    LIMIT 1
+  );
 
   RETURN jsonb_build_object(''ok'', true, ''mode'', ''direct_update'');
 END;

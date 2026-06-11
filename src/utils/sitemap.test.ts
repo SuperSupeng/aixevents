@@ -11,6 +11,7 @@ test('sitemap only includes public indexed pages', async () => {
   assert.match(sitemap, /https:\/\/aixevents\.datawhale\.cn\/resources/);
   assert.doesNotMatch(sitemap, /\/partners/);
   assert.doesNotMatch(sitemap, /\/edit/);
+  assert.doesNotMatch(sitemap, /\/admin/);
 });
 
 test('robots keeps hidden and private routes out of crawl paths', async () => {
@@ -18,7 +19,9 @@ test('robots keeps hidden and private routes out of crawl paths', async () => {
   const robots = generateRobotsTxt();
 
   assert.match(robots, /Disallow: \/edit\//);
+  assert.match(robots, /Disallow: \/admin/);
   assert.match(robots, /Disallow: \/partners/);
+  assert.match(robots, /Disallow: \/api\/admin\//);
   assert.match(robots, /Allow: \/api\/calendar/);
   assert.match(robots, /Sitemap: https:\/\/aixevents\.datawhale\.cn\/sitemap\.xml/);
 });

@@ -9,6 +9,7 @@ Datawhale AI+X 活动日历用于收录、筛选、订阅和展示 AI+X 生态�
 - 活动提交、海报上传、确认后公开展示
 - 无账号编辑链接：提交后可通过 token 链接修改活动
 - 已公开活动修改进入待确认状态，不直接覆盖线上内容
+- 后台管理 `/admin`：审核提交、确认更新、管理首页推荐位
 - 日历订阅接口 `/api/calendar`
 - Hackathon 独立页面
 - Datawhale 品牌视觉与活动群二维码弹窗
@@ -42,9 +43,12 @@ SUPABASE_SERVICE_ROLE_KEY=...
 REVIEW_ADMIN_TOKEN=...
 STATS_API_KEY=...
 IP_HASH_SALT=...
+ADMIN_ALLOWED_ORIGINS=...
 ```
 
 可从 `.env.example` 复制一份到 `.env.local` 后再填写。
+
+本地 `npm run dev` 会为 `/api/admin/submissions` 挂载一个仅开发环境使用的 Vite middleware，方便 `/admin` 直接读取同一套管理接口逻辑。修改 `vite.config.ts` 或 `.env.local` 后需要重启 dev server。
 
 ## 数据库初始化
 
@@ -86,6 +90,7 @@ supabase_rls_setup.sql
 - `VITE_PUBLIC_SITE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `REVIEW_ADMIN_TOKEN`
+- `ADMIN_ALLOWED_ORIGINS`
 - `STATS_API_KEY`
 - `IP_HASH_SALT`
 
@@ -94,7 +99,8 @@ supabase_rls_setup.sql
 Pages Functions 会提供：
 
 - `/api/calendar`
-- `/api/review-submission`
+- `/api/admin/submissions`
+- `/api/review-submission`（兼容旧入口，307 跳转到 `/api/admin/submissions`）
 - `/api/stats`
 
 如果只想绑定子域名，不接管根域名，可以在 Pages 的 `Custom domains` 添加子域名，然后在当前 DNS 服务商添加 CNAME 指向 Pages 默认域名。
@@ -103,8 +109,11 @@ Pages Functions 会提供：
 
 - 新提交活动默认 `review_status = pending`
 - 设置 `review_status = approved` 后会通过 `datawhale_events_public` 展示
-- 首页“本周推荐”由 `is_featured = true` 控制，`featured_rank` 数字越小越靠前
+- 首页“本周推荐”由 `is_featured = true` 控制，`featured_rank` 数字越小越靠前；最多展示 3 个尚未结束的当前有效推荐
+- 后台“推荐中”只展示当前有效推荐，可拖拽调整展示顺序，保存后会重写 `featured_rank`
 - 已公开活动通过 token 修改后，更新内容存入 `pending_update`，确认后再应用到公开字段
+- 访问 `/admin` 后使用 `REVIEW_ADMIN_TOKEN` 登录；后台只调用服务端 `/api/admin/submissions`
+- 后台审核、拒绝、推荐位修改会写入 `datawhale_admin_audit_logs` 审计表
 
 ## 安全说明
 

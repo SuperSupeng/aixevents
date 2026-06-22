@@ -254,11 +254,12 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onClose, onToast, shar
 
   if (!event) return null;
 
+  const eventLinks = event.links || { officialSite: '#' };
   const smartTags = identifyTags(event);
-  const detailUrl = safeExternalUrl(event.links.registration || event.links.officialSite);
+  const detailUrl = safeExternalUrl(eventLinks.registration || eventLinks.officialSite);
   const hasDetailUrl = Boolean(detailUrl);
   const coverImageUrl = safeImageUrl(event.coverImage);
-  const detailPosterSource = safeImageUrl(event.links.poster) || coverImageUrl;
+  const detailPosterSource = safeImageUrl(eventLinks.poster) || coverImageUrl;
   const posterPreviewSource = detailPosterSource;
   const internalShareUrl = shareUrl || (
     typeof window !== 'undefined'
@@ -270,7 +271,9 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onClose, onToast, shar
     ? '线上'
     : [event.location?.city, event.location?.address].filter(Boolean).join(' · ') || '地点待定';
   const primaryTag = getActivityTypeLabel(event.activityType);
-  const organizerLabel = event.organizers?.length ? event.organizers.join(' / ') : event.organizer.name;
+  const organizerLabel = event.organizers?.length
+    ? event.organizers.join(' / ')
+    : event.organizer?.name || '主办方待确认';
 
   React.useEffect(() => {
     setPosterScrollable(false);

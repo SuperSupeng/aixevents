@@ -74,6 +74,33 @@ test('event detail uses a stable poster viewport instead of sizing layout from t
   assert.doesNotMatch(markup, /md:border-r-2/);
 });
 
+test('event detail tolerates incomplete public event data', () => {
+  const partialEvent = {
+    id: 'partial-public-event',
+    title: '字段不完整的公开活动',
+    summary: '公开视图中的历史数据可能缺少部分 JSON 字段。',
+    startTime: '2026-06-10T11:00:00.000Z',
+    endTime: '2026-06-10T13:00:00.000Z',
+    timezone: 'Asia/Shanghai',
+    format: 'online',
+    tags: [],
+    language: ['中文'],
+    price: { type: 'unknown' },
+    status: 'upcoming',
+  } as unknown as TechEvent;
+
+  const markup = renderToStaticMarkup(
+    React.createElement(EventDetail, {
+      event: partialEvent,
+      onClose: () => undefined,
+    }),
+  );
+
+  assert.match(markup, /字段不完整的公开活动/);
+  assert.match(markup, /主办方待确认/);
+  assert.match(markup, /以海报二维码为准/);
+});
+
 test('event detail poster does not reserve a visible scrollbar gutter over the poster edge', () => {
   const styles = readFileSync(new URL('../index.css', import.meta.url), 'utf8');
 

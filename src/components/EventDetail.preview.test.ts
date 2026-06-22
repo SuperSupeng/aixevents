@@ -101,6 +101,20 @@ test('event detail tolerates incomplete public event data', () => {
   assert.match(markup, /以海报二维码为准/);
 });
 
+test('event detail keeps hooks before the null-event guard', () => {
+  const source = readFileSync(new URL('./EventDetail.tsx', import.meta.url), 'utf8');
+  const componentStart = source.indexOf('const EventDetail: React.FC<EventDetailProps>');
+  const nullEventGuard = source.indexOf('if (!event) return null;', componentStart);
+
+  assert.notEqual(componentStart, -1);
+  assert.notEqual(nullEventGuard, -1);
+  assert.equal(
+    (source.slice(nullEventGuard).match(/React\.useEffect\(/g) || []).length,
+    0,
+    'EventDetail must not add hooks only after event changes from null to loaded.',
+  );
+});
+
 test('event detail poster does not reserve a visible scrollbar gutter over the poster edge', () => {
   const styles = readFileSync(new URL('../index.css', import.meta.url), 'utf8');
 

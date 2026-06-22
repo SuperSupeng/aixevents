@@ -252,14 +252,19 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onClose, onToast, shar
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isPosterPreviewOpen]);
 
+  const eventLinks: TechEvent['links'] = event?.links || { officialSite: '#' };
+  const coverImageUrl = safeImageUrl(event?.coverImage);
+  const detailPosterSource = safeImageUrl(eventLinks.poster) || coverImageUrl;
+
+  React.useEffect(() => {
+    setPosterScrollable(false);
+  }, [detailPosterSource]);
+
   if (!event) return null;
 
-  const eventLinks = event.links || { officialSite: '#' };
   const smartTags = identifyTags(event);
   const detailUrl = safeExternalUrl(eventLinks.registration || eventLinks.officialSite);
   const hasDetailUrl = Boolean(detailUrl);
-  const coverImageUrl = safeImageUrl(event.coverImage);
-  const detailPosterSource = safeImageUrl(eventLinks.poster) || coverImageUrl;
   const posterPreviewSource = detailPosterSource;
   const internalShareUrl = shareUrl || (
     typeof window !== 'undefined'
@@ -274,10 +279,6 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onClose, onToast, shar
   const organizerLabel = event.organizers?.length
     ? event.organizers.join(' / ')
     : event.organizer?.name || '主办方待确认';
-
-  React.useEffect(() => {
-    setPosterScrollable(false);
-  }, [detailPosterSource]);
 
   const handleCopyLink = async () => {
     try {

@@ -8,6 +8,7 @@ test('sitemap only includes public indexed pages', async () => {
   assert.match(sitemap, /https:\/\/aixevents\.datawhale\.cn\//);
   assert.match(sitemap, /https:\/\/aixevents\.datawhale\.cn\/hackathons/);
   assert.match(sitemap, /https:\/\/aixevents\.datawhale\.cn\/creators-day/);
+  assert.match(sitemap, /https:\/\/aixevents\.datawhale\.cn\/waic-2026/);
   assert.match(sitemap, /https:\/\/aixevents\.datawhale\.cn\/resources/);
   assert.doesNotMatch(sitemap, /\/partners/);
   assert.doesNotMatch(sitemap, /\/edit/);

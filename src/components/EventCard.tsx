@@ -28,15 +28,24 @@ const EventCard: React.FC<EventCardProps> = ({ event, onClick }) => {
       <div className="flex flex-col md:flex-row">
         <div className="relative min-h-[150px] overflow-hidden border-b border-black/10 bg-black/[0.035] md:w-52 md:min-h-full md:border-b-0 md:border-r">
           {event.coverImage ? (
-            <img
-              src={event.coverImage}
-              alt={`${event.title} 活动海报`}
-              className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-              loading="lazy"
-              onError={(imageEvent) => {
-                imageEvent.currentTarget.style.display = 'none';
-              }}
-            />
+            <>
+              <img
+                src={event.coverImage}
+                alt=""
+                aria-hidden="true"
+                className="absolute inset-0 h-full w-full scale-110 object-cover opacity-25 blur-xl"
+                loading="lazy"
+              />
+              <img
+                src={event.coverImage}
+                alt={`${event.title} 活动海报`}
+                className="absolute inset-0 h-full w-full object-contain p-1.5 transition-transform duration-300 group-hover:scale-[1.02]"
+                loading="lazy"
+                onError={(imageEvent) => {
+                  imageEvent.currentTarget.style.display = 'none';
+                }}
+              />
+            </>
           ) : (
             <div className="absolute inset-0 flex flex-col justify-between p-4">
               <span className="text-[10px] font-black uppercase tracking-[0.22em] text-accent">DATAWHALE</span>

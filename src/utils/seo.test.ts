@@ -7,7 +7,18 @@ test('seo utilities load outside Vite and use the community calendar brand', asy
   assert.equal(seo.SITE_NAME, 'Datawhale AI+X 社区活动日历');
   assert.equal(seo.canonicalUrl('/hackathons'), 'https://aixevents.datawhale.cn/hackathons');
   assert.equal(seo.canonicalUrl('/creators-day'), 'https://aixevents.datawhale.cn/creators-day');
+  assert.equal(seo.canonicalUrl('/waic-2026'), 'https://aixevents.datawhale.cn/waic-2026');
   assert.equal(seo.canonicalUrl('/'), 'https://aixevents.datawhale.cn/');
+});
+
+test('waic page has dedicated indexed seo metadata', async () => {
+  const seo = await import('./seo');
+  const metadata = seo.getPageSEO('waic2026');
+
+  assert.equal(metadata.canonicalPath, '/waic-2026');
+  assert.match(metadata.title, /WAIC 2026/);
+  assert.equal(metadata.ogImage, '/waic-2026-og.png');
+  assert.doesNotMatch(metadata.robots || '', /noindex/);
 });
 
 test('creator day page has dedicated indexed seo metadata', async () => {

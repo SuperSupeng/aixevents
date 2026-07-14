@@ -31,6 +31,7 @@ interface SubmitEventModalProps {
   editToken?: string;
   initialActivityType?: ActivityType;
   initialCity?: string;
+  initialWaic2026?: boolean;
 }
 
 const initialForm = {
@@ -38,6 +39,7 @@ const initialForm = {
   summary: '',
   activityType: DEFAULT_ACTIVITY_TYPE,
   customTagsText: '',
+  isWaic2026: false,
   startTime: '',
   endTime: '',
   format: 'offline' as EventSubmissionInput['format'],
@@ -81,10 +83,13 @@ function parseCustomTags(value: string): string[] {
   );
 }
 
-function getSubmittedDestination(activityType: ActivityType): string {
-  if (activityType === 'creator_day') return '公开日历、创造节页面和订阅源';
-  if (activityType === 'hackathon') return '公开日历、Hackathon 页面和订阅源';
-  return '公开日历和订阅源';
+function getSubmittedDestination(activityType: ActivityType, isWaic2026: boolean): string {
+  const destinations = ['公开日历'];
+  if (activityType === 'creator_day') destinations.push('创造节页面');
+  if (activityType === 'hackathon') destinations.push('Hackathon 页面');
+  if (isWaic2026) destinations.push('WAIC 2026 专题页');
+  destinations.push('订阅源');
+  return destinations.join('、');
 }
 
 const SubmitEventModal: React.FC<SubmitEventModalProps> = ({
@@ -94,6 +99,7 @@ const SubmitEventModal: React.FC<SubmitEventModalProps> = ({
   editToken,
   initialActivityType = DEFAULT_ACTIVITY_TYPE,
   initialCity = '',
+  initialWaic2026 = false,
 }) => {
   const [form, setForm] = useState(initialForm);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -109,9 +115,12 @@ const SubmitEventModal: React.FC<SubmitEventModalProps> = ({
   const isEditMode = Boolean(editToken);
   const resolvedCity = form.city.trim();
   const parsedOrganizers = useMemo(() => parseOrganizers(form.organizersText), [form.organizersText]);
-  const parsedCustomTags = useMemo(() => parseCustomTags(form.customTagsText), [form.customTagsText]);
+  const parsedCustomTags = useMemo(() => Array.from(new Set([
+    ...(form.isWaic2026 ? ['WAIC 2026'] : []),
+    ...parseCustomTags(form.customTagsText),
+  ])).slice(0, 8), [form.customTagsText, form.isWaic2026]);
   const posterDisplayUrl = posterPreview || existingPosterUrl;
-  const submittedDestination = getSubmittedDestination(form.activityType);
+  const submittedDestination = getSubmittedDestination(form.activityType, form.isWaic2026);
   const activityTypeOptions = useMemo(() => {
     const hasCurrentType = SUBMISSION_ACTIVITY_TYPES.some((type) => type.value === form.activityType);
     if (hasCurrentType) return SUBMISSION_ACTIVITY_TYPES;
@@ -149,8 +158,13 @@ const SubmitEventModal: React.FC<SubmitEventModalProps> = ({
 
   useEffect(() => {
     if (!isOpen || editToken) return;
-    setForm((current) => ({ ...current, activityType: initialActivityType, city: initialCity || current.city }));
-  }, [editToken, initialActivityType, initialCity, isOpen]);
+    setForm((current) => ({
+      ...current,
+      activityType: initialActivityType,
+      city: initialCity || current.city,
+      isWaic2026: initialWaic2026,
+    }));
+  }, [editToken, initialActivityType, initialCity, initialWaic2026, isOpen]);
 
   useEffect(() => {
     if (!isOpen || !editToken) return;
@@ -175,7 +189,8 @@ const SubmitEventModal: React.FC<SubmitEventModalProps> = ({
           title: submission.title,
           summary: submission.summary,
           activityType: (submission.activityType || DEFAULT_ACTIVITY_TYPE) as ActivityType,
-          customTagsText: submission.customTags.map((tag) => `#${tag}`).join(' '),
+          customTagsText: submission.customTags.filter((tag) => tag !== 'WAIC 2026').map((tag) => `#${tag}`).join(' '),
+          isWaic2026: submission.customTags.includes('WAIC 2026'),
           startTime: toDateTimeLocal(submission.startTime),
           endTime: toDateTimeLocal(submission.endTime),
           format: submission.format,
@@ -453,6 +468,20 @@ const SubmitEventModal: React.FC<SubmitEventModalProps> = ({
                         <option value="online">线上</option>
                         <option value="hybrid">混合</option>
                       </select>
+                    </label>
+                    <label className={`sm:col-span-2 flex cursor-pointer items-start gap-3 rounded-md border-2 p-4 transition ${form.isWaic2026 ? 'border-black bg-primary/20 shadow-[3px_3px_0_rgba(5,5,5,0.9)]' : 'border-black/12 bg-black/[0.025] hover:border-black/35'}`}>
+                      <input
+                        type="checkbox"
+                        checked={form.isWaic2026}
+                        onChange={(event) => updateField('isWaic2026', event.target.checked)}
+                        className="mt-0.5 h-5 w-5 shrink-0 accent-black"
+                      />
+                      <span>
+                        <span className="block text-sm font-black text-black">这是 WAIC 2026 周边活动</span>
+                        <span className="mt-1 block text-xs font-bold leading-5 text-black/55">
+                          勾选后会自动添加「WAIC 2026」标签，确认通过后同时进入 WAIC 专题页。
+                        </span>
+                      </span>
                     </label>
                     <label>
                       <span className="submit-label">开始时间 *</span>

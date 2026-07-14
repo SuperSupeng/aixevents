@@ -17,7 +17,7 @@ export interface SEOMetadata {
   type?: 'website' | 'article';
 }
 
-export type SeoPage = 'home' | 'privacy' | 'terms' | 'resources' | 'hackathons' | 'creatorsDay' | 'partners' | 'join' | 'edit' | 'admin';
+export type SeoPage = 'home' | 'privacy' | 'terms' | 'resources' | 'hackathons' | 'creatorsDay' | 'waic2026' | 'partners' | 'join' | 'edit' | 'admin';
 
 export const PAGE_SEO: Record<SeoPage, SEOMetadata> = {
   home: {
@@ -37,6 +37,15 @@ export const PAGE_SEO: Record<SeoPage, SEOMetadata> = {
     description: 'Datawhale AI+X 创造节是面向 AI 学习者、开发者、高校学生、个人创造者与产业从业者的 AI 动手实践品牌活动，鼓励大家在真实场景中用 AI 做出可展示的作品。',
     keywords: 'AI+X创造节, Datawhale AI+X Creators Day, AI实践活动, AI作品共创, 高校AI活动, 城市AI活动, Agent, 工作流, 应用原型',
     canonicalPath: '/creators-day',
+  },
+  waic2026: {
+    title: 'WAIC 2026 周边活动指南｜7 月 15–20 日上海 AI Side Events',
+    description: 'WAIC 2026 大会于 7 月 17–20 日举行，周边活动从 7 月 15 日起陆续开始。Datawhale 整理技术分享、创业交流、Demo Day、研究者聚会、AI 硬件、人文科技与 After Party。',
+    keywords: 'WAIC 2026, WAIC周边活动, WAIC Side Events, 上海AI活动, 世界人工智能大会, AI聚会, Datawhale',
+    canonicalPath: '/waic-2026',
+    ogTitle: '主会场之外，还有这些 WAIC 2026 AI 活动',
+    ogDescription: '7 月 15–20 日，查看上海 WAIC 周边活动、报名入口与持续更新日程。',
+    ogImage: '/waic-2026-og.png',
   },
   resources: {
     title: 'AI+X 资源与外部参考｜Datawhale AI+X 社区活动日历',

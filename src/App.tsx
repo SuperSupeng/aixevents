@@ -18,7 +18,7 @@ import { useToast } from './hooks/useToast';
 import { generateBaseSchema, generateEventItemListSchema, generateEventSchema, getEventSEO, getPageSEO, injectStructuredData, removeStructuredData, updatePageSEO } from './utils/seo';
 import type { ActivityType } from './constants/activityTaxonomy';
 
-type Page = 'home' | 'privacy' | 'terms' | 'resources' | 'hackathons' | 'creatorsDay' | 'partners' | 'join' | 'edit' | 'event' | 'admin';
+type Page = 'home' | 'privacy' | 'terms' | 'resources' | 'hackathons' | 'creatorsDay' | 'waic2026' | 'partners' | 'join' | 'edit' | 'event' | 'admin';
 
 const PARTNERS_COMING_SOON_FEATURE = '生态伙伴页面';
 
@@ -33,6 +33,7 @@ const TermsOfService = React.lazy(() => import('./pages/TermsOfService'));
 const Resources = React.lazy(() => import('./pages/Resources'));
 const Hackathons = React.lazy(() => import('./pages/Hackathons'));
 const CreatorsDay = React.lazy(() => import('./pages/CreatorsDay'));
+const Waic2026 = React.lazy(() => import('./pages/Waic2026'));
 const Partners = React.lazy(() => import('./pages/Partners'));
 const JoinGroups = React.lazy(() => import('./pages/JoinGroups'));
 const AdminDashboard = React.lazy(() => import('./pages/AdminDashboard'));
@@ -96,6 +97,7 @@ function getRouteFromPath(): RouteState {
   if (path === '/resources') return { page: 'resources' };
   if (path === '/hackathons') return { page: 'hackathons' };
   if (path === '/creators-day') return { page: 'creatorsDay' };
+  if (path === '/waic-2026') return { page: 'waic2026' };
   if (path === '/join') return { page: 'join' };
   if (path === '/admin') return { page: 'admin' };
   if (path === '/partners') return { page: 'home', blockedFeature: PARTNERS_COMING_SOON_FEATURE };
@@ -176,6 +178,7 @@ const App: React.FC = () => {
   const [showSubmitEventModal, setShowSubmitEventModal] = useState(false);
   const [submitInitialActivityType, setSubmitInitialActivityType] = useState<ActivityType | undefined>();
   const [submitInitialCity, setSubmitInitialCity] = useState('');
+  const [submitInitialWaic2026, setSubmitInitialWaic2026] = useState(false);
   
   // Toast notifications
   const { toasts, removeToast, success } = useToast();
@@ -191,9 +194,10 @@ const App: React.FC = () => {
     setViewMode('month'); // 确保显示日历视图
   };
 
-  const openSubmitEventModal = (initialActivityType?: ActivityType, initialCity?: string) => {
+  const openSubmitEventModal = (initialActivityType?: ActivityType, initialCity?: string, initialWaic2026 = false) => {
     setSubmitInitialActivityType(initialActivityType);
     setSubmitInitialCity(initialCity || '');
+    setSubmitInitialWaic2026(initialWaic2026);
     setShowSubmitEventModal(true);
   };
 
@@ -201,6 +205,7 @@ const App: React.FC = () => {
     setShowSubmitEventModal(false);
     setSubmitInitialActivityType(undefined);
     setSubmitInitialCity('');
+    setSubmitInitialWaic2026(false);
   };
 
   const showPartnersComingSoon = () => {
@@ -265,7 +270,7 @@ const App: React.FC = () => {
       return;
     }
 
-    const cachedEvent = events.find((event) => event.id === eventId);
+    const cachedEvent = events.find((event: TechEvent) => event.id === eventId);
     if (cachedEvent) {
       setRouteEvent(cachedEvent);
       setRouteEventLoading(false);
@@ -335,6 +340,13 @@ const App: React.FC = () => {
     setCurrentPage('creatorsDay');
     resetRouteState();
     window.history.pushState({}, '', '/creators-day');
+    window.scrollTo(0, 0);
+  };
+
+  const navigateToWaic2026 = () => {
+    setCurrentPage('waic2026');
+    resetRouteState();
+    window.history.pushState({}, '', '/waic-2026');
     window.scrollTo(0, 0);
   };
 
@@ -518,6 +530,36 @@ const App: React.FC = () => {
     );
   }
 
+  if (currentPage === 'waic2026') {
+    return (
+      <>
+        <LazySection label="WAIC 2026 专题加载中...">
+          <Waic2026
+            events={events}
+            isLoading={eventsLoading}
+            onBack={navigateToHome}
+            onEventClick={openEventDetail}
+            onSubmitClick={() => openSubmitEventModal(undefined, '上海', true)}
+          />
+        </LazySection>
+        {showSubmitEventModal && (
+          <LazySection>
+            <SubmitEventModal
+              isOpen
+              onClose={closeSubmitEventModal}
+              onSubmitted={success}
+              initialActivityType={submitInitialActivityType}
+              initialCity={submitInitialCity}
+              initialWaic2026={submitInitialWaic2026}
+            />
+          </LazySection>
+        )}
+        {renderSelectedEventDetail()}
+        <Toast toasts={toasts} onRemove={removeToast} />
+      </>
+    );
+  }
+
   if (currentPage === 'partners') {
     return (
       <>
@@ -564,6 +606,7 @@ const App: React.FC = () => {
           onExploreClick={navigateToHome}
           onHackathonsClick={navigateToHackathons}
           onCreatorsDayClick={navigateToCreatorsDay}
+          onWaicClick={navigateToWaic2026}
           onPartnersClick={navigateToPartners}
           onResourcesClick={navigateToResources}
           onSubmitClick={() => openSubmitEventModal()}
@@ -620,6 +663,7 @@ const App: React.FC = () => {
           onExploreClick={navigateToHome}
           onHackathonsClick={navigateToHackathons}
           onCreatorsDayClick={navigateToCreatorsDay}
+          onWaicClick={navigateToWaic2026}
           onPartnersClick={navigateToPartners}
           onResourcesClick={navigateToResources}
           onSubmitClick={() => openSubmitEventModal()}
@@ -687,6 +731,7 @@ const App: React.FC = () => {
         onExploreClick={scrollToCalendar}
         onHackathonsClick={navigateToHackathons}
         onCreatorsDayClick={navigateToCreatorsDay}
+        onWaicClick={navigateToWaic2026}
         onPartnersClick={navigateToPartners}
         onResourcesClick={navigateToResources}
         onSubmitClick={() => openSubmitEventModal()}
@@ -1057,6 +1102,7 @@ const App: React.FC = () => {
             onSubmitted={success}
             initialActivityType={submitInitialActivityType}
             initialCity={submitInitialCity}
+            initialWaic2026={submitInitialWaic2026}
           />
         </LazySection>
       )}

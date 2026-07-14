@@ -114,10 +114,10 @@ function getPayload(submission: AdminSubmission | null): Record<string, any> {
 }
 
 function getOrganizerText(payload: Record<string, any>, fallback?: AdminSubmission): string {
-  const organizers = Array.isArray(payload.organizers)
+  const organizers: string[] = Array.isArray(payload.organizers)
     ? payload.organizers
     : Array.isArray(fallback?.organizers)
-      ? fallback?.organizers
+      ? (fallback?.organizers || [])
       : [];
   if (organizers.length) return organizers.join(' / ');
   return payload.organizer?.name || fallback?.organizer?.name || '未填写';

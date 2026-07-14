@@ -68,7 +68,7 @@ const JoinGroups: React.FC<JoinGroupsProps> = ({ onBack, onCalendarClick, onSubm
     });
   }, [citySearch]);
 
-  const previewEvents = cityEvents.filter((event) => isEventActiveByEndTime(event.endTime)).slice(0, 4);
+  const previewEvents = cityEvents.filter((event: TechEvent) => isEventActiveByEndTime(event.endTime)).slice(0, 4);
 
   const selectGroup = (group: CityGroup | null) => {
     setCopied(false);
@@ -219,7 +219,7 @@ const JoinGroups: React.FC<JoinGroupsProps> = ({ onBack, onCalendarClick, onSubm
                   </div>
                 )}
 
-                {!eventsLoading && previewEvents.map((event) => (
+                {!eventsLoading && previewEvents.map((event: TechEvent) => (
                   <button
                     key={event.id}
                     onClick={() => onEventClick(event)}

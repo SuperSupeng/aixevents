@@ -50,7 +50,7 @@ export const ACTIVITY_FILTER_GROUPS = [
     label: '课程/训练营',
     values: ['training'],
   },
-] as const satisfies ReadonlyArray<{ id: string; label: string; values: ActivityType[] }>;
+] as const satisfies ReadonlyArray<{ id: string; label: string; values: readonly ActivityType[] }>;
 
 export const PUBLIC_ACTIVITY_TYPES = ACTIVITY_TYPES.filter((type) => type.value !== 'other');
 

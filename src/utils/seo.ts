@@ -39,12 +39,12 @@ export const PAGE_SEO: Record<SeoPage, SEOMetadata> = {
     canonicalPath: '/creators-day',
   },
   waic2026: {
-    title: 'WAIC 2026 周边活动指南｜7 月 15–20 日上海 AI Side Events',
-    description: 'WAIC 2026 大会于 7 月 17–20 日举行，周边活动从 7 月 15 日起陆续开始。Datawhale 整理技术分享、创业交流、Demo Day、研究者聚会、AI 硬件、人文科技与 After Party。',
+    title: 'WAIC 2026 周边活动归档｜上海 AI Side Events',
+    description: 'WAIC 2026 已结束。本页保留 7 月 15–20 日上海周边活动的历史日程与活动信息。',
     keywords: 'WAIC 2026, WAIC周边活动, WAIC Side Events, 上海AI活动, 世界人工智能大会, AI聚会, Datawhale',
     canonicalPath: '/waic-2026',
-    ogTitle: '主会场之外，还有这些 WAIC 2026 AI 活动',
-    ogDescription: '7 月 15–20 日，查看上海 WAIC 周边活动、报名入口与持续更新日程。',
+    ogTitle: 'WAIC 2026 上海周边活动归档',
+    ogDescription: '回顾 7 月 15–20 日上海 WAIC 周边活动历史日程。',
     ogImage: '/waic-2026-og.png',
   },
   resources: {

@@ -31,7 +31,6 @@ interface SubmitEventModalProps {
   editToken?: string;
   initialActivityType?: ActivityType;
   initialCity?: string;
-  initialWaic2026?: boolean;
 }
 
 const initialForm = {
@@ -99,7 +98,6 @@ const SubmitEventModal: React.FC<SubmitEventModalProps> = ({
   editToken,
   initialActivityType = DEFAULT_ACTIVITY_TYPE,
   initialCity = '',
-  initialWaic2026 = false,
 }) => {
   const [form, setForm] = useState(initialForm);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -162,9 +160,8 @@ const SubmitEventModal: React.FC<SubmitEventModalProps> = ({
       ...current,
       activityType: initialActivityType,
       city: initialCity || current.city,
-      isWaic2026: initialWaic2026,
     }));
-  }, [editToken, initialActivityType, initialCity, initialWaic2026, isOpen]);
+  }, [editToken, initialActivityType, initialCity, isOpen]);
 
   useEffect(() => {
     if (!isOpen || !editToken) return;
@@ -468,20 +465,6 @@ const SubmitEventModal: React.FC<SubmitEventModalProps> = ({
                         <option value="online">线上</option>
                         <option value="hybrid">混合</option>
                       </select>
-                    </label>
-                    <label className={`sm:col-span-2 flex cursor-pointer items-start gap-3 rounded-md border-2 p-4 transition ${form.isWaic2026 ? 'border-black bg-primary/20 shadow-[3px_3px_0_rgba(5,5,5,0.9)]' : 'border-black/12 bg-black/[0.025] hover:border-black/35'}`}>
-                      <input
-                        type="checkbox"
-                        checked={form.isWaic2026}
-                        onChange={(event) => updateField('isWaic2026', event.target.checked)}
-                        className="mt-0.5 h-5 w-5 shrink-0 accent-black"
-                      />
-                      <span>
-                        <span className="block text-sm font-black text-black">这是 WAIC 2026 周边活动</span>
-                        <span className="mt-1 block text-xs font-bold leading-5 text-black/55">
-                          勾选后会自动添加「WAIC 2026」标签，确认通过后同时进入 WAIC 专题页。
-                        </span>
-                      </span>
                     </label>
                     <label>
                       <span className="submit-label">开始时间 *</span>

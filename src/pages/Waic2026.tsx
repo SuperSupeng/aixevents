@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import {
   ArrowLeft,
   ArrowRight,
@@ -6,11 +6,7 @@ import {
   Clock3,
   ExternalLink,
   MapPin,
-  MessageCircle,
-  Plus,
   Sparkles,
-  Users,
-  X,
 } from 'lucide-react';
 import Logo from '../components/Logo';
 import type { TechEvent } from '../types';
@@ -21,7 +17,6 @@ interface Waic2026Props {
   isLoading?: boolean;
   onBack: () => void;
   onEventClick: (event: TechEvent) => void;
-  onSubmitClick: () => void;
 }
 
 const WAIC_DATES = ['2026-07-15', '2026-07-16', '2026-07-17', '2026-07-18', '2026-07-19', '2026-07-20'];
@@ -90,7 +85,6 @@ const Waic2026: React.FC<Waic2026Props> = ({
   isLoading = false,
   onBack,
   onEventClick,
-  onSubmitClick,
 }) => {
   const scheduleRef = useRef<HTMLElement>(null);
   const initialDate = useMemo(() => {
@@ -100,7 +94,6 @@ const Waic2026: React.FC<Waic2026Props> = ({
   }, []);
   const [selectedDate, setSelectedDate] = useState(initialDate);
   const [activeFilter, setActiveFilter] = useState<FilterId>('all');
-  const [showGroupQr, setShowGroupQr] = useState(false);
 
   const waicEvents = useMemo(() => events
     .filter(isWaicEvent)
@@ -117,15 +110,6 @@ const Waic2026: React.FC<Waic2026Props> = ({
       .filter((event): event is TechEvent => Boolean(event));
   }, [waicEvents]);
 
-  useEffect(() => {
-    if (!showGroupQr) return;
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setShowGroupQr(false);
-    };
-    window.addEventListener('keydown', closeOnEscape);
-    return () => window.removeEventListener('keydown', closeOnEscape);
-  }, [showGroupQr]);
-
   const openSchedule = () => scheduleRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   return (
@@ -137,9 +121,7 @@ const Waic2026: React.FC<Waic2026Props> = ({
             <span className="hidden sm:inline">返回活动日历</span>
           </button>
           <Logo size={28} />
-          <button onClick={() => setShowGroupQr(true)} className="inline-flex items-center gap-2 rounded-full border-2 border-black bg-white px-3 py-2 text-xs font-black shadow-[3px_3px_0_#101410] transition hover:-translate-y-0.5 hover:bg-primary">
-            <MessageCircle size={15} /> 加入交流群
-          </button>
+          <span className="rounded-full border-2 border-black bg-white px-3 py-2 text-xs font-black">历史归档</span>
         </div>
       </header>
 
@@ -156,14 +138,14 @@ const Waic2026: React.FC<Waic2026Props> = ({
           <div className="relative mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 sm:py-20 lg:grid-cols-[1.25fr_0.75fr] lg:items-end">
             <div>
               <div className="mb-7 inline-flex items-center gap-2 border-2 border-black bg-white px-3 py-1.5 text-xs font-black uppercase tracking-[0.16em] text-accent shadow-[3px_3px_0_#101410]">
-                <Sparkles size={14} /> 2026 WAIC · Side Events
+                <Sparkles size={14} /> 2026 WAIC · Side Events · 已结束
               </div>
               <h1 className="max-w-4xl [font-size:clamp(2rem,10vw,2.35rem)] font-black leading-[1.02] tracking-[-0.045em] sm:text-[4rem] lg:text-[4.7rem] xl:text-[5rem]">
                 <span className="block whitespace-nowrap">WAIC 主会场之外，</span>
                 <span className="block whitespace-nowrap">还有这些 AI 活动。</span>
               </h1>
               <p className="mt-7 max-w-[46rem] text-base font-bold leading-8 text-black/65 [text-wrap:pretty] sm:text-lg">
-                WAIC 大会于 7 月 17–20 日举行，周边活动从 7 月 15 日起陆续开始。技术分享、创业交流、Demo Day、研究者聚会与 After Party 持续发生，选一场去现场碰个头。
+                WAIC 大会已于 7 月 17–20 日举行，周边活动从 7 月 15 日起陆续展开。本页作为历史活动归档保留。
               </p>
               <a
                 href="https://www.worldaic.com.cn/"
@@ -177,14 +159,11 @@ const Waic2026: React.FC<Waic2026Props> = ({
                 <button onClick={openSchedule} className="inline-flex min-h-12 items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-black text-black transition hover:-translate-y-0.5 hover:bg-primary-light">
                   查看完整日程 <ArrowRight size={17} />
                 </button>
-                <button onClick={() => setShowGroupQr(true)} className="inline-flex min-h-12 items-center gap-2 rounded-md border-2 border-black bg-white px-6 py-3 text-sm font-black text-accent shadow-[4px_4px_0_#c7d8ff] transition hover:-translate-y-0.5 hover:bg-white">
-                  <Users size={17} /> 来 WAIC 2026 碰个头
-                </button>
               </div>
             </div>
 
             <div className="border-2 border-black bg-white p-5 shadow-[9px_9px_0_#c7d8ff] sm:p-6">
-              <p className="text-xs font-black uppercase tracking-[0.18em] text-black/45">持续更新</p>
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-black/45">历史收录</p>
               <p className="mt-3 text-6xl font-black text-accent">{waicEvents.length}</p>
               <p className="mt-1 text-sm font-bold text-black/65">场 WAIC 周边活动已收录</p>
               <div className="mt-6 grid grid-cols-2 gap-2 text-xs font-black">
@@ -289,25 +268,21 @@ const Waic2026: React.FC<Waic2026Props> = ({
         </section>
 
         <section className="bg-primary py-12 sm:py-16">
-          <div className="mx-auto grid max-w-6xl gap-8 px-4 sm:px-6 lg:grid-cols-[1fr_auto] lg:items-center">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.18em] text-black/45">Datawhale community</p>
-              <h2 className="mt-2 max-w-3xl text-4xl font-black leading-none tracking-[-0.04em] sm:text-6xl">来 WAIC 2026<br />碰个头 @Datawhale</h2>
-              <p className="mt-5 max-w-2xl text-sm font-bold leading-7 text-black/65 sm:text-base">加入活动交流群，获取临时新增活动、时间地点变更、余票信息和现场约伴。非 WAIC 官方社群。</p>
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-black/45">Event archive</p>
+              <h2 className="mt-2 max-w-3xl text-4xl font-black leading-none tracking-[-0.04em] sm:text-6xl">WAIC 2026<br />活动归档</h2>
+              <p className="mt-5 max-w-2xl text-sm font-bold leading-7 text-black/65 sm:text-base">专题活动已经结束。继续查看 Datawhale AI+X 活动日历，发现近期可参与的活动。</p>
               <div className="mt-7 flex flex-wrap gap-3">
-                <button onClick={() => setShowGroupQr(true)} className="inline-flex min-h-12 items-center gap-2 rounded-full bg-black px-6 py-3 text-sm font-black text-white hover:bg-accent"><MessageCircle size={17} />查看入群二维码</button>
-                <button onClick={onSubmitClick} className="inline-flex min-h-12 items-center gap-2 rounded-full border-2 border-black bg-white px-6 py-3 text-sm font-black shadow-[3px_3px_0_#101410] hover:-translate-y-0.5"><Plus size={17} />提交 WAIC 活动</button>
+                <button onClick={onBack} className="inline-flex min-h-12 items-center gap-2 rounded-full bg-black px-6 py-3 text-sm font-black text-white hover:bg-accent">返回活动日历 <ArrowRight size={17} /></button>
               </div>
             </div>
-            <button onClick={() => setShowGroupQr(true)} className="hidden w-48 rotate-2 border-2 border-black bg-white p-2 shadow-[8px_8px_0_#101410] transition hover:rotate-0 lg:block">
-              <img src="/brand/waic-2026-group-qr.png" alt="来 WAIC 2026 碰个头 Datawhale 交流群二维码" className="w-full" />
-            </button>
           </div>
         </section>
 
         <section className="border-t-2 border-black bg-[#101410] py-10 text-white">
           <div className="mx-auto flex max-w-6xl flex-col gap-5 px-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-            <div><Logo size={28} variant="white" /><p className="mt-3 text-xs font-bold text-white/45">活动持续更新，以主办方最新通知为准。</p></div>
+            <div><Logo size={28} variant="white" /><p className="mt-3 text-xs font-bold text-white/45">本页为历史活动归档。</p></div>
             <button onClick={onBack} className="inline-flex items-center gap-2 text-sm font-black text-primary">查看 Datawhale AI+X 完整活动日历 <ArrowRight size={16} /></button>
           </div>
         </section>
@@ -315,20 +290,7 @@ const Waic2026: React.FC<Waic2026Props> = ({
 
       <div className="fixed inset-x-0 bottom-0 z-30 flex border-t-2 border-black bg-white p-2 sm:hidden">
         <button onClick={openSchedule} className="flex min-h-11 flex-1 items-center justify-center gap-2 text-xs font-black"><Clock3 size={16} />查看日程</button>
-        <button onClick={() => setShowGroupQr(true)} className="flex min-h-11 flex-1 items-center justify-center gap-2 bg-primary text-xs font-black"><MessageCircle size={16} />加入交流群</button>
       </div>
-
-      {showGroupQr && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm" onClick={() => setShowGroupQr(false)}>
-          <div role="dialog" aria-modal="true" aria-labelledby="waic-group-title" className="relative max-h-[92vh] w-full max-w-md overflow-y-auto border-2 border-black bg-white p-5 shadow-[10px_10px_0_#a7f000]" onClick={(event) => event.stopPropagation()}>
-            <button onClick={() => setShowGroupQr(false)} className="absolute right-3 top-3 z-10 border-2 border-black bg-white p-2 hover:bg-primary" aria-label="关闭二维码"><X size={17} /></button>
-            <p className="pr-10 text-xs font-black uppercase tracking-[0.16em] text-accent">WAIC 2026 community</p>
-            <h2 id="waic-group-title" className="mt-2 text-3xl font-black leading-tight">来 WAIC 2026<br />碰个头 @Datawhale</h2>
-            <img src="/brand/waic-2026-group-qr.png" alt="来 WAIC 2026 碰个头 Datawhale 交流群二维码" className="mx-auto mt-4 max-h-[58vh] w-auto max-w-full border border-black/10 object-contain" />
-            <p className="mt-4 text-center text-xs font-bold leading-6 text-black/55">使用微信扫码加入。二维码有效期以图片提示为准；若失效，我们会及时更新。</p>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

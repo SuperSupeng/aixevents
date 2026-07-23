@@ -37,8 +37,8 @@ export function generateSitemap(events: TechEvent[]): string {
     {
       loc: `${baseUrl}/waic-2026`,
       lastmod: today,
-      changefreq: 'daily',
-      priority: '0.9',
+      changefreq: 'monthly',
+      priority: '0.4',
     },
     {
       loc: `${baseUrl}/resources`,

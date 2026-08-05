@@ -70,7 +70,7 @@ CREATE INDEX IF NOT EXISTS idx_datawhale_events_edit_token_hash ON datawhale_eve
 CREATE TABLE IF NOT EXISTS datawhale_admin_audit_logs (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   actor TEXT NOT NULL,
-  action TEXT NOT NULL CHECK (action IN ('approve', 'reject', 'set_feature', 'reorder_featured')),
+  action TEXT NOT NULL CHECK (action IN ('approve', 'reject', 'update', 'set_feature', 'reorder_featured')),
   event_id UUID REFERENCES datawhale_events(id) ON DELETE SET NULL,
   request_ip_hash TEXT,
   user_agent TEXT,
@@ -83,7 +83,7 @@ ALTER TABLE datawhale_admin_audit_logs
 
 ALTER TABLE datawhale_admin_audit_logs
   ADD CONSTRAINT datawhale_admin_audit_logs_action_check
-  CHECK (action IN ('approve', 'reject', 'set_feature', 'reorder_featured'));
+  CHECK (action IN ('approve', 'reject', 'update', 'set_feature', 'reorder_featured'));
 
 CREATE INDEX IF NOT EXISTS idx_datawhale_admin_audit_logs_event_id ON datawhale_admin_audit_logs(event_id);
 CREATE INDEX IF NOT EXISTS idx_datawhale_admin_audit_logs_created_at ON datawhale_admin_audit_logs(created_at);

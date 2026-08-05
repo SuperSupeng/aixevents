@@ -9,7 +9,7 @@ Datawhale AI+X 活动日历用于收录、筛选、订阅和展示 AI+X 生态�
 - 活动提交、海报上传、确认后公开展示
 - 无账号编辑链接：提交后可通过 token 链接修改活动
 - 已公开活动修改进入待确认状态，不直接覆盖线上内容
-- 后台管理 `/admin`：审核提交、确认更新、管理首页推荐位
+- 后台管理 `/admin`：审核提交、编辑活动、确认更新、管理首页推荐位
 - 日历订阅接口 `/api/calendar`
 - Hackathon 独立页面
 - Datawhale 品牌视觉与活动群二维码弹窗
@@ -112,8 +112,11 @@ Pages Functions 会提供：
 - 首页“本周推荐”由 `is_featured = true` 控制，`featured_rank` 数字越小越靠前；最多展示 3 个尚未结束的当前有效推荐
 - 后台“推荐中”只展示当前有效推荐，可拖拽调整展示顺序，保存后会重写 `featured_rank`
 - 已公开活动通过 token 修改后，更新内容存入 `pending_update`，确认后再应用到公开字段
+- 后台可直接编辑任意活动记录；保存后立即生效，并清理该记录已有的待更新内容
 - 访问 `/admin` 后使用 `REVIEW_ADMIN_TOKEN` 登录；后台只调用服务端 `/api/admin/submissions`
-- 后台审核、拒绝、推荐位修改会写入 `datawhale_admin_audit_logs` 审计表
+- 后台审核、拒绝、直接编辑、推荐位修改会写入 `datawhale_admin_audit_logs` 审计表
+
+已有数据库在上线后台编辑功能前，执行一次 `database/add_admin_update_audit_action.sql`，允许审计表记录 `update` 操作；全新环境直接执行 `database/schema.sql` 即可。
 
 ## 安全说明
 

@@ -22,13 +22,15 @@ import {
   getActivityTypeLabel,
   type ActivityType,
 } from '../constants/activityTaxonomy';
-import type { EventSubmissionInput } from '../types';
+import type { EditableEventSubmission, EventSubmissionInput } from '../types';
 
 interface SubmitEventModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmitted?: (message: string) => void;
   editToken?: string;
+  adminSubmission?: EditableEventSubmission;
+  onAdminSave?: (input: EventSubmissionInput) => Promise<void>;
   initialActivityType?: ActivityType;
   initialCity?: string;
 }
@@ -50,6 +52,26 @@ const initialForm = {
   contactInfo: '',
   notes: '',
 };
+
+function formFromSubmission(submission: EditableEventSubmission): typeof initialForm {
+  return {
+    title: submission.title,
+    summary: submission.summary,
+    activityType: (submission.activityType || DEFAULT_ACTIVITY_TYPE) as ActivityType,
+    customTagsText: submission.customTags.filter((tag) => tag !== 'WAIC 2026').map((tag) => `#${tag}`).join(' '),
+    isWaic2026: submission.customTags.includes('WAIC 2026'),
+    startTime: toDateTimeLocal(submission.startTime),
+    endTime: toDateTimeLocal(submission.endTime),
+    format: submission.format,
+    city: submission.city || '',
+    address: submission.address || '',
+    organizersText: submission.organizers.join(' / '),
+    registrationUrl: submission.registrationUrl || '',
+    contactName: submission.contactName,
+    contactInfo: submission.contactInfo,
+    notes: submission.notes || '',
+  };
+}
 
 function toDateTimeLocal(value?: string): string {
   if (!value) return '';
@@ -96,6 +118,8 @@ const SubmitEventModal: React.FC<SubmitEventModalProps> = ({
   onClose,
   onSubmitted,
   editToken,
+  adminSubmission,
+  onAdminSave,
   initialActivityType = DEFAULT_ACTIVITY_TYPE,
   initialCity = '',
 }) => {
@@ -110,7 +134,8 @@ const SubmitEventModal: React.FC<SubmitEventModalProps> = ({
   const [existingPosterUrl, setExistingPosterUrl] = useState('');
   const [imagePreviewUrl, setImagePreviewUrl] = useState('');
 
-  const isEditMode = Boolean(editToken);
+  const isAdminEditMode = Boolean(adminSubmission && onAdminSave);
+  const isEditMode = Boolean(editToken) || isAdminEditMode;
   const resolvedCity = form.city.trim();
   const parsedOrganizers = useMemo(() => parseOrganizers(form.organizersText), [form.organizersText]);
   const parsedCustomTags = useMemo(() => Array.from(new Set([
@@ -155,13 +180,28 @@ const SubmitEventModal: React.FC<SubmitEventModalProps> = ({
   }, [posterPreview]);
 
   useEffect(() => {
-    if (!isOpen || editToken) return;
+    if (!isOpen || editToken || adminSubmission) return;
     setForm((current) => ({
       ...current,
       activityType: initialActivityType,
       city: initialCity || current.city,
     }));
-  }, [editToken, initialActivityType, initialCity, isOpen]);
+  }, [adminSubmission, editToken, initialActivityType, initialCity, isOpen]);
+
+  useEffect(() => {
+    if (!isOpen || !adminSubmission) return;
+
+    setForm(formFromSubmission(adminSubmission));
+    setError('');
+    setSubmitted(false);
+    setSubmittedEditUrl('');
+    setExistingPosterUrl(adminSubmission.posterUrl || '');
+    setPosterFile(null);
+    setPosterPreview((current) => {
+      if (current) URL.revokeObjectURL(current);
+      return '';
+    });
+  }, [adminSubmission, isOpen]);
 
   useEffect(() => {
     if (!isOpen || !editToken) return;
@@ -182,23 +222,7 @@ const SubmitEventModal: React.FC<SubmitEventModalProps> = ({
           return;
         }
 
-        setForm({
-          title: submission.title,
-          summary: submission.summary,
-          activityType: (submission.activityType || DEFAULT_ACTIVITY_TYPE) as ActivityType,
-          customTagsText: submission.customTags.filter((tag) => tag !== 'WAIC 2026').map((tag) => `#${tag}`).join(' '),
-          isWaic2026: submission.customTags.includes('WAIC 2026'),
-          startTime: toDateTimeLocal(submission.startTime),
-          endTime: toDateTimeLocal(submission.endTime),
-          format: submission.format,
-          city: submission.city || '',
-          address: submission.address || '',
-          organizersText: submission.organizers.join(' / '),
-          registrationUrl: submission.registrationUrl || '',
-          contactName: submission.contactName,
-          contactInfo: submission.contactInfo,
-          notes: submission.notes || '',
-        });
+        setForm(formFromSubmission(submission));
         setExistingPosterUrl(submission.posterUrl || '');
         setPosterFile(null);
         setPosterPreview((current) => {
@@ -340,6 +364,13 @@ const SubmitEventModal: React.FC<SubmitEventModalProps> = ({
       setIsSubmitting(true);
       const payload = await buildPayload();
 
+      if (isAdminEditMode && onAdminSave) {
+        await onAdminSave(payload);
+        setSubmitted(true);
+        onSubmitted?.('活动信息已保存并立即生效');
+        return;
+      }
+
       if (isEditMode && editToken) {
         await updateSubmissionWithToken(editToken, payload);
         setSubmitted(true);
@@ -375,6 +406,9 @@ const SubmitEventModal: React.FC<SubmitEventModalProps> = ({
           initial={{ opacity: 0, scale: 0.96, y: 28 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.96, y: 28 }}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="event-editor-title"
           className="relative max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-lg border-2 border-black bg-white shadow-[8px_8px_0_rgba(5,5,5,0.92)]"
         >
           <button
@@ -390,11 +424,13 @@ const SubmitEventModal: React.FC<SubmitEventModalProps> = ({
               <div className="mb-5 flex h-14 w-14 items-center justify-center border-2 border-black bg-primary text-black">
                 <CheckCircle2 size={30} />
               </div>
-              <h2 className="mb-4 max-w-xl text-3xl font-black leading-tight text-black sm:text-4xl">
-                {isEditMode ? '修改已提交，等待确认。' : '已提交，等待确认。'}
+              <h2 id="event-editor-title" className="mb-4 max-w-xl text-3xl font-black leading-tight text-black sm:text-4xl">
+                {isAdminEditMode ? '活动信息已保存。' : isEditMode ? '修改已提交，等待确认。' : '已提交，等待确认。'}
               </h2>
               <p className="mb-6 max-w-xl text-sm font-bold leading-7 text-black/70 sm:text-base">
-                {isEditMode
+                {isAdminEditMode
+                  ? '后台修改已经立即生效，公开日历会读取最新信息。'
+                  : isEditMode
                   ? '如果这条活动已经公开，修改内容会先进入确认，确认通过后再更新到公开日历。'
                   : `活动信息已进入待确认列表。确认真实、完整、适合公开后，同一条记录会自动出现在 ${submittedDestination} 中。`}
               </p>
@@ -421,14 +457,16 @@ const SubmitEventModal: React.FC<SubmitEventModalProps> = ({
             <form onSubmit={handleSubmit} className="p-6 sm:p-8">
               <div className="mb-6 inline-flex items-center gap-2 border-2 border-black px-3 py-1 text-xs font-black uppercase tracking-wide">
                 <span className="block h-2 w-2 bg-primary" />
-                {isEditMode ? '活动修改' : '活动提交'}
+                {isAdminEditMode ? '后台编辑' : isEditMode ? '活动修改' : '活动提交'}
               </div>
 
-              <h2 className="mb-4 max-w-xl text-3xl font-black leading-tight text-black sm:text-4xl">
-                {isEditMode ? '修改活动信息。' : '把你的活动放到日历里。'}
+              <h2 id="event-editor-title" className="mb-4 max-w-xl text-3xl font-black leading-tight text-black sm:text-4xl">
+                {isAdminEditMode ? '编辑活动信息。' : isEditMode ? '修改活动信息。' : '把你的活动放到日历里。'}
               </h2>
               <p className="mb-6 max-w-xl text-sm font-bold leading-7 text-black/70 sm:text-base">
-                正在办 AI 活动，想让更多人看到？提交基本信息后，我们确认无误就会放到活动日历。联系人只用于沟通确认，不会公开；海报和报名链接可以后续补充。
+                {isAdminEditMode
+                  ? '保存后会立即更新活动；如果存在提交者的待确认修改，也会以这次后台保存的内容为准。'
+                  : '正在办 AI 活动，想让更多人看到？提交基本信息后，我们确认无误就会放到活动日历。联系人只用于沟通确认，不会公开；海报和报名链接可以后续补充。'}
               </p>
 
               {isLoadingSubmission ? (
@@ -597,18 +635,22 @@ const SubmitEventModal: React.FC<SubmitEventModalProps> = ({
                   className="btn-primary flex flex-1 items-center justify-center gap-2 px-6 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
-                  {isSubmitting ? '提交中...' : isEditMode ? '提交修改' : '提交活动信息'}
+                  {isSubmitting ? '保存中...' : isAdminEditMode ? '保存并立即生效' : isEditMode ? '提交修改' : '提交活动信息'}
                 </button>
                 <button
                   type="button"
                   onClick={resetAndClose}
                   className="btn-secondary flex flex-1 items-center justify-center gap-2 px-6 py-3 text-sm"
                 >
-                  先看看活动日历
+                  {isAdminEditMode ? '取消' : '先看看活动日历'}
                 </button>
               </div>
               <p className="mt-4 text-xs font-bold leading-6 text-black/55">
-                {isEditMode ? '修改也会先确认；确认通过前不会影响已公开的活动信息。' : '提交后会先确认信息，确认通过后才会展示到公开日历。'}
+                {isAdminEditMode
+                  ? '后台保存会直接覆盖活动内容，并记录操作人和修改字段。'
+                  : isEditMode
+                    ? '修改也会先确认；确认通过前不会影响已公开的活动信息。'
+                    : '提交后会先确认信息，确认通过后才会展示到公开日历。'}
               </p>
             </form>
           )}

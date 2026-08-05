@@ -1,6 +1,6 @@
 # Security Checklist
 
-Last updated: 2026-05-29
+Last updated: 2026-08-05
 
 ## Current Model
 
@@ -11,7 +11,7 @@ Last updated: 2026-05-29
 - Approved-event edits are stored in `pending_update` and do not change the public event until reviewed.
 - Admin review uses server-side Cloudflare Pages Functions with `SUPABASE_SERVICE_ROLE_KEY` and `REVIEW_ADMIN_TOKEN`.
 - Admin UI at `/admin` calls only `/api/admin/submissions`; it must not import Supabase service credentials.
-- Admin write actions are limited to `approve`, `reject`, `set_feature`, and `reorder_featured`.
+- Admin write actions are limited to `approve`, `reject`, `update`, `set_feature`, and `reorder_featured`.
 - Admin write actions attempt to append audit records to `datawhale_admin_audit_logs`.
 - Poster uploads go to `datawhale-event-posters`, limited to JPG, PNG, WebP, and 5 MB.
 
@@ -74,4 +74,4 @@ Do not expose server-only values in Vite code or browser logs.
 - Edit an approved event and verify the public event does not change until the pending update is approved.
 - Confirm direct anonymous `select`, `update`, and `delete` on `datawhale_events` fail.
 - Confirm `/admin` can list pending items only after a valid token is supplied.
-- Confirm approving, rejecting, recommendation changes, and recommendation reorder operations create rows in `datawhale_admin_audit_logs`.
+- Confirm approving, rejecting, direct activity edits, recommendation changes, and recommendation reorder operations create rows in `datawhale_admin_audit_logs`.

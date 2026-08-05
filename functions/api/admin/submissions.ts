@@ -9,7 +9,7 @@ type Env = {
   IP_HASH_SALT?: string;
 };
 
-type AdminAction = 'approve' | 'reject' | 'set_feature' | 'reorder_featured';
+type AdminAction = 'approve' | 'reject' | 'update' | 'set_feature' | 'reorder_featured';
 
 const MAX_ACTIVE_FEATURED_EVENTS = 3;
 
@@ -150,6 +150,106 @@ function normalizePendingUpdatePayload(payload: any) {
     price: payload.price || { type: 'unknown' },
     submitter: payload.submitter,
     notes: payload.notes || null,
+  };
+}
+
+function normalizeText(value: unknown, maxLength: number): string {
+  return typeof value === 'string' ? value.trim().slice(0, maxLength) : '';
+}
+
+function normalizeStringArray(value: unknown, maxItems: number, maxLength: number): string[] {
+  if (!Array.isArray(value)) return [];
+  return Array.from(new Set(
+    value
+      .map((item) => normalizeText(item, maxLength))
+      .filter(Boolean)
+      .slice(0, maxItems),
+  ));
+}
+
+function normalizeHttpUrl(value: unknown): string | null {
+  const text = normalizeText(value, 2000);
+  if (!text) return null;
+
+  try {
+    const url = new URL(text);
+    return url.protocol === 'http:' || url.protocol === 'https:' ? url.toString() : null;
+  } catch {
+    return null;
+  }
+}
+
+function normalizeAdminEventPayload(raw: any): { payload?: Record<string, unknown>; error?: string } {
+  const title = normalizeText(raw?.title, 240);
+  const summary = normalizeText(raw?.summary, 5000);
+  const activityType = normalizeText(raw?.activity_type, 80) || 'meetup';
+  const format = normalizeText(raw?.format, 20);
+  const startTime = normalizeText(raw?.start_time, 80);
+  const endTime = normalizeText(raw?.end_time, 80);
+  const startMs = new Date(startTime).getTime();
+  const endMs = new Date(endTime).getTime();
+  const organizers = normalizeStringArray(raw?.organizers, 30, 160);
+  const fallbackOrganizer = normalizeText(raw?.organizer?.name, 300);
+  const normalizedOrganizers = organizers.length ? organizers : fallbackOrganizer ? [fallbackOrganizer] : [];
+  const submitterName = normalizeText(raw?.submitter?.name, 160);
+  const submitterContact = normalizeText(raw?.submitter?.contact, 300);
+  const city = normalizeText(raw?.location?.city, 120);
+  const address = normalizeText(raw?.location?.address, 500);
+  const registrationUrl = normalizeHttpUrl(raw?.links?.registration);
+  const posterUrl = normalizeHttpUrl(raw?.links?.poster);
+
+  if (!title || !summary || !startTime || !endTime || normalizedOrganizers.length === 0 || !submitterName || !submitterContact) {
+    return { error: '请补充活动名称、简介、时间、组织方和联系人信息' };
+  }
+  if (!['online', 'offline', 'hybrid'].includes(format)) {
+    return { error: '活动形式无效' };
+  }
+  if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || endMs <= startMs) {
+    return { error: '活动结束时间必须晚于开始时间' };
+  }
+  if (format !== 'online' && !city) {
+    return { error: '线下或混合活动需要填写城市' };
+  }
+  if (raw?.links?.registration && !registrationUrl) {
+    return { error: '报名链接必须是有效的 HTTP 或 HTTPS 地址' };
+  }
+  if (raw?.links?.poster && !posterUrl) {
+    return { error: '海报链接必须是有效的 HTTP 或 HTTPS 地址' };
+  }
+
+  const customTags = normalizeStringArray(raw?.custom_tags, 8, 80);
+  const links: Record<string, string> = {
+    officialSite: registrationUrl || posterUrl || '#',
+    source: 'Datawhale AI+X 活动日历提交',
+  };
+  if (registrationUrl) links.registration = registrationUrl;
+  if (posterUrl) links.poster = posterUrl;
+
+  return {
+    payload: {
+      title,
+      summary,
+      start_time: new Date(startMs).toISOString(),
+      end_time: new Date(endMs).toISOString(),
+      timezone: 'Asia/Shanghai',
+      is_all_day: false,
+      format,
+      activity_type: activityType,
+      location: format === 'online' ? null : {
+        country: normalizeText(raw?.location?.country, 80) || '中国',
+        city,
+        ...(address ? { address } : {}),
+      },
+      organizer: { name: normalizedOrganizers.join(' / ') },
+      organizers: normalizedOrganizers,
+      links,
+      tags: Array.from(new Set(['AI+X', activityType, ...customTags])),
+      custom_tags: customTags,
+      language: ['中文'],
+      price: { type: 'unknown' },
+      submitter: { name: submitterName, contact: submitterContact },
+      notes: normalizeText(raw?.notes, 5000) || null,
+    },
   };
 }
 
@@ -427,6 +527,64 @@ async function reviewSubmission(request: Request, env: Env, body: any, action: '
   return jsonResponse(request, env, { status: 'approved', eventId: submission.id });
 }
 
+async function updateEvent(request: Request, env: Env, body: any) {
+  const eventId = String(body.eventId || body.submissionId || '');
+  if (!isUuid(eventId)) {
+    return jsonResponse(request, env, { error: 'A valid eventId is required' }, 400);
+  }
+
+  const normalized = normalizeAdminEventPayload(body.event);
+  if (!normalized.payload) {
+    return jsonResponse(request, env, { error: normalized.error || '活动信息无效' }, 400);
+  }
+
+  const supabase = createSupabaseClient(env);
+  const { data: existing, error: fetchError } = await supabase
+    .from('datawhale_events')
+    .select(EVENT_SELECT)
+    .eq('id', eventId)
+    .single();
+
+  if (fetchError || !existing) {
+    if (fetchError) console.error('Admin update fetch error:', fetchError);
+    return jsonResponse(request, env, { error: 'Event not found' }, 404);
+  }
+
+  const editableFields = Object.keys(normalized.payload);
+  const changedFields = editableFields.filter((field) => (
+    JSON.stringify(existing[field] ?? null) !== JSON.stringify(normalized.payload?.[field] ?? null)
+  ));
+  const eventHasEnded = new Date(String(normalized.payload.end_time)).getTime() < Date.now();
+  const updatePayload = {
+    ...normalized.payload,
+    pending_update: null,
+    update_status: 'none',
+    update_note: null,
+    ...(eventHasEnded ? { is_featured: false, featured_rank: null } : {}),
+  };
+
+  const { error } = await supabase
+    .from('datawhale_events')
+    .update(updatePayload)
+    .eq('id', eventId);
+
+  if (error) {
+    console.error('Admin event update error:', error);
+    return jsonResponse(request, env, { error: '活动信息保存失败' }, 500);
+  }
+
+  await writeAuditLog(supabase, request, env, getActor(request), 'update', eventId, {
+    changedFields,
+    clearedPendingUpdate: Boolean(existing.pending_update),
+    removedExpiredFeature: eventHasEnded && Boolean(existing.is_featured),
+  });
+
+  return jsonResponse(request, env, {
+    status: 'updated',
+    eventId,
+  });
+}
+
 async function setFeatured(request: Request, env: Env, body: any) {
   const eventId = String(body.eventId || body.submissionId || '');
   const isFeatured = Boolean(body.isFeatured);
@@ -621,6 +779,10 @@ export async function onRequestPost(context: { request: Request; env: Env }): Pr
 
     if (action === 'approve' || action === 'reject') {
       return reviewSubmission(request, env, body, action);
+    }
+
+    if (action === 'update') {
+      return updateEvent(request, env, body);
     }
 
     if (action === 'set_feature') {

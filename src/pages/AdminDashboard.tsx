@@ -9,6 +9,7 @@ import {
   Loader2,
   Lock,
   LogOut,
+  Pencil,
   RefreshCw,
   Search,
   ShieldCheck,
@@ -23,7 +24,10 @@ import {
   reorderAdminFeaturedEvents,
   reviewAdminSubmission,
   setAdminEventFeature,
+  updateAdminEvent,
 } from '../api/admin';
+import SubmitEventModal from '../components/SubmitEventModal';
+import type { EditableEventSubmission, EventSubmissionInput } from '../types';
 
 const TOKEN_STORAGE_KEY = 'aixevents.adminToken';
 const ACTOR_STORAGE_KEY = 'aixevents.adminActor';
@@ -111,6 +115,40 @@ function getPayload(submission: AdminSubmission | null): Record<string, any> {
   if (!submission) return {};
   if (submission.update_status === 'pending' && submission.pending_update) return submission.pending_update;
   return submission as unknown as Record<string, any>;
+}
+
+function toEditableAdminSubmission(submission: AdminSubmission): EditableEventSubmission {
+  const source = getPayload(submission);
+  const submitter = source.submitter || submission.submitter || {};
+  const links = source.links || submission.links || {};
+  const organizers = Array.isArray(source.organizers) && source.organizers.length
+    ? source.organizers
+    : Array.isArray(submission.organizers) && submission.organizers.length
+      ? submission.organizers
+      : [source.organizer?.name || submission.organizer?.name].filter(Boolean);
+
+  return {
+    id: submission.id,
+    title: source.title || submission.title || '',
+    summary: source.summary || submission.summary || '',
+    activityType: source.activity_type || submission.activity_type || 'meetup',
+    customTags: Array.isArray(source.custom_tags) ? source.custom_tags : submission.custom_tags || [],
+    startTime: source.start_time || submission.start_time || '',
+    endTime: source.end_time || submission.end_time || '',
+    format: source.format || submission.format || 'offline',
+    city: source.location?.city || submission.location?.city || '',
+    address: source.location?.address || submission.location?.address || '',
+    organizers,
+    registrationUrl: links.registration || '',
+    posterUrl: links.poster || '',
+    contactName: submitter.name || '',
+    contactInfo: submitter.contact || '',
+    notes: source.notes || submission.notes || '',
+    reviewStatus: submission.review_status,
+    reviewNote: submission.review_note,
+    updateStatus: submission.update_status,
+    updateNote: submission.update_note,
+  };
 }
 
 function getOrganizerText(payload: Record<string, any>, fallback?: AdminSubmission): string {
@@ -218,6 +256,7 @@ const AdminDashboard: React.FC = () => {
   const [featureEnabled, setFeatureEnabled] = React.useState(false);
   const [featureRank, setFeatureRank] = React.useState('');
   const [draggedFeaturedId, setDraggedFeaturedId] = React.useState('');
+  const [editingSubmission, setEditingSubmission] = React.useState<AdminSubmission | null>(null);
 
   const logout = React.useCallback(() => {
     removeSessionValue(TOKEN_STORAGE_KEY);
@@ -228,6 +267,7 @@ const AdminDashboard: React.FC = () => {
     setActorInput('admin');
     setSelected(null);
     setSubmissions([]);
+    setEditingSubmission(null);
   }, []);
 
   React.useEffect(() => {
@@ -293,6 +333,10 @@ const AdminDashboard: React.FC = () => {
   const canSaveFeature = Boolean(selected && selected.review_status === 'approved' && (!featureEnabled || isSelectedActive));
   const registrationUrl = getExternalUrl(payload.links?.registration || payload.links?.officialSite);
   const posterUrl = getExternalUrl(payload.links?.poster);
+  const editableAdminSubmission = React.useMemo(
+    () => editingSubmission ? toEditableAdminSubmission(editingSubmission) : undefined,
+    [editingSubmission],
+  );
 
   const notify = (nextNotice: Notice) => {
     setNotice(nextNotice);
@@ -355,6 +399,21 @@ const AdminDashboard: React.FC = () => {
     } finally {
       setActionLoading('');
     }
+  };
+
+  const saveAdminEdit = async (input: EventSubmissionInput) => {
+    if (!editingSubmission) return;
+    await updateAdminEvent({
+      token,
+      actor,
+      eventId: editingSubmission.id,
+      input,
+    });
+  };
+
+  const closeAdminEditor = () => {
+    setEditingSubmission(null);
+    refresh();
   };
 
   const handleFeaturedDrop = async (targetId: string) => {
@@ -643,16 +702,26 @@ const AdminDashboard: React.FC = () => {
             <div className="grid min-h-[32rem] lg:grid-cols-[minmax(0,1fr)_18rem]">
               <div className="min-w-0 border-b-2 border-black/15 lg:border-b-0 lg:border-r-2">
                 <div className="border-b-2 border-black px-5 py-4">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className={`rounded-md border px-2 py-0.5 text-xs font-black ${getStatusClass(selected)}`}>
-                      {getStatusText(selected)}
-                    </span>
-                    {selected.is_featured && (
-                      <span className="inline-flex items-center gap-1 rounded-md border-2 border-black bg-primary px-2 py-0.5 text-xs font-black text-black shadow-[2px_2px_0_rgba(5,5,5,0.75)]">
-                        <Star size={13} />
-                        推荐 {selected.featured_rank ?? ''}
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className={`rounded-md border px-2 py-0.5 text-xs font-black ${getStatusClass(selected)}`}>
+                        {getStatusText(selected)}
                       </span>
-                    )}
+                      {selected.is_featured && (
+                        <span className="inline-flex items-center gap-1 rounded-md border-2 border-black bg-primary px-2 py-0.5 text-xs font-black text-black shadow-[2px_2px_0_rgba(5,5,5,0.75)]">
+                          <Star size={13} />
+                          推荐 {selected.featured_rank ?? ''}
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setEditingSubmission(selected)}
+                      className={`h-9 shrink-0 ${primaryButtonClass}`}
+                    >
+                      <Pencil size={15} />
+                      编辑活动
+                    </button>
                   </div>
                   <h2 className="mt-3 break-words text-2xl font-black leading-tight">{payload.title || selected.title}</h2>
                   <p className="mt-2 text-sm font-bold leading-6 text-black/62">{payload.summary || selected.summary}</p>
@@ -841,6 +910,16 @@ const AdminDashboard: React.FC = () => {
           )}
         </section>
       </div>
+
+      {editableAdminSubmission && (
+        <SubmitEventModal
+          isOpen
+          adminSubmission={editableAdminSubmission}
+          onAdminSave={saveAdminEdit}
+          onClose={closeAdminEditor}
+          onSubmitted={(message) => notify({ type: 'success', message })}
+        />
+      )}
     </main>
   );
 };

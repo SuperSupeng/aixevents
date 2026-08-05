@@ -1,3 +1,6 @@
+import { buildEventPayload } from './submissions';
+import type { EventSubmissionInput } from '../types';
+
 export type AdminStatusFilter = 'pending' | 'updates' | 'approved' | 'rejected' | 'featured' | 'all';
 
 export interface AdminSubmission {
@@ -182,6 +185,26 @@ export async function reorderAdminFeaturedEvents(params: {
     body: JSON.stringify({
       action: 'reorder_featured',
       eventIds: params.eventIds,
+    }),
+  });
+
+  return parseAdminResponse<AdminActionResponse>(response);
+}
+
+export async function updateAdminEvent(params: {
+  token: string;
+  actor: string;
+  eventId: string;
+  input: EventSubmissionInput;
+}): Promise<AdminActionResponse> {
+  const response = await fetch('/api/admin/submissions', {
+    method: 'POST',
+    headers: adminHeaders(params.token, params.actor),
+    cache: 'no-store',
+    body: JSON.stringify({
+      action: 'update',
+      eventId: params.eventId,
+      event: buildEventPayload(params.input),
     }),
   });
 

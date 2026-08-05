@@ -80,7 +80,7 @@ function getEditUrl(editToken: string): string {
   return `${window.location.origin}/edit/${editToken}`;
 }
 
-function buildEventPayload(input: EventSubmissionInput) {
+export function buildEventPayload(input: EventSubmissionInput) {
   const registrationUrl = normalizeHttpUrl(input.links.registration);
   const posterUrl = normalizeHttpUrl(input.links.poster);
   const primaryLink = registrationUrl || posterUrl;

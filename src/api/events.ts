@@ -108,8 +108,10 @@ export async function fetchEvents(filters: EventFilters = {}): Promise<TechEvent
     }
 
     // 分页
-    const limit = filters.limit || 100;
-    const offset = filters.offset || 0;
+    // 首页日历需要覆盖完整活动集。默认只取 100 条时，按开始时间升序的
+    // “全部”活动会在较早记录处被截断，反而比“线下”等子集显示得更少。
+    const limit = filters.limit ?? 1000;
+    const offset = filters.offset ?? 0;
     query = query.range(offset, offset + limit - 1);
 
     const { data, error } = await query;

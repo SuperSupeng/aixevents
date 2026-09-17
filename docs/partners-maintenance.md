@@ -1,18 +1,14 @@
 # 生态伙伴维护说明
 
-这个文档用于维护生态伙伴 logo、名称、分类和内部备注。
+这个文档用于维护首页生态伙伴 logo 墙的数据，包括 logo、名称、分类和内部备注。
 
-页面实际读取的数据源是 [src/data/partners.json](/Volumes/1TB/develop/aixevents/src/data/partners.json)。如果要让页面生效，修改这个 JSON 文件即可。
+生态伙伴独立页面暂未开放；点击导航或首页的生态伙伴入口会显示“即将上线”，直接访问 `/partners` 会回到首页并显示同样提示。[src/pages/Partners.tsx](../src/pages/Partners.tsx) 保留了尚未开放的分类展示组件。
 
-[src/data/partners.ts](/Volumes/1TB/develop/aixevents/src/data/partners.ts) 只是读取 JSON 并转换成前端组件需要的数据结构，一般不需要修改。
+首页 logo 墙实际读取的数据源是 [src/data/partners.json](../src/data/partners.json)。修改这个 JSON 文件即可更新 logo 墙中的伙伴数据。
 
-当前页面只展示：
+[src/data/partners.ts](../src/data/partners.ts) 负责读取 JSON 并转换成前端组件需要的数据结构，一般不需要修改。
 
-- logo
-- 伙伴名称
-- 所属分类
-
-不会展示“内部备注 / 原说明”，备注只用于维护时判断分类。
+首页 logo 墙展示 logo，并用伙伴名称作为图片替代文本；分类和“内部备注 / 原说明”用于数据组织与维护，不展示在 logo 墙中。
 
 ## 分类结构
 
@@ -54,7 +50,7 @@
 字段含义：
 
 - `logoFile`：logo 文件名
-- `name`：页面展示名称
+- `name`：伙伴名称，用作 logo 的图片替代文本
 - `note`：内部备注 / 原说明，不会展示在页面上
 
 logo 文件放在：
@@ -65,7 +61,7 @@ public/partners/edu-alliance/
 
 新增伙伴时，把 logo 放进这个目录，然后在目标分类的 `partners` 数组里新增一项。删除伙伴时，删除对应 JSON 对象即可。
 
-调整分类导航顺序时，移动 `categories` 数组里的整个分类对象。
+调整分类的数据顺序时，移动 `categories` 数组里的整个分类对象。
 
 移动伙伴分类时，把对应伙伴对象剪切到另一个分类的 `partners` 数组里。
 

@@ -16,6 +16,9 @@ dist-ssr
 build
 *.local
 
+# Local generated documents and screenshots
+/outputs/
+
 # Cache directories
 .npm-cache
 .npm
